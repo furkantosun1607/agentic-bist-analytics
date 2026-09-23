@@ -59,6 +59,36 @@ WEEKDAY_PATTERN_SUMMARY_COLUMNS = (
     "median_cost_adjusted_return",
     "unconditional_mean_return",
 )
+TECHNICAL_REVERSAL_COLUMNS = (
+    "symbol",
+    "event_family",
+    "event_type",
+    "event_date",
+    "known_at",
+    "signal_group",
+    "horizon",
+    "status",
+    "entry_date",
+    "entry_close",
+    "exit_date",
+    "exit_close",
+    "forward_return",
+    "bounce",
+    "market_regime",
+)
+TECHNICAL_REVERSAL_SUMMARY_COLUMNS = (
+    "signal_group",
+    "event_family",
+    "event_type",
+    "horizon",
+    "market_regime",
+    "event_count",
+    "bounce_count",
+    "failure_count",
+    "bounce_rate",
+    "average_return",
+    "median_return",
+)
 
 
 @dataclass(frozen=True)
@@ -75,6 +105,13 @@ class SectorCatchUpResult:
 
 @dataclass(frozen=True)
 class WeekdayPatternResult:
+    observations: pd.DataFrame
+    summary: pd.DataFrame
+    errors: tuple[ResearchError, ...]
+
+
+@dataclass(frozen=True)
+class TechnicalReversalResult:
     observations: pd.DataFrame
     summary: pd.DataFrame
     errors: tuple[ResearchError, ...]
@@ -351,6 +388,156 @@ def write_weekday_patterns_report(
     return path
 
 
+def run_technical_reversals(
+    prices_by_symbol: dict[str, pd.DataFrame],
+    events_by_symbol: dict[str, pd.DataFrame],
+    benchmark_prices: pd.DataFrame | None = None,
+    horizons: tuple[int, ...] = (1, 3, 5, 10),
+    regime_lookback_days: int = 20,
+) -> TechnicalReversalResult:
+    """Compare technical events with future returns."""
+
+    _validate_reversal_args(horizons)
+    errors: list[ResearchError] = []
+    observations: list[pd.DataFrame] = []
+
+    benchmark_panel = None
+    if benchmark_prices is not None:
+        try:
+            benchmark_panel = _prepare_benchmark_regime(benchmark_prices, regime_lookback_days)
+        except Exception as exc:
+            errors.append(ResearchError(scope="benchmark_regime", message=str(exc)))
+
+    for symbol, events in events_by_symbol.items():
+        try:
+            prices = prices_by_symbol.get(symbol)
+            if prices is None:
+                raise ResearchInputError(f"missing price history for {symbol}")
+
+            symbol_observations = _technical_reversals_for_symbol(
+                prices=prices,
+                events=events,
+                symbol=symbol,
+                benchmark_panel=benchmark_panel,
+                horizons=horizons,
+                regime_lookback_days=regime_lookback_days,
+            )
+        except Exception as exc:
+            errors.append(ResearchError(scope=symbol, message=str(exc)))
+            continue
+
+        observations.append(symbol_observations)
+
+    if not observations:
+        return TechnicalReversalResult(
+            observations=empty_technical_reversal_frame(),
+            summary=empty_technical_reversal_summary_frame(),
+            errors=tuple(errors)
+            or (ResearchError(scope="technical_reversals", message="no events were evaluated"),),
+        )
+
+    combined = pd.concat(observations, ignore_index=True)
+    summary = summarize_technical_reversals(combined)
+    return TechnicalReversalResult(
+        observations=combined.loc[:, list(TECHNICAL_REVERSAL_COLUMNS)],
+        summary=summary,
+        errors=tuple(errors),
+    )
+
+
+def summarize_technical_reversals(observations: pd.DataFrame) -> pd.DataFrame:
+    """Summarize eligible technical reversal outcomes."""
+
+    if observations.empty:
+        return empty_technical_reversal_summary_frame()
+
+    eligible = observations[observations["status"] == "ok"].copy()
+    if eligible.empty:
+        return empty_technical_reversal_summary_frame()
+
+    summary = (
+        eligible.groupby(
+            [
+                "signal_group",
+                "event_family",
+                "event_type",
+                "horizon",
+                "market_regime",
+            ],
+            dropna=False,
+        )
+        .agg(
+            event_count=("symbol", "count"),
+            bounce_count=("bounce", "sum"),
+            average_return=("forward_return", "mean"),
+            median_return=("forward_return", "median"),
+        )
+        .reset_index()
+    )
+    summary["failure_count"] = summary["event_count"] - summary["bounce_count"]
+    summary["bounce_rate"] = summary["bounce_count"] / summary["event_count"]
+    return summary.loc[:, list(TECHNICAL_REVERSAL_SUMMARY_COLUMNS)]
+
+
+def write_technical_reversals_report(
+    result: TechnicalReversalResult,
+    output_path: str | Path,
+) -> Path:
+    """Write a compact markdown report for technical reversal results."""
+
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    lines = [
+        "# Technical Reversal Report",
+        "",
+        "Events: deterministic technical event detector output from Scenario 3.",
+        "Timing: each event becomes tradable no earlier than the next available trading day.",
+        "Combined signals: multiple same-symbol same-date events are collapsed into a separate combined observation.",
+        "",
+    ]
+
+    if result.observations.empty:
+        lines.extend(["Status: no observations generated.", ""])
+    else:
+        lines.extend(
+            [
+                f"Event period: {result.observations['event_date'].min()} to {result.observations['event_date'].max()}.",
+                f"Observation rows: {len(result.observations)}.",
+                f"Symbols: {result.observations['symbol'].nunique()}.",
+                "",
+                "## Status Counts",
+                "",
+                result.observations["status"].value_counts().to_markdown(),
+                "",
+            ]
+        )
+
+    if result.summary.empty:
+        lines.extend(["## Summary", "", "No eligible reversal observations.", ""])
+    else:
+        lines.extend(["## Summary", "", result.summary.to_markdown(index=False), ""])
+
+    if result.errors:
+        lines.extend(["## Errors", ""])
+        for error in result.errors:
+            lines.append(f"- `{error.scope}`: {error.message}")
+        lines.append("")
+
+    lines.extend(
+        [
+            "Limitations:",
+            "- This report is historical research output, not investment advice.",
+            "- Event definitions are intentionally simple and are not optimized.",
+            "- Fundamental, macro, news and video context are added in later phases.",
+            "",
+        ]
+    )
+
+    path.write_text("\n".join(lines), encoding="utf-8")
+    return path
+
+
 def empty_sector_catch_up_frame() -> pd.DataFrame:
     return pd.DataFrame(columns=list(SECTOR_CATCH_UP_COLUMNS))
 
@@ -361,6 +548,190 @@ def empty_weekday_pattern_frame() -> pd.DataFrame:
 
 def empty_weekday_pattern_summary_frame() -> pd.DataFrame:
     return pd.DataFrame(columns=list(WEEKDAY_PATTERN_SUMMARY_COLUMNS))
+
+
+def empty_technical_reversal_frame() -> pd.DataFrame:
+    return pd.DataFrame(columns=list(TECHNICAL_REVERSAL_COLUMNS))
+
+
+def empty_technical_reversal_summary_frame() -> pd.DataFrame:
+    return pd.DataFrame(columns=list(TECHNICAL_REVERSAL_SUMMARY_COLUMNS))
+
+
+def _technical_reversals_for_symbol(
+    prices: pd.DataFrame,
+    events: pd.DataFrame,
+    symbol: str,
+    benchmark_panel: pd.DataFrame | None,
+    horizons: tuple[int, ...],
+    regime_lookback_days: int,
+) -> pd.DataFrame:
+    _require_columns(prices, ["date", "close"], scope=symbol)
+    _require_columns(
+        events,
+        ["event_family", "event_type", "event_date", "known_at"],
+        scope=f"{symbol} events",
+    )
+    price_frame = prices.loc[:, ["date", "close"]].copy()
+    price_frame["date"] = pd.to_datetime(price_frame["date"], errors="raise")
+    price_frame["close"] = pd.to_numeric(price_frame["close"], errors="raise")
+    price_frame = price_frame.sort_values("date").reset_index(drop=True)
+    if price_frame["date"].duplicated().any():
+        raise ResearchInputError(f"{symbol} contains duplicate dates")
+
+    if benchmark_panel is not None:
+        price_frame = price_frame.merge(benchmark_panel, on="date", how="left")
+    else:
+        price_frame["regime_return"] = price_frame["close"].pct_change(regime_lookback_days)
+
+    price_frame["market_regime"] = "unknown"
+    price_frame.loc[price_frame["regime_return"] >= 0, "market_regime"] = "rising"
+    price_frame.loc[price_frame["regime_return"] < 0, "market_regime"] = "falling"
+
+    event_frame = events.copy()
+    event_frame["event_date"] = pd.to_datetime(event_frame["event_date"], errors="raise")
+    event_frame = event_frame.sort_values(["event_date", "event_family", "event_type"])
+    individual = _technical_reversal_rows(
+        price_frame=price_frame,
+        event_frame=event_frame,
+        symbol=symbol,
+        horizons=horizons,
+        signal_group="individual",
+    )
+    combined = _combined_reversal_rows(
+        price_frame=price_frame,
+        event_frame=event_frame,
+        symbol=symbol,
+        horizons=horizons,
+    )
+    frames = [individual]
+    if not combined.empty:
+        frames.append(combined)
+    return pd.concat(frames, ignore_index=True).loc[:, list(TECHNICAL_REVERSAL_COLUMNS)]
+
+
+def _technical_reversal_rows(
+    price_frame: pd.DataFrame,
+    event_frame: pd.DataFrame,
+    symbol: str,
+    horizons: tuple[int, ...],
+    signal_group: str,
+) -> pd.DataFrame:
+    rows: list[dict[str, object]] = []
+    for _, event in event_frame.iterrows():
+        for horizon in horizons:
+            rows.append(
+                _reversal_observation(
+                    price_frame=price_frame,
+                    symbol=symbol,
+                    event_family=str(event["event_family"]),
+                    event_type=str(event["event_type"]),
+                    event_date=event["event_date"],
+                    known_at=str(event["known_at"]),
+                    signal_group=signal_group,
+                    horizon=horizon,
+                )
+            )
+    return pd.DataFrame(rows, columns=list(TECHNICAL_REVERSAL_COLUMNS))
+
+
+def _combined_reversal_rows(
+    price_frame: pd.DataFrame,
+    event_frame: pd.DataFrame,
+    symbol: str,
+    horizons: tuple[int, ...],
+) -> pd.DataFrame:
+    combined_events = []
+    grouped = event_frame.groupby("event_date", sort=True)
+    for event_date, group in grouped:
+        if len(group) < 2:
+            continue
+        known_at = str(group["known_at"].max())
+        event_types = sorted(group["event_type"].astype(str).unique())
+        combined_events.append(
+            {
+                "event_family": "combined",
+                "event_type": "+".join(event_types),
+                "event_date": event_date,
+                "known_at": known_at,
+            }
+        )
+
+    if not combined_events:
+        return empty_technical_reversal_frame()
+
+    return _technical_reversal_rows(
+        price_frame=price_frame,
+        event_frame=pd.DataFrame(combined_events),
+        symbol=symbol,
+        horizons=horizons,
+        signal_group="combined",
+    )
+
+
+def _reversal_observation(
+    price_frame: pd.DataFrame,
+    symbol: str,
+    event_family: str,
+    event_type: str,
+    event_date: pd.Timestamp,
+    known_at: str,
+    signal_group: str,
+    horizon: int,
+) -> dict[str, object]:
+    entry_index = price_frame.index[price_frame["date"] > event_date]
+    row = {
+        "symbol": symbol,
+        "event_family": event_family,
+        "event_type": event_type,
+        "event_date": event_date.date().isoformat(),
+        "known_at": known_at,
+        "signal_group": signal_group,
+        "horizon": horizon,
+        "status": "ok",
+        "entry_date": pd.NA,
+        "entry_close": pd.NA,
+        "exit_date": pd.NA,
+        "exit_close": pd.NA,
+        "forward_return": pd.NA,
+        "bounce": False,
+        "market_regime": "unknown",
+    }
+    if len(entry_index) == 0:
+        row["status"] = "insufficient_forward_history"
+        return row
+
+    entry_pos = int(entry_index[0])
+    exit_pos = entry_pos + horizon
+    if exit_pos >= len(price_frame):
+        entry = price_frame.iloc[entry_pos]
+        row.update(
+            {
+                "entry_date": entry["date"].date().isoformat(),
+                "entry_close": float(entry["close"]),
+                "market_regime": str(entry["market_regime"]),
+                "status": "insufficient_forward_history",
+            }
+        )
+        return row
+
+    entry = price_frame.iloc[entry_pos]
+    exit_row = price_frame.iloc[exit_pos]
+    forward_return = float(exit_row["close"] / entry["close"] - 1)
+    row.update(
+        {
+            "entry_date": entry["date"].date().isoformat(),
+            "entry_close": float(entry["close"]),
+            "exit_date": exit_row["date"].date().isoformat(),
+            "exit_close": float(exit_row["close"]),
+            "forward_return": forward_return,
+            "bounce": forward_return > 0,
+            "market_regime": str(entry["market_regime"]),
+        }
+    )
+    if row["market_regime"] == "unknown":
+        row["status"] = "insufficient_regime_history"
+    return row
 
 
 def _weekday_patterns_for_symbol(
@@ -571,6 +942,14 @@ def _validate_weekday_pattern_args(
         raise ResearchInputError("trading_cost_bps cannot be negative")
     if slippage_bps < 0:
         raise ResearchInputError("slippage_bps cannot be negative")
+
+
+def _validate_reversal_args(horizons: tuple[int, ...]) -> None:
+    if not horizons:
+        raise ResearchInputError("at least one reversal horizon is required")
+    invalid_horizons = [horizon for horizon in horizons if horizon <= 0]
+    if invalid_horizons:
+        raise ResearchInputError(f"horizons must be positive: {invalid_horizons}")
 
 
 def _period_split(dates: pd.Series, unseen_start_date: str | None) -> pd.Series:

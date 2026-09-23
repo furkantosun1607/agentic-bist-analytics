@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Weekday pattern research ready |
+| Proje durumu | Technical reversal research ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P09 - Technical Reversal Research |
-| Kritik sonraki hedef | Teknik eventleri ileri getirilerle karsilastiran reversal analizini uygulamak |
+| Aktif faz | P10 - Fundamentals Data Schema |
+| Kritik sonraki hedef | Point-in-time finansal veri semasini ve import akisini olusturmak |
 
 ## Degismez Proje Kurallari
 
@@ -368,7 +368,7 @@ Notes:
 
 ### P09 - Technical Reversal Research
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Scenario 3 teknik reversal olaylarini ileri getirilerle karsilastirmak.
 
@@ -385,10 +385,24 @@ Acceptance:
 - Combined signal kurallari onceden tanimli olur.
 
 Completed:
-- Yok.
+- `src.research.run_technical_reversals` ile teknik eventleri 1/3/5/10 benzeri horizonlarda ileri getirilerle karsilastiran analiz eklendi.
+- Eventler, event tarihinden sonraki ilk uygun trading day ile entry alir; event gunu kapanisi sinyal bilgisi olarak kalir.
+- Observation semasi `symbol`, event family/type/date, `known_at`, `signal_group`, horizon, status, entry/exit date-close, forward return, bounce ve market regime alanlariyla tanimlandi.
+- Individual event sonuclari ve ayni sembol/tarihteki coklu eventler icin `combined` sinyal grubu eklendi.
+- Bounce/failure counts, bounce rate, average/median return ve market-regime kirilimli summary eklendi.
+- Eksik price history, eksik event kolonlari, duplicate date, invalid horizon ve benchmark hazirlama problemleri icin acik error handling eklendi.
+- `write_technical_reversals_report` markdown rapor yazicisi eklendi.
+- `reports/technical_reversals.md` olcum uydurmayan baslangic raporu olarak eklendi.
+- Technical reversal unit testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 48 tests.
+- `python -c "from tests.test_research_technical_reversals import prices, events; from src.research import run_technical_reversals; r=run_technical_reversals({'AAA.IS': prices()}, {'AAA.IS': events()}, horizons=(1,3,5,10), regime_lookback_days=1); print(len(r.observations), len(r.summary), len(r.errors), sorted(r.observations.signal_group.unique()))"` returned 16 observations, 15 summary rows, 0 errors and combined/individual signal groups.
 
 Notes:
 - P05 ve P06 tamamlanmadan baslanmaz.
+- Canli/cache market data henuz repoda olmadigi icin `reports/technical_reversals.md` measured result icermeyen uygulama durumu raporudur.
+- Combined signal kurali: ayni sembol ve ayni event tarihinde iki veya daha fazla teknik event varsa ayri bir `combined` observation uretilir.
 
 ### P10 - Fundamentals Data Schema
 
@@ -739,6 +753,7 @@ Notes:
 | 2026-09-23 | P06 | Teknik event detectorleri, ortak event semasi ve detector-level error handling eklendi. | `python -m unittest discover -s tests` passed: 31 tests. | Aktif faz P07'ye tasindi. |
 | 2026-09-24 | P07 | Sector catch-up hesaplayici, self-excluding peer median, status alanlari, rapor yazici ve testler eklendi. | `python -m unittest discover -s tests` passed: 36 tests. | Aktif faz P08'e tasindi. |
 | 2026-09-24 | P08 | Weekday/multi-day pattern hesaplayici, cost-adjusted return, regime/split alanlari, ozet ve rapor yazici eklendi. | `python -m unittest discover -s tests` passed: 42 tests. | Aktif faz P09'a tasindi. |
+| 2026-09-24 | P09 | Teknik reversal analizi, individual/combined signal grouping, bounce/failure summary ve rapor yazici eklendi. | `python -m unittest discover -s tests` passed: 48 tests. | Aktif faz P10'a tasindi. |
 
 ## Acik Riskler Ve Kararlar
 

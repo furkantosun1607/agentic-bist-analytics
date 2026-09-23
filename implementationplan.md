@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Data validation gate ready |
+| Proje durumu | Core indicators ready |
 | Son guncelleme | 2026-09-23 |
-| Aktif faz | P05 - Core Technical Indicators |
-| Kritik sonraki hedef | Deterministik teknik indikator hesaplamalarini eklemek |
+| Aktif faz | P06 - Technical Event Detectors |
+| Kritik sonraki hedef | Timestamped teknik olay detectorlerini eklemek |
 
 ## Degismez Proje Kurallari
 
@@ -221,7 +221,7 @@ Notes:
 
 ### P05 - Core Technical Indicators
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Deterministik teknik indikator hesaplamalarini eklemek.
 
@@ -237,10 +237,19 @@ Acceptance:
 - En az bir kucuk sentetik veri testi bulunur.
 
 Completed:
-- Yok.
+- `src/indicators.py` deterministik teknik indikator modulu olarak dolduruldu.
+- SMA, EMA, KAMA, RSI, MACD, Bollinger Bands, True Range, ATR, Supertrend, Ichimoku hesaplari eklendi.
+- Rolling support/resistance ve volume/relative volume yardimcilari eklendi.
+- `add_all_indicators` ile normalize OHLCV tablosuna cekirdek indikator setini ekleyen birlesik fonksiyon eklendi.
+- Sentetik OHLCV verisiyle indikator hesaplama testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 26 tests.
+- `python -c "from tests.test_indicators import sample_prices; from src.indicators import add_all_indicators; df=add_all_indicators(sample_prices(80)); print(len(df.columns), df[['sma_20','rsi_14','supertrend']].tail(1).to_dict('records')[0])"` returned 38 columns with populated `sma_20`, `rsi_14` and `supertrend`.
 
 Notes:
 - Kural optimizasyonu yapilmayacak; az sayida acik ve tekrar edilebilir indikator kullanilacak.
+- Eksik pencere donemlerinde pandas'in standart `NaN` davranisi korunur.
 
 ### P06 - Technical Event Detectors
 
@@ -683,6 +692,7 @@ Notes:
 | 2026-09-23 | P02 | Merkezi settings YAML'i, typed config loader ve settings testleri eklendi. | `python -m unittest discover -s tests` passed: 8 tests. | Aktif faz P03'e tasindi. |
 | 2026-09-23 | P03 | Market data adapter, normalized OHLCV cache helpers, missing-symbol report ve fetch script eklendi. | `python -m unittest discover -s tests` passed: 12 tests. | Aktif faz P04'e tasindi; live cache commitlenmedi. |
 | 2026-09-23 | P04 | Data-quality validator, point-in-time checks ve leakage blok kontrolleri eklendi. | `python -m unittest discover -s tests` passed: 20 tests. | Aktif faz P05'e tasindi. |
+| 2026-09-23 | P05 | Cekirdek teknik indikator fonksiyonlari ve sentetik veri testleri eklendi. | `python -m unittest discover -s tests` passed: 26 tests. | Aktif faz P06'ya tasindi. |
 
 ## Acik Riskler Ve Kararlar
 

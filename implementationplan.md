@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Technical event detectors ready |
-| Son guncelleme | 2026-09-23 |
-| Aktif faz | P07 - Sector Catch-Up Research |
-| Kritik sonraki hedef | Sektor catch-up analizini ve insufficient-peer davranisini uygulamak |
+| Proje durumu | Sector catch-up research ready |
+| Son guncelleme | 2026-09-24 |
+| Aktif faz | P08 - Weekday And Multi-Day Pattern Research |
+| Kritik sonraki hedef | Hafta ici ve 2-5 gunluk takvim desen analizlerini uygulamak |
 
 ## Degismez Proje Kurallari
 
@@ -293,7 +293,7 @@ Notes:
 
 ### P07 - Sector Catch-Up Research
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Scenario 1 sektor catch-up analizini uygulamak.
 
@@ -309,10 +309,23 @@ Acceptance:
 - False positive ve sample count raporda yer alir.
 
 Completed:
-- Yok.
+- `src.research.run_sector_catch_up` ile 20 gunluk lookback return, peer median, catch-up score ve 5/10/20 benzeri horizon bazli ileri relatif getiri hesaplama altyapisi eklendi.
+- Hisse kendisiyle karsilastirilmez; peer median hesaplari ayni sektor ve tarih icinde self-exclusion ile yapilir.
+- Tek hisseli sektorler `insufficient_peers` olarak isaretlenir.
+- Eksik history, forward history ve peer forward history durumlari structured `status` degeriyle raporlanir.
+- Laggard, false-positive ve rank-in-sector alanlari eklendi.
+- `ResearchError` ve `ResearchInputError` ile horizon/input problemleri icin acik error handling eklendi.
+- `write_sector_catch_up_report` markdown rapor yazicisi eklendi.
+- `reports/sector_catch_up.md` olcum uydurmayan baslangic raporu olarak eklendi.
+- Sector catch-up unit testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 36 tests.
+- `python -c "from tests.test_research_sector_catch_up import prices, universe; from src.research import run_sector_catch_up; r=run_sector_catch_up({'AAA.IS': prices('AAA.IS',[100,90,95,98,102,105]), 'BBB.IS': prices('BBB.IS',[100,110,111,112,113,114])}, universe()[:2], lookback_days=1, horizons=(2,)); print(len(r.observations), len(r.errors), sorted(r.observations.status.unique()))"` returned 12 observations, 0 errors and expected status values.
 
 Notes:
 - Fixed 30 disindaki PDF ornekleri kullanilmayacak.
+- Canli/cache market data henuz repoda olmadigi icin `reports/sector_catch_up.md` measured result icermeyen uygulama durumu raporudur.
 
 ### P08 - Weekday And Multi-Day Pattern Research
 
@@ -709,6 +722,7 @@ Notes:
 | 2026-09-23 | P04 | Data-quality validator, point-in-time checks ve leakage blok kontrolleri eklendi. | `python -m unittest discover -s tests` passed: 20 tests. | Aktif faz P05'e tasindi. |
 | 2026-09-23 | P05 | Cekirdek teknik indikator fonksiyonlari ve sentetik veri testleri eklendi. | `python -m unittest discover -s tests` passed: 26 tests. | Aktif faz P06'ya tasindi. |
 | 2026-09-23 | P06 | Teknik event detectorleri, ortak event semasi ve detector-level error handling eklendi. | `python -m unittest discover -s tests` passed: 31 tests. | Aktif faz P07'ye tasindi. |
+| 2026-09-24 | P07 | Sector catch-up hesaplayici, self-excluding peer median, status alanlari, rapor yazici ve testler eklendi. | `python -m unittest discover -s tests` passed: 36 tests. | Aktif faz P08'e tasindi. |
 
 ## Acik Riskler Ve Kararlar
 

@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Runtime configured |
+| Proje durumu | Market data adapter ready |
 | Son guncelleme | 2026-09-23 |
-| Aktif faz | P03 - Market Data Adapter And Cache |
-| Kritik sonraki hedef | Hisse ve XU100 fiyatlari icin market data adapter ve cache akisini kurmak |
+| Aktif faz | P04 - Data Validation And Point-In-Time Checks |
+| Kritik sonraki hedef | Veri kalitesi, tarih sirasi ve leakage blok kontrollerini eklemek |
 
 ## Degismez Proje Kurallari
 
@@ -150,7 +150,7 @@ Notes:
 
 ### P03 - Market Data Adapter And Cache
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Hisse ve XU100 fiyatlarini indirip tekrar kullanilabilir cache formatinda saklamak.
 
@@ -166,10 +166,23 @@ Acceptance:
 - Kaynak ulasilamazsa demo icin cache kullanilabilir.
 
 Completed:
-- Yok.
+- `src.data` icinde yfinance destekli, provider enjekte edilebilir market data adapter eklendi.
+- Fiyat kayitlari `symbol`, `date`, OHLCV, `adj_close`, `source`, `download_timestamp` kolonlariyla normalize ediliyor.
+- Symbol bazli CSV cache path/write/read yardimcilari eklendi.
+- XU100 benchmark sembolunu hisse sembolleriyle birlikte fetch eden `fetch_market_data` akisi eklendi.
+- Eksik semboller icin structured `MissingSymbol` kaydi ve `reports/missing_symbols.csv` yazicisi eklendi.
+- `python -m scripts.fetch_market_data` ile ayarlardaki universe ve benchmark icin cache ureten script eklendi.
+- `data/.gitkeep` eklendi; runtime cache dosyalari `.gitignore` nedeniyle repoya alinmayacak.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 12 tests.
+- `python -c "import scripts.fetch_market_data as f; print(callable(f.main))"` returned `True`.
+- `python -c "from src.data import load_universe; from src.settings import load_settings; s=load_settings(); print(len([m.yahoo_symbol for m in load_universe(s.paths.universe)]), s.market_data.benchmark_symbol)"` returned `30 XU100.IS`.
 
 Notes:
 - Yahoo/yfinance README'de fiyat kaynagi olarak belirtilmis.
+- Testler ag cagrisina bagli degil; fake provider ile cache, benchmark ve missing-symbol davranisi dogrulandi.
+- Canli fiyat cache'i bu fazda repoya commitlenmedi. Gerekirse `python -m scripts.fetch_market_data` komutu yerel cache'i uretir.
 
 ### P04 - Data Validation And Point-In-Time Checks
 
@@ -656,6 +669,7 @@ Notes:
 | 2026-09-23 | P00 | Repository baseline dosya ve dizin iskeleti eklendi. | Python import smoke testi passed; pytest dependency eksik oldugu icin kosulmadi. | Aktif faz P01'e tasindi. |
 | 2026-09-23 | P01 | Fixed universe CSV, data dictionary ve universe validation eklendi. | `python -m unittest discover -s tests` passed. | Aktif faz P02'ye tasindi. |
 | 2026-09-23 | P02 | Merkezi settings YAML'i, typed config loader ve settings testleri eklendi. | `python -m unittest discover -s tests` passed: 8 tests. | Aktif faz P03'e tasindi. |
+| 2026-09-23 | P03 | Market data adapter, normalized OHLCV cache helpers, missing-symbol report ve fetch script eklendi. | `python -m unittest discover -s tests` passed: 12 tests. | Aktif faz P04'e tasindi; live cache commitlenmedi. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -663,7 +677,7 @@ Notes:
 | --- | --- | --- |
 | Finansal veri erisimi | Open | Fintables erisim ve lisans kosullari uygulanirken dogrulanacak. |
 | Haber/video kaynaklari | Open | Yalnizca yasal erisilebilir ve timestamp dogrulanabilir kaynaklar kullanilacak. |
-| BIST/XU100 sembol uyumu | Open | P03 sirasinda missing symbol ve uyumsuzluk raporu uretilecek. |
+| BIST/XU100 sembol uyumu | Open | P03 adapter ve missing-symbol rapor yazicisi eklendi; canli `python -m scripts.fetch_market_data` calistirildiginda rapor uretilecek. |
 | Unseen period tarihleri | Open | Veri kapsamindan sonra settings icinde sabitlenecek. |
 | Maliyet/slippage varsayimlari | Decided | Ilk varsayim `trading_cost_bps: 10` ve `slippage_bps: 5`; P14 sirasinda risk raporu icin tekrar gozden gecirilecek. |
 

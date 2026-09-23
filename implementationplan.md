@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Technical reversal research ready |
+| Proje durumu | Fundamentals schema ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P10 - Fundamentals Data Schema |
-| Kritik sonraki hedef | Point-in-time finansal veri semasini ve import akisini olusturmak |
+| Aktif faz | P11 - Quarterly Fundamentals Research |
+| Kritik sonraki hedef | Ceyreklik finansal degisimler ile aciklama sonrasi getirileri karsilastirmak |
 
 ## Degismez Proje Kurallari
 
@@ -406,7 +406,7 @@ Notes:
 
 ### P10 - Fundamentals Data Schema
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Ceyreklik finansal veriler icin point-in-time sema ve import akisi olusturmak.
 
@@ -422,10 +422,23 @@ Acceptance:
 - Kaynak bilgisi her kayitta yer alir.
 
 Completed:
-- Yok.
+- `src/fundamentals.py` point-in-time fundamentals schema ve import modulu olarak eklendi.
+- Normalized schema; `ticker`, `yahoo_symbol`, `sector`, `metric_profile`, `period_end`, `period_type`, `disclosure_timestamp`, `download_timestamp`, `source`, `currency` ve temel finansal metrik alanlarini kapsar.
+- Revenue/profit/margin icin ileride kullanilacak gelir tablosu alanlari; debt/cash-flow analizi icin bilanço ve nakit akisi alanlari eklendi.
+- Banking sektorleri icin `metric_profile=bank`, diger sektorler icin `metric_profile=industrial` ayrimi eklendi.
+- CSV import ve DataFrame normalize akisi row-level error handling ile eklendi; hatali satirlar valid satirlari dusurmez.
+- Eksik disclosure timestamp import seviyesinde reddedilir; quarter-end tek basina sinyal tarihi olarak kabul edilmez.
+- Fundamentals kayitlari `PointInTimeRecord` listesine cevrilerek P04 kalite kapisi ile uyumlu hale getirildi.
+- `config/fundamentals_dictionary.md` ve header-only `config/fundamentals_template.csv` eklendi.
+- Fundamentals schema/import testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 55 tests.
+- `python -c "from tests.test_fundamentals import raw_records, universe; from src.fundamentals import normalize_fundamentals; r=normalize_fundamentals(raw_records(), universe()); print(len(r.records), len(r.errors), sorted(r.records.metric_profile.unique()))"` returned 2 records, 0 errors and bank/industrial profiles.
 
 Notes:
 - Fintables README'de finansal kaynak olarak belirtilmis; erisim kosullari kontrol edilecek.
+- Bu fazda canli Fintables erisimi yapilmadi; sema ve import akisi hazirlandi.
 
 ### P11 - Quarterly Fundamentals Research
 
@@ -754,6 +767,7 @@ Notes:
 | 2026-09-24 | P07 | Sector catch-up hesaplayici, self-excluding peer median, status alanlari, rapor yazici ve testler eklendi. | `python -m unittest discover -s tests` passed: 36 tests. | Aktif faz P08'e tasindi. |
 | 2026-09-24 | P08 | Weekday/multi-day pattern hesaplayici, cost-adjusted return, regime/split alanlari, ozet ve rapor yazici eklendi. | `python -m unittest discover -s tests` passed: 42 tests. | Aktif faz P09'a tasindi. |
 | 2026-09-24 | P09 | Teknik reversal analizi, individual/combined signal grouping, bounce/failure summary ve rapor yazici eklendi. | `python -m unittest discover -s tests` passed: 48 tests. | Aktif faz P10'a tasindi. |
+| 2026-09-24 | P10 | Point-in-time fundamentals semasi, bank/industrial metric profile ayrimi, import helperlari ve testler eklendi. | `python -m unittest discover -s tests` passed: 55 tests. | Aktif faz P11'e tasindi. |
 
 ## Acik Riskler Ve Kararlar
 

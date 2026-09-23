@@ -89,6 +89,61 @@ TECHNICAL_REVERSAL_SUMMARY_COLUMNS = (
     "average_return",
     "median_return",
 )
+QUARTERLY_FUNDAMENTALS_COLUMNS = (
+    "ticker",
+    "symbol",
+    "sector",
+    "metric_profile",
+    "period_end",
+    "disclosure_timestamp",
+    "source",
+    "metric_name",
+    "current_value",
+    "qoq_change",
+    "yoy_change",
+    "horizon",
+    "status",
+    "entry_date",
+    "entry_close",
+    "exit_date",
+    "exit_close",
+    "post_disclosure_return",
+    "benchmark_return",
+    "benchmark_relative_return",
+    "sector_peer_count",
+    "sector_peer_median_return",
+    "sector_relative_return",
+)
+QUARTERLY_FUNDAMENTALS_SUMMARY_COLUMNS = (
+    "metric_profile",
+    "metric_name",
+    "horizon",
+    "status",
+    "observation_count",
+    "average_qoq_change",
+    "median_qoq_change",
+    "average_yoy_change",
+    "median_yoy_change",
+    "average_post_disclosure_return",
+    "median_post_disclosure_return",
+    "average_benchmark_relative_return",
+    "average_sector_relative_return",
+)
+INDUSTRIAL_FUNDAMENTAL_METRICS = (
+    "revenue",
+    "gross_margin",
+    "operating_margin",
+    "net_income",
+    "debt_to_assets",
+    "operating_cash_flow",
+    "free_cash_flow",
+)
+BANK_FUNDAMENTAL_METRICS = (
+    "net_interest_income",
+    "net_income",
+    "assets_to_equity",
+    "liabilities_to_assets",
+)
 
 
 @dataclass(frozen=True)
@@ -112,6 +167,13 @@ class WeekdayPatternResult:
 
 @dataclass(frozen=True)
 class TechnicalReversalResult:
+    observations: pd.DataFrame
+    summary: pd.DataFrame
+    errors: tuple[ResearchError, ...]
+
+
+@dataclass(frozen=True)
+class QuarterlyFundamentalsResult:
     observations: pd.DataFrame
     summary: pd.DataFrame
     errors: tuple[ResearchError, ...]
@@ -538,6 +600,175 @@ def write_technical_reversals_report(
     return path
 
 
+def run_quarterly_fundamentals(
+    fundamentals: pd.DataFrame,
+    prices_by_symbol: dict[str, pd.DataFrame],
+    benchmark_prices: pd.DataFrame | None = None,
+    horizons: tuple[int, ...] = (1, 5, 20),
+) -> QuarterlyFundamentalsResult:
+    """Compare point-in-time fundamentals changes with post-disclosure returns."""
+
+    _validate_fundamentals_research_args(horizons)
+    try:
+        enriched = _prepare_fundamentals_metrics(fundamentals)
+    except Exception as exc:
+        return QuarterlyFundamentalsResult(
+            observations=empty_quarterly_fundamentals_frame(),
+            summary=empty_quarterly_fundamentals_summary_frame(),
+            errors=(ResearchError(scope="quarterly_fundamentals", message=str(exc)),),
+        )
+
+    errors: list[ResearchError] = []
+    observations: list[dict[str, object]] = []
+    symbol_to_sector = (
+        enriched.drop_duplicates("yahoo_symbol")
+        .set_index("yahoo_symbol")["sector"]
+        .astype(str)
+        .to_dict()
+    )
+    benchmark_frame = None
+    if benchmark_prices is not None:
+        try:
+            benchmark_frame = _prepare_return_price_frame(benchmark_prices, "benchmark")
+        except Exception as exc:
+            errors.append(ResearchError(scope="benchmark", message=str(exc)))
+
+    for _, record in enriched.iterrows():
+        symbol = str(record["yahoo_symbol"])
+        try:
+            price_frame = _prepare_return_price_frame(prices_by_symbol[symbol], symbol)
+        except KeyError:
+            errors.append(ResearchError(scope=symbol, message="missing price history"))
+            continue
+        except Exception as exc:
+            errors.append(ResearchError(scope=symbol, message=str(exc)))
+            continue
+
+        for metric_name in _metrics_for_profile(str(record["metric_profile"])):
+            if metric_name not in enriched.columns:
+                continue
+            metric_value = record[metric_name]
+            if pd.isna(metric_value):
+                continue
+            for horizon in horizons:
+                observations.append(
+                    _fundamental_observation(
+                        record=record,
+                        metric_name=metric_name,
+                        price_frame=price_frame,
+                        benchmark_frame=benchmark_frame,
+                        prices_by_symbol=prices_by_symbol,
+                        symbol_to_sector=symbol_to_sector,
+                        horizon=horizon,
+                    )
+                )
+
+    if not observations:
+        return QuarterlyFundamentalsResult(
+            observations=empty_quarterly_fundamentals_frame(),
+            summary=empty_quarterly_fundamentals_summary_frame(),
+            errors=tuple(errors)
+            or (
+                ResearchError(
+                    scope="quarterly_fundamentals",
+                    message="no fundamental observations were evaluated",
+                ),
+            ),
+        )
+
+    combined = pd.DataFrame(observations).loc[:, list(QUARTERLY_FUNDAMENTALS_COLUMNS)]
+    summary = summarize_quarterly_fundamentals(combined)
+    return QuarterlyFundamentalsResult(
+        observations=combined,
+        summary=summary,
+        errors=tuple(errors),
+    )
+
+
+def summarize_quarterly_fundamentals(observations: pd.DataFrame) -> pd.DataFrame:
+    """Summarize eligible quarterly fundamentals observations."""
+
+    if observations.empty:
+        return empty_quarterly_fundamentals_summary_frame()
+
+    eligible = observations[observations["status"] == "ok"].copy()
+    if eligible.empty:
+        return empty_quarterly_fundamentals_summary_frame()
+
+    summary = (
+        eligible.groupby(["metric_profile", "metric_name", "horizon", "status"], dropna=False)
+        .agg(
+            observation_count=("symbol", "count"),
+            average_qoq_change=("qoq_change", "mean"),
+            median_qoq_change=("qoq_change", "median"),
+            average_yoy_change=("yoy_change", "mean"),
+            median_yoy_change=("yoy_change", "median"),
+            average_post_disclosure_return=("post_disclosure_return", "mean"),
+            median_post_disclosure_return=("post_disclosure_return", "median"),
+            average_benchmark_relative_return=("benchmark_relative_return", "mean"),
+            average_sector_relative_return=("sector_relative_return", "mean"),
+        )
+        .reset_index()
+    )
+    return summary.loc[:, list(QUARTERLY_FUNDAMENTALS_SUMMARY_COLUMNS)]
+
+
+def write_quarterly_fundamentals_report(
+    result: QuarterlyFundamentalsResult,
+    output_path: str | Path,
+) -> Path:
+    """Write a compact markdown report for quarterly fundamentals research."""
+
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "# Quarterly Fundamentals Report",
+        "",
+        "Timing: disclosure timestamp is the signal time; quarter-end is only the observation period.",
+        "Metrics: bank records use bank-appropriate metrics, while industrial records use revenue/profit/margin/debt/cash-flow metrics.",
+        "",
+    ]
+
+    if result.observations.empty:
+        lines.extend(["Status: no observations generated.", ""])
+    else:
+        lines.extend(
+            [
+                f"Disclosure period: {result.observations['disclosure_timestamp'].min()} to {result.observations['disclosure_timestamp'].max()}.",
+                f"Observation rows: {len(result.observations)}.",
+                f"Symbols: {result.observations['symbol'].nunique()}.",
+                "",
+                "## Status Counts",
+                "",
+                result.observations["status"].value_counts().to_markdown(),
+                "",
+            ]
+        )
+
+    if result.summary.empty:
+        lines.extend(["## Summary", "", "No eligible quarterly fundamentals observations.", ""])
+    else:
+        lines.extend(["## Summary", "", result.summary.to_markdown(index=False), ""])
+
+    if result.errors:
+        lines.extend(["## Errors", ""])
+        for error in result.errors:
+            lines.append(f"- `{error.scope}`: {error.message}")
+        lines.append("")
+
+    lines.extend(
+        [
+            "Limitations:",
+            "- This report is historical research output, not investment advice.",
+            "- Source access, disclosure timestamps and licensing must be verified before measured reporting.",
+            "- Macro, news and video context are added in later phases.",
+            "",
+        ]
+    )
+    path.write_text("\n".join(lines), encoding="utf-8")
+    return path
+
+
 def empty_sector_catch_up_frame() -> pd.DataFrame:
     return pd.DataFrame(columns=list(SECTOR_CATCH_UP_COLUMNS))
 
@@ -556,6 +787,221 @@ def empty_technical_reversal_frame() -> pd.DataFrame:
 
 def empty_technical_reversal_summary_frame() -> pd.DataFrame:
     return pd.DataFrame(columns=list(TECHNICAL_REVERSAL_SUMMARY_COLUMNS))
+
+
+def empty_quarterly_fundamentals_frame() -> pd.DataFrame:
+    return pd.DataFrame(columns=list(QUARTERLY_FUNDAMENTALS_COLUMNS))
+
+
+def empty_quarterly_fundamentals_summary_frame() -> pd.DataFrame:
+    return pd.DataFrame(columns=list(QUARTERLY_FUNDAMENTALS_SUMMARY_COLUMNS))
+
+
+def _prepare_fundamentals_metrics(fundamentals: pd.DataFrame) -> pd.DataFrame:
+    _require_columns(
+        fundamentals,
+        [
+            "ticker",
+            "yahoo_symbol",
+            "sector",
+            "metric_profile",
+            "period_end",
+            "period_type",
+            "disclosure_timestamp",
+            "source",
+        ],
+        scope="fundamentals",
+    )
+    frame = fundamentals.copy()
+    frame["period_end"] = pd.to_datetime(frame["period_end"], errors="raise")
+    frame["disclosure_timestamp"] = pd.to_datetime(
+        frame["disclosure_timestamp"],
+        utc=True,
+        errors="raise",
+    )
+    if frame["disclosure_timestamp"].isna().any():
+        raise ResearchInputError("fundamentals contain missing disclosure_timestamp")
+    if (frame["period_end"].dt.date > frame["disclosure_timestamp"].dt.date).any():
+        raise ResearchInputError("fundamentals contain period_end after disclosure_timestamp")
+
+    frame = frame.sort_values(["ticker", "period_end", "disclosure_timestamp"]).reset_index(
+        drop=True
+    )
+    frame["gross_margin"] = _safe_ratio(frame.get("gross_profit"), frame.get("revenue"))
+    frame["operating_margin"] = _safe_ratio(
+        frame.get("operating_profit"),
+        frame.get("revenue"),
+    )
+    frame["debt_to_assets"] = _safe_ratio(frame.get("total_debt"), frame.get("total_assets"))
+    frame["assets_to_equity"] = _safe_ratio(frame.get("total_assets"), frame.get("total_equity"))
+    frame["liabilities_to_assets"] = _safe_ratio(
+        frame.get("total_liabilities"),
+        frame.get("total_assets"),
+    )
+
+    metrics = set(INDUSTRIAL_FUNDAMENTAL_METRICS) | set(BANK_FUNDAMENTAL_METRICS)
+    for metric in metrics:
+        if metric not in frame.columns:
+            frame[metric] = pd.NA
+        frame[metric] = pd.to_numeric(frame[metric], errors="coerce")
+        group = frame.groupby(["ticker", "period_type"])[metric]
+        frame[f"{metric}_qoq_change"] = _pct_change_with_zero_guard(group.shift(0), group.shift(1))
+        annual_lag = frame["period_type"].map({"quarterly": 4, "annual": 1}).fillna(4).astype(int)
+        frame[f"{metric}_yoy_change"] = pd.NA
+        for lag in sorted(annual_lag.unique()):
+            mask = annual_lag == lag
+            shifted = frame.loc[mask].groupby(["ticker", "period_type"])[metric].shift(lag)
+            current = frame.loc[mask, metric]
+            frame.loc[mask, f"{metric}_yoy_change"] = _pct_change_with_zero_guard(
+                current,
+                shifted,
+            )
+        frame[f"{metric}_yoy_change"] = pd.to_numeric(
+            frame[f"{metric}_yoy_change"],
+            errors="coerce",
+        )
+
+    return frame
+
+
+def _fundamental_observation(
+    record: pd.Series,
+    metric_name: str,
+    price_frame: pd.DataFrame,
+    benchmark_frame: pd.DataFrame | None,
+    prices_by_symbol: dict[str, pd.DataFrame],
+    symbol_to_sector: dict[str, str],
+    horizon: int,
+) -> dict[str, object]:
+    disclosure_time = pd.to_datetime(record["disclosure_timestamp"], utc=True)
+    disclosure_date = disclosure_time.tz_convert(None).date()
+    base = {
+        "ticker": str(record["ticker"]),
+        "symbol": str(record["yahoo_symbol"]),
+        "sector": str(record["sector"]),
+        "metric_profile": str(record["metric_profile"]),
+        "period_end": pd.to_datetime(record["period_end"]).date().isoformat(),
+        "disclosure_timestamp": disclosure_time.isoformat(),
+        "source": str(record["source"]),
+        "metric_name": metric_name,
+        "current_value": record[metric_name],
+        "qoq_change": record.get(f"{metric_name}_qoq_change", pd.NA),
+        "yoy_change": record.get(f"{metric_name}_yoy_change", pd.NA),
+        "horizon": horizon,
+        "status": "ok",
+        "entry_date": pd.NA,
+        "entry_close": pd.NA,
+        "exit_date": pd.NA,
+        "exit_close": pd.NA,
+        "post_disclosure_return": pd.NA,
+        "benchmark_return": pd.NA,
+        "benchmark_relative_return": pd.NA,
+        "sector_peer_count": 0,
+        "sector_peer_median_return": pd.NA,
+        "sector_relative_return": pd.NA,
+    }
+    stock_return = _post_disclosure_return(price_frame, disclosure_date, horizon)
+    base.update(stock_return)
+    if base["status"] != "ok":
+        return base
+
+    if benchmark_frame is not None:
+        benchmark_return = _post_disclosure_return(benchmark_frame, disclosure_date, horizon)
+        if benchmark_return["status"] == "ok":
+            base["benchmark_return"] = benchmark_return["post_disclosure_return"]
+            base["benchmark_relative_return"] = (
+                base["post_disclosure_return"] - benchmark_return["post_disclosure_return"]
+            )
+
+    peer_returns = []
+    for peer_symbol, peer_prices in prices_by_symbol.items():
+        if peer_symbol == base["symbol"]:
+            continue
+        if symbol_to_sector.get(peer_symbol) != base["sector"]:
+            continue
+        try:
+            prepared = _prepare_return_price_frame(peer_prices, peer_symbol)
+        except Exception:
+            continue
+        peer_return = _post_disclosure_return(prepared, disclosure_date, horizon)
+        if peer_return["status"] == "ok":
+            peer_returns.append(peer_return["post_disclosure_return"])
+
+    base["sector_peer_count"] = len(peer_returns)
+    if peer_returns:
+        base["sector_peer_median_return"] = float(pd.Series(peer_returns).median())
+        base["sector_relative_return"] = (
+            base["post_disclosure_return"] - base["sector_peer_median_return"]
+        )
+    return base
+
+
+def _post_disclosure_return(
+    price_frame: pd.DataFrame,
+    disclosure_date,
+    horizon: int,
+) -> dict[str, object]:
+    entry_index = price_frame.index[price_frame["date"].dt.date > disclosure_date]
+    result = {
+        "status": "ok",
+        "entry_date": pd.NA,
+        "entry_close": pd.NA,
+        "exit_date": pd.NA,
+        "exit_close": pd.NA,
+        "post_disclosure_return": pd.NA,
+    }
+    if len(entry_index) == 0:
+        result["status"] = "insufficient_forward_history"
+        return result
+
+    entry_pos = int(entry_index[0])
+    exit_pos = entry_pos + horizon
+    entry = price_frame.iloc[entry_pos]
+    result["entry_date"] = entry["date"].date().isoformat()
+    result["entry_close"] = float(entry["close"])
+    if exit_pos >= len(price_frame):
+        result["status"] = "insufficient_forward_history"
+        return result
+
+    exit_row = price_frame.iloc[exit_pos]
+    result["exit_date"] = exit_row["date"].date().isoformat()
+    result["exit_close"] = float(exit_row["close"])
+    result["post_disclosure_return"] = float(exit_row["close"] / entry["close"] - 1)
+    return result
+
+
+def _prepare_return_price_frame(prices: pd.DataFrame, scope: str) -> pd.DataFrame:
+    _require_columns(prices, ["date", "close"], scope=scope)
+    frame = prices.loc[:, ["date", "close"]].copy()
+    frame["date"] = pd.to_datetime(frame["date"], errors="raise")
+    frame["close"] = pd.to_numeric(frame["close"], errors="raise")
+    frame = frame.sort_values("date").reset_index(drop=True)
+    if frame["date"].duplicated().any():
+        raise ResearchInputError(f"{scope} contains duplicate dates")
+    return frame
+
+
+def _metrics_for_profile(metric_profile: str) -> tuple[str, ...]:
+    if metric_profile == "bank":
+        return BANK_FUNDAMENTAL_METRICS
+    return INDUSTRIAL_FUNDAMENTAL_METRICS
+
+
+def _safe_ratio(numerator, denominator) -> pd.Series:
+    if numerator is None or denominator is None:
+        index = getattr(numerator, "index", None)
+        if index is None:
+            index = getattr(denominator, "index", None)
+        return pd.Series(pd.NA, index=index)
+    numerator_values = pd.to_numeric(numerator, errors="coerce")
+    denominator_values = pd.to_numeric(denominator, errors="coerce")
+    return numerator_values / denominator_values.replace(0, pd.NA)
+
+
+def _pct_change_with_zero_guard(current, previous) -> pd.Series:
+    current_values = pd.to_numeric(current, errors="coerce")
+    previous_values = pd.to_numeric(previous, errors="coerce")
+    return (current_values - previous_values) / previous_values.replace(0, pd.NA)
 
 
 def _technical_reversals_for_symbol(
@@ -947,6 +1393,14 @@ def _validate_weekday_pattern_args(
 def _validate_reversal_args(horizons: tuple[int, ...]) -> None:
     if not horizons:
         raise ResearchInputError("at least one reversal horizon is required")
+    invalid_horizons = [horizon for horizon in horizons if horizon <= 0]
+    if invalid_horizons:
+        raise ResearchInputError(f"horizons must be positive: {invalid_horizons}")
+
+
+def _validate_fundamentals_research_args(horizons: tuple[int, ...]) -> None:
+    if not horizons:
+        raise ResearchInputError("at least one fundamentals horizon is required")
     invalid_horizons = [horizon for horizon in horizons if horizon <= 0]
     if invalid_horizons:
         raise ResearchInputError(f"horizons must be positive: {invalid_horizons}")

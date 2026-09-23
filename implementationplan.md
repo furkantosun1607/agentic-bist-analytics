@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Fundamentals schema ready |
+| Proje durumu | Quarterly fundamentals research ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P11 - Quarterly Fundamentals Research |
-| Kritik sonraki hedef | Ceyreklik finansal degisimler ile aciklama sonrasi getirileri karsilastirmak |
+| Aktif faz | P12 - Macro, News And Video Context |
+| Kritik sonraki hedef | Makro, haber ve public-video baglamini kaynak ve timestamp ile kaydetmek |
 
 ## Degismez Proje Kurallari
 
@@ -442,7 +442,7 @@ Notes:
 
 ### P11 - Quarterly Fundamentals Research
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Scenario 4 finansal degisimler ile aciklama sonrasi getirileri karsilastirmak.
 
@@ -458,10 +458,25 @@ Acceptance:
 - Disclosure timestamp eksikse sonuc guvenli sekilde sinirlandirilir.
 
 Completed:
-- Yok.
+- `src.research.run_quarterly_fundamentals` ile point-in-time fundamentals kayitlari disclosure timestamp sonrasi fiyat getirilerine baglandi.
+- QoQ ve YoY degisim hesaplari eklendi; quarterly kayitlarda YoY icin 4 ceyrek once, annual kayitlarda 1 onceki annual kayit kullanilir.
+- Industrial metric seti revenue, net income, gross/operating margin, debt-to-assets, operating cash flow ve free cash flow alanlarini kapsar.
+- Bank metric seti net interest income, net income, assets-to-equity ve liabilities-to-assets alanlarini kapsar; bankalar industrial margin metrikleriyle degerlendirilmez.
+- Entry, disclosure tarihinden sonraki ilk trading day olarak tanimlandi; quarter-end tarihi sinyal tarihi olarak kullanilmaz.
+- 1/5/20 benzeri horizonlarda post-disclosure return, benchmark-relative return ve same-sector peer-relative return alanlari eklendi.
+- Eksik price history, eksik disclosure timestamp, invalid horizon, duplicate dates ve tarih uyumsuzluklari icin acik error/status handling eklendi.
+- `write_quarterly_fundamentals_report` markdown rapor yazicisi eklendi.
+- `reports/quarterly_fundamentals.md` olcum uydurmayan baslangic raporu olarak eklendi.
+- Quarterly fundamentals research unit testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 63 tests.
+- `python -c "from tests.test_research_quarterly_fundamentals import normalized_fundamentals, prices; from src.research import run_quarterly_fundamentals; f=normalized_fundamentals(); r=run_quarterly_fundamentals(f, {'ASELS.IS': prices('ASELS.IS'), 'FROTO.IS': prices('FROTO.IS', start=200, step=.5), 'AKBNK.IS': prices('AKBNK.IS', start=50, step=.25)}, benchmark_prices=prices('XU100.IS', start=1000, step=2), horizons=(1,5,20)); print(len(r.observations), len(r.summary), len(r.errors), sorted(r.observations.metric_profile.unique()))"` returned 117 observations, 33 summary rows, 0 errors and bank/industrial profiles.
 
 Notes:
 - P10 tamamlanmadan baslanmaz.
+- Canli veya manuel dogrulanmis fundamentals verisi henuz repoda olmadigi icin `reports/quarterly_fundamentals.md` measured result icermeyen uygulama durumu raporudur.
+- Same-sector peer relative return, sadece fundamentals kayitlarindan sektoru bilinen ayni sektor sembolleriyle hesaplanir.
 
 ### P12 - Macro, News And Video Context
 
@@ -768,6 +783,7 @@ Notes:
 | 2026-09-24 | P08 | Weekday/multi-day pattern hesaplayici, cost-adjusted return, regime/split alanlari, ozet ve rapor yazici eklendi. | `python -m unittest discover -s tests` passed: 42 tests. | Aktif faz P09'a tasindi. |
 | 2026-09-24 | P09 | Teknik reversal analizi, individual/combined signal grouping, bounce/failure summary ve rapor yazici eklendi. | `python -m unittest discover -s tests` passed: 48 tests. | Aktif faz P10'a tasindi. |
 | 2026-09-24 | P10 | Point-in-time fundamentals semasi, bank/industrial metric profile ayrimi, import helperlari ve testler eklendi. | `python -m unittest discover -s tests` passed: 55 tests. | Aktif faz P11'e tasindi. |
+| 2026-09-24 | P11 | Quarterly fundamentals research, QoQ/YoY metrics, post-disclosure returns ve benchmark/sector-relative karsilastirmalar eklendi. | `python -m unittest discover -s tests` passed: 63 tests. | Aktif faz P12'ye tasindi. |
 
 ## Acik Riskler Ve Kararlar
 

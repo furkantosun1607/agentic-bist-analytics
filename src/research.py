@@ -28,6 +28,37 @@ SECTOR_CATCH_UP_COLUMNS = (
     "future_relative_return",
     "false_positive",
 )
+WEEKDAY_PATTERN_COLUMNS = (
+    "symbol",
+    "date",
+    "weekday",
+    "pattern_type",
+    "pattern_name",
+    "holding_days",
+    "status",
+    "entry_close",
+    "exit_close",
+    "gross_return",
+    "cost_bps",
+    "slippage_bps",
+    "cost_adjusted_return",
+    "unconditional_mean_return",
+    "market_regime",
+    "period_split",
+)
+WEEKDAY_PATTERN_SUMMARY_COLUMNS = (
+    "pattern_type",
+    "pattern_name",
+    "holding_days",
+    "market_regime",
+    "period_split",
+    "occurrence_count",
+    "average_return",
+    "median_return",
+    "average_cost_adjusted_return",
+    "median_cost_adjusted_return",
+    "unconditional_mean_return",
+)
 
 
 @dataclass(frozen=True)
@@ -39,6 +70,13 @@ class ResearchError:
 @dataclass(frozen=True)
 class SectorCatchUpResult:
     observations: pd.DataFrame
+    errors: tuple[ResearchError, ...]
+
+
+@dataclass(frozen=True)
+class WeekdayPatternResult:
+    observations: pd.DataFrame
+    summary: pd.DataFrame
     errors: tuple[ResearchError, ...]
 
 
@@ -163,8 +201,256 @@ def write_sector_catch_up_report(
     return path
 
 
+def run_weekday_patterns(
+    prices_by_symbol: dict[str, pd.DataFrame],
+    benchmark_prices: pd.DataFrame | None = None,
+    holding_days: tuple[int, ...] = (1, 2, 3, 4, 5),
+    trading_cost_bps: float = 10.0,
+    slippage_bps: float = 5.0,
+    regime_lookback_days: int = 20,
+    unseen_start_date: str | None = None,
+) -> WeekdayPatternResult:
+    """Run weekday and two-to-five-day calendar pattern tests."""
+
+    _validate_weekday_pattern_args(holding_days, trading_cost_bps, slippage_bps)
+    errors: list[ResearchError] = []
+    observations: list[pd.DataFrame] = []
+
+    benchmark_panel = None
+    if benchmark_prices is not None:
+        try:
+            benchmark_panel = _prepare_benchmark_regime(benchmark_prices, regime_lookback_days)
+        except Exception as exc:
+            errors.append(ResearchError(scope="benchmark_regime", message=str(exc)))
+
+    for symbol, prices in prices_by_symbol.items():
+        try:
+            symbol_frame = _weekday_patterns_for_symbol(
+                prices=prices,
+                symbol=symbol,
+                benchmark_panel=benchmark_panel,
+                holding_days=holding_days,
+                trading_cost_bps=trading_cost_bps,
+                slippage_bps=slippage_bps,
+                regime_lookback_days=regime_lookback_days,
+                unseen_start_date=unseen_start_date,
+            )
+        except Exception as exc:
+            errors.append(ResearchError(scope=symbol, message=str(exc)))
+            continue
+
+        observations.append(symbol_frame)
+
+    if not observations:
+        return WeekdayPatternResult(
+            observations=empty_weekday_pattern_frame(),
+            summary=empty_weekday_pattern_summary_frame(),
+            errors=tuple(errors)
+            or (ResearchError(scope="weekday_patterns", message="no symbols were evaluated"),),
+        )
+
+    combined = pd.concat(observations, ignore_index=True)
+    summary = summarize_weekday_patterns(combined)
+    return WeekdayPatternResult(
+        observations=combined.loc[:, list(WEEKDAY_PATTERN_COLUMNS)],
+        summary=summary,
+        errors=tuple(errors),
+    )
+
+
+def summarize_weekday_patterns(observations: pd.DataFrame) -> pd.DataFrame:
+    """Summarize eligible weekday pattern observations."""
+
+    if observations.empty:
+        return empty_weekday_pattern_summary_frame()
+
+    eligible = observations[observations["status"] == "ok"].copy()
+    if eligible.empty:
+        return empty_weekday_pattern_summary_frame()
+
+    summary = (
+        eligible.groupby(
+            [
+                "pattern_type",
+                "pattern_name",
+                "holding_days",
+                "market_regime",
+                "period_split",
+            ],
+            dropna=False,
+        )
+        .agg(
+            occurrence_count=("symbol", "count"),
+            average_return=("gross_return", "mean"),
+            median_return=("gross_return", "median"),
+            average_cost_adjusted_return=("cost_adjusted_return", "mean"),
+            median_cost_adjusted_return=("cost_adjusted_return", "median"),
+            unconditional_mean_return=("unconditional_mean_return", "mean"),
+        )
+        .reset_index()
+    )
+    return summary.loc[:, list(WEEKDAY_PATTERN_SUMMARY_COLUMNS)]
+
+
+def write_weekday_patterns_report(
+    result: WeekdayPatternResult,
+    output_path: str | Path,
+) -> Path:
+    """Write a compact markdown report for weekday pattern results."""
+
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    lines = [
+        "# Weekday And Multi-Day Pattern Report",
+        "",
+        "Patterns: weekday entry tests and two-to-five-trading-day holding tests.",
+        "Costs: reported with configured trading cost and slippage deducted from gross returns.",
+        "Multiple-testing note: calendar effects are exploratory and must be treated as fragile until unseen-period stability is checked.",
+        "",
+    ]
+
+    if result.observations.empty:
+        lines.extend(["Status: no observations generated.", ""])
+    else:
+        lines.extend(
+            [
+                f"Data period: {result.observations['date'].min()} to {result.observations['date'].max()}.",
+                f"Observation rows: {len(result.observations)}.",
+                f"Symbols: {result.observations['symbol'].nunique()}.",
+                "",
+                "## Status Counts",
+                "",
+                result.observations["status"].value_counts().to_markdown(),
+                "",
+            ]
+        )
+
+    if result.summary.empty:
+        lines.extend(["## Summary", "", "No eligible pattern observations.", ""])
+    else:
+        lines.extend(["## Summary", "", result.summary.to_markdown(index=False), ""])
+
+    if result.errors:
+        lines.extend(["## Errors", ""])
+        for error in result.errors:
+            lines.append(f"- `{error.scope}`: {error.message}")
+        lines.append("")
+
+    lines.extend(
+        [
+            "Limitations:",
+            "- This report is historical research output, not investment advice.",
+            "- Calendar effects are vulnerable to multiple testing and regime instability.",
+            "- Fundamental, macro, news and video context are added in later phases.",
+            "",
+        ]
+    )
+
+    path.write_text("\n".join(lines), encoding="utf-8")
+    return path
+
+
 def empty_sector_catch_up_frame() -> pd.DataFrame:
     return pd.DataFrame(columns=list(SECTOR_CATCH_UP_COLUMNS))
+
+
+def empty_weekday_pattern_frame() -> pd.DataFrame:
+    return pd.DataFrame(columns=list(WEEKDAY_PATTERN_COLUMNS))
+
+
+def empty_weekday_pattern_summary_frame() -> pd.DataFrame:
+    return pd.DataFrame(columns=list(WEEKDAY_PATTERN_SUMMARY_COLUMNS))
+
+
+def _weekday_patterns_for_symbol(
+    prices: pd.DataFrame,
+    symbol: str,
+    benchmark_panel: pd.DataFrame | None,
+    holding_days: tuple[int, ...],
+    trading_cost_bps: float,
+    slippage_bps: float,
+    regime_lookback_days: int,
+    unseen_start_date: str | None,
+) -> pd.DataFrame:
+    _require_columns(prices, ["date", "close"], scope=symbol)
+    frame = prices.loc[:, ["date", "close"]].copy()
+    frame["date"] = pd.to_datetime(frame["date"], errors="raise")
+    frame["close"] = pd.to_numeric(frame["close"], errors="raise")
+    frame = frame.sort_values("date").reset_index(drop=True)
+    if frame["date"].duplicated().any():
+        raise ResearchInputError(f"{symbol} contains duplicate dates")
+
+    if benchmark_panel is not None:
+        frame = frame.merge(benchmark_panel, on="date", how="left")
+    else:
+        frame["regime_return"] = frame["close"].pct_change(regime_lookback_days)
+
+    frame["market_regime"] = "unknown"
+    frame.loc[frame["regime_return"] >= 0, "market_regime"] = "rising"
+    frame.loc[frame["regime_return"] < 0, "market_regime"] = "falling"
+    frame["period_split"] = _period_split(frame["date"], unseen_start_date)
+    frame["weekday"] = frame["date"].dt.day_name()
+    frame["date"] = frame["date"].dt.date.astype(str)
+
+    total_cost = (trading_cost_bps + slippage_bps) / 10000
+    outputs: list[pd.DataFrame] = []
+    unconditional_by_holding: dict[int, float] = {}
+
+    for holding in holding_days:
+        exit_close = frame["close"].shift(-holding)
+        gross_return = exit_close / frame["close"] - 1
+        unconditional_by_holding[holding] = float(gross_return.dropna().mean())
+
+        pattern_type = "weekday" if holding == 1 else "multi_day"
+        pattern_name = (
+            frame["weekday"]
+            if holding == 1
+            else frame["weekday"] + f"_{holding}d_hold"
+        )
+        status = pd.Series("ok", index=frame.index, dtype="object")
+        status.loc[exit_close.isna()] = "insufficient_forward_history"
+        status.loc[frame["market_regime"] == "unknown"] = "insufficient_regime_history"
+
+        output = pd.DataFrame(
+            {
+                "symbol": symbol,
+                "date": frame["date"],
+                "weekday": frame["weekday"],
+                "pattern_type": pattern_type,
+                "pattern_name": pattern_name,
+                "holding_days": holding,
+                "status": status,
+                "entry_close": frame["close"],
+                "exit_close": exit_close,
+                "gross_return": gross_return,
+                "cost_bps": trading_cost_bps,
+                "slippage_bps": slippage_bps,
+                "cost_adjusted_return": gross_return - total_cost,
+                "unconditional_mean_return": unconditional_by_holding[holding],
+                "market_regime": frame["market_regime"],
+                "period_split": frame["period_split"],
+            }
+        )
+        outputs.append(output)
+
+    return pd.concat(outputs, ignore_index=True).loc[:, list(WEEKDAY_PATTERN_COLUMNS)]
+
+
+def _prepare_benchmark_regime(
+    benchmark_prices: pd.DataFrame,
+    regime_lookback_days: int,
+) -> pd.DataFrame:
+    _require_columns(benchmark_prices, ["date", "close"], scope="benchmark")
+    benchmark = benchmark_prices.loc[:, ["date", "close"]].copy()
+    benchmark["date"] = pd.to_datetime(benchmark["date"], errors="raise")
+    benchmark["close"] = pd.to_numeric(benchmark["close"], errors="raise")
+    benchmark = benchmark.sort_values("date").reset_index(drop=True)
+    if benchmark["date"].duplicated().any():
+        raise ResearchInputError("benchmark contains duplicate dates")
+
+    benchmark["regime_return"] = benchmark["close"].pct_change(regime_lookback_days)
+    return benchmark.loc[:, ["date", "regime_return"]]
 
 
 def _sector_catch_up_for_horizon(panel: pd.DataFrame, horizon: int) -> pd.DataFrame:
@@ -267,6 +553,34 @@ def _validate_sector_catch_up_args(lookback_days: int, horizons: tuple[int, ...]
     invalid_horizons = [horizon for horizon in horizons if horizon <= 0]
     if invalid_horizons:
         raise ResearchInputError(f"horizons must be positive: {invalid_horizons}")
+
+
+def _validate_weekday_pattern_args(
+    holding_days: tuple[int, ...],
+    trading_cost_bps: float,
+    slippage_bps: float,
+) -> None:
+    if not holding_days:
+        raise ResearchInputError("at least one holding day is required")
+    invalid_holding = [holding for holding in holding_days if holding <= 0]
+    if invalid_holding:
+        raise ResearchInputError(f"holding_days must be positive: {invalid_holding}")
+    if min(holding_days) < 1 or max(holding_days) > 5:
+        raise ResearchInputError("holding_days must stay within the predefined 1-5 range")
+    if trading_cost_bps < 0:
+        raise ResearchInputError("trading_cost_bps cannot be negative")
+    if slippage_bps < 0:
+        raise ResearchInputError("slippage_bps cannot be negative")
+
+
+def _period_split(dates: pd.Series, unseen_start_date: str | None) -> pd.Series:
+    if unseen_start_date is None:
+        return pd.Series("full_sample", index=dates.index, dtype="object")
+
+    unseen_start = pd.to_datetime(unseen_start_date, errors="raise")
+    split = pd.Series("selection", index=dates.index, dtype="object")
+    split.loc[dates >= unseen_start] = "unseen"
+    return split
 
 
 def _laggard_summary_markdown(observations: pd.DataFrame) -> str:

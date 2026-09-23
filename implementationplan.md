@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Sector catch-up research ready |
+| Proje durumu | Weekday pattern research ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P08 - Weekday And Multi-Day Pattern Research |
-| Kritik sonraki hedef | Hafta ici ve 2-5 gunluk takvim desen analizlerini uygulamak |
+| Aktif faz | P09 - Technical Reversal Research |
+| Kritik sonraki hedef | Teknik eventleri ileri getirilerle karsilastiran reversal analizini uygulamak |
 
 ## Degismez Proje Kurallari
 
@@ -329,7 +329,7 @@ Notes:
 
 ### P08 - Weekday And Multi-Day Pattern Research
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Scenario 2 hafta ici ve 2-5 gunluk takvim desenlerini test etmek.
 
@@ -346,10 +346,25 @@ Acceptance:
 - Unseen period stabilitesi icin alan hazirdir.
 
 Completed:
-- Yok.
+- `src.research.run_weekday_patterns` ile weekday ve 2-5 gunluk holding pattern analizleri eklendi.
+- Pattern gozlem semasi `symbol`, `date`, `weekday`, `pattern_type`, `pattern_name`, `holding_days`, `status`, gross/cost-adjusted return, unconditional baseline, market regime ve period split alanlariyla tanimlandi.
+- `summarize_weekday_patterns` ile occurrence count, average/median return, cost-adjusted return ve unconditional baseline ozeti eklendi.
+- Trading cost ve slippage gross return'den dusulerek cost-adjusted return hesaplanir.
+- Benchmark verisi verilirse market regime benchmark returnu uzerinden; verilmezse sembol returnu uzerinden hesaplanir.
+- `unseen_start_date` ile `selection` / `unseen` split destegi eklendi.
+- Eksik kolon, invalid holding day, duplicate date ve benchmark hazirlama problemleri icin acik error handling eklendi.
+- `write_weekday_patterns_report` markdown rapor yazicisi eklendi.
+- `reports/weekday_patterns.md` olcum uydurmayan baslangic raporu olarak eklendi.
+- Weekday/multi-day pattern unit testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 42 tests.
+- `python -c "from tests.test_research_weekday_patterns import prices, benchmark; from src.research import run_weekday_patterns; r=run_weekday_patterns({'AAA.IS': prices()}, benchmark_prices=benchmark(), holding_days=(1,2,5), regime_lookback_days=3, unseen_start_date='2024-02-01'); print(len(r.observations), len(r.summary), len(r.errors), sorted(r.observations.pattern_type.unique()))"` returned 105 observations, 30 summary rows, 0 errors and weekday/multi_day types.
 
 Notes:
 - Hipotetik yuzdeler sonuc gibi yazilmayacak.
+- Canli/cache market data henuz repoda olmadigi icin `reports/weekday_patterns.md` measured result icermeyen uygulama durumu raporudur.
+- Multiple-testing riski rapor yazicisinda acikca belirtilir.
 
 ### P09 - Technical Reversal Research
 
@@ -723,6 +738,7 @@ Notes:
 | 2026-09-23 | P05 | Cekirdek teknik indikator fonksiyonlari ve sentetik veri testleri eklendi. | `python -m unittest discover -s tests` passed: 26 tests. | Aktif faz P06'ya tasindi. |
 | 2026-09-23 | P06 | Teknik event detectorleri, ortak event semasi ve detector-level error handling eklendi. | `python -m unittest discover -s tests` passed: 31 tests. | Aktif faz P07'ye tasindi. |
 | 2026-09-24 | P07 | Sector catch-up hesaplayici, self-excluding peer median, status alanlari, rapor yazici ve testler eklendi. | `python -m unittest discover -s tests` passed: 36 tests. | Aktif faz P08'e tasindi. |
+| 2026-09-24 | P08 | Weekday/multi-day pattern hesaplayici, cost-adjusted return, regime/split alanlari, ozet ve rapor yazici eklendi. | `python -m unittest discover -s tests` passed: 42 tests. | Aktif faz P09'a tasindi. |
 
 ## Acik Riskler Ve Kararlar
 

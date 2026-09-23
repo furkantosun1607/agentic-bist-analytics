@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Universe frozen |
+| Proje durumu | Runtime configured |
 | Son guncelleme | 2026-09-23 |
-| Aktif faz | P02 - Settings And Runtime Configuration |
-| Kritik sonraki hedef | Merkezi ayar dosyasini ve ayar okuma yardimcisini eklemek |
+| Aktif faz | P03 - Market Data Adapter And Cache |
+| Kritik sonraki hedef | Hisse ve XU100 fiyatlari icin market data adapter ve cache akisini kurmak |
 
 ## Degismez Proje Kurallari
 
@@ -118,7 +118,7 @@ Notes:
 
 ### P02 - Settings And Runtime Configuration
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Veri donemi, cache yolu, maliyet varsayimlari ve rapor ciktilari icin merkezi ayar dosyasi olusturmak.
 
@@ -133,10 +133,20 @@ Acceptance:
 - Test ve demo icin tek ayar noktasi vardir.
 
 Completed:
-- Yok.
+- `config/settings.yaml` merkezi runtime ayar dosyasi olarak eklendi.
+- `src/settings.py` ile typed settings dataclass'lari ve YAML loader eklendi.
+- Universe, cache, reports, notebooks ve decision log pathleri proje kokune gore normalize ediliyor.
+- Market data benchmark/source, adjusted price policy, backtest timing, nonzero cost/slippage, horizons ve kalite ayarlari merkezi hale getirildi.
+- Settings testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 8 tests.
+- `python -c "from src.settings import load_settings; s=load_settings(); print(s.paths.universe); print(s.backtest.trading_cost_bps, s.backtest.slippage_bps)"` returned the resolved universe path and `10.0 5.0`.
+- `python -c "from src import settings; print(settings.load_settings().market_data.benchmark_symbol)"` returned `XU100.IS`.
 
 Notes:
-- API key veya gizli bilgi dosyaya yazilmayacak.
+- API key veya gizli bilgi dosyaya yazilmadi.
+- Ilk maliyet varsayimi `trading_cost_bps: 10` ve `slippage_bps: 5`; P14 sirasinda gerekirse gerekceli olarak revize edilecek.
 
 ### P03 - Market Data Adapter And Cache
 
@@ -645,6 +655,7 @@ Notes:
 | 2026-09-23 | Planning | README okundu ve implementation plan olusturuldu. | Dosya olusturma kontrolu yapilacak. | Ilk plan. |
 | 2026-09-23 | P00 | Repository baseline dosya ve dizin iskeleti eklendi. | Python import smoke testi passed; pytest dependency eksik oldugu icin kosulmadi. | Aktif faz P01'e tasindi. |
 | 2026-09-23 | P01 | Fixed universe CSV, data dictionary ve universe validation eklendi. | `python -m unittest discover -s tests` passed. | Aktif faz P02'ye tasindi. |
+| 2026-09-23 | P02 | Merkezi settings YAML'i, typed config loader ve settings testleri eklendi. | `python -m unittest discover -s tests` passed: 8 tests. | Aktif faz P03'e tasindi. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -654,7 +665,7 @@ Notes:
 | Haber/video kaynaklari | Open | Yalnizca yasal erisilebilir ve timestamp dogrulanabilir kaynaklar kullanilacak. |
 | BIST/XU100 sembol uyumu | Open | P03 sirasinda missing symbol ve uyumsuzluk raporu uretilecek. |
 | Unseen period tarihleri | Open | Veri kapsamindan sonra settings icinde sabitlenecek. |
-| Maliyet/slippage varsayimlari | Open | P02/P14 sirasinda makul nonzero varsayim olarak belirlenecek. |
+| Maliyet/slippage varsayimlari | Decided | Ilk varsayim `trading_cost_bps: 10` ve `slippage_bps: 5`; P14 sirasinda risk raporu icin tekrar gozden gecirilecek. |
 
 ## Teslimat Checklist
 

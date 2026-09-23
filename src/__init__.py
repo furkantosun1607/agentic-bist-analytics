@@ -7,4 +7,5 @@ __all__ = [
     "indicators",
     "mcp_server",
     "research",
+    "settings",
 ]

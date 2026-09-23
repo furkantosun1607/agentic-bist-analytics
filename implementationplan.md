@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Market data adapter ready |
+| Proje durumu | Data validation gate ready |
 | Son guncelleme | 2026-09-23 |
-| Aktif faz | P04 - Data Validation And Point-In-Time Checks |
-| Kritik sonraki hedef | Veri kalitesi, tarih sirasi ve leakage blok kontrollerini eklemek |
+| Aktif faz | P05 - Core Technical Indicators |
+| Kritik sonraki hedef | Deterministik teknik indikator hesaplamalarini eklemek |
 
 ## Degismez Proje Kurallari
 
@@ -186,7 +186,7 @@ Notes:
 
 ### P04 - Data Validation And Point-In-Time Checks
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Veri kalitesi, tarih sirasi ve gelecek bilgi sizintisi icin bloklayici kontroller eklemek.
 
@@ -202,10 +202,22 @@ Acceptance:
 - Gelecek getiri sinyal girdisi olarak kullanilamaz.
 
 Completed:
-- Yok.
+- `src/validation.py` data-quality ve point-in-time safety modulu olarak eklendi.
+- `QualityIssue` ve `QualityReport` ile warning/blocking issue modeli olusturuldu.
+- Gate ciktisi `ANALYSIS_SAFE` veya `ANALYSIS_UNSAFE` olarak standardize edildi.
+- Price history kontrolleri eklendi: bos veri, eksik kolon, kucuk orneklem, parse edilemeyen tarih, sirali olmayan tarih, duplicate tarih, numeric olmayan veya non-positive fiyat, high/low uyumsuzlugu, negatif volume, invalid download timestamp ve price-date-after-download.
+- Market dataset validator eklendi; missing symbol ve expected-but-not-fetched durumlari warning olarak raporlanir.
+- Point-in-time record validator eklendi; publication timestamp decision time'dan sonraysa blocking future leakage uretir.
+- Future outcome feature kolonlari icin leakage blok kontrolu eklendi.
+- Validation testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 20 tests.
+- `python -c "from src.validation import validate_no_future_outcome_columns; print(validate_no_future_outcome_columns(['rsi','next_return']).gate_status)"` returned `ANALYSIS_UNSAFE`.
 
 Notes:
 - Bu faz sonraki tum analizlerin guvenlik temelidir.
+- Missing source veya small sample warning olarak kalir; future-information leakage ve kritik tarih uyumsuzluklari `ANALYSIS_UNSAFE` uretir.
 
 ### P05 - Core Technical Indicators
 
@@ -670,6 +682,7 @@ Notes:
 | 2026-09-23 | P01 | Fixed universe CSV, data dictionary ve universe validation eklendi. | `python -m unittest discover -s tests` passed. | Aktif faz P02'ye tasindi. |
 | 2026-09-23 | P02 | Merkezi settings YAML'i, typed config loader ve settings testleri eklendi. | `python -m unittest discover -s tests` passed: 8 tests. | Aktif faz P03'e tasindi. |
 | 2026-09-23 | P03 | Market data adapter, normalized OHLCV cache helpers, missing-symbol report ve fetch script eklendi. | `python -m unittest discover -s tests` passed: 12 tests. | Aktif faz P04'e tasindi; live cache commitlenmedi. |
+| 2026-09-23 | P04 | Data-quality validator, point-in-time checks ve leakage blok kontrolleri eklendi. | `python -m unittest discover -s tests` passed: 20 tests. | Aktif faz P05'e tasindi. |
 
 ## Acik Riskler Ve Kararlar
 

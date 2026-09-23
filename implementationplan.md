@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Core indicators ready |
+| Proje durumu | Technical event detectors ready |
 | Son guncelleme | 2026-09-23 |
-| Aktif faz | P06 - Technical Event Detectors |
-| Kritik sonraki hedef | Timestamped teknik olay detectorlerini eklemek |
+| Aktif faz | P07 - Sector Catch-Up Research |
+| Kritik sonraki hedef | Sektor catch-up analizini ve insufficient-peer davranisini uygulamak |
 
 ## Degismez Proje Kurallari
 
@@ -253,7 +253,7 @@ Notes:
 
 ### P06 - Technical Event Detectors
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Scenario 3 icin timestamped teknik olaylari tespit etmek.
 
@@ -271,10 +271,25 @@ Acceptance:
 - Her event ailesi icin en az bir smoke test vardir.
 
 Completed:
-- Yok.
+- `src/events.py` teknik event detector modulu olarak eklendi.
+- Standart event ciktisi `symbol`, `event_family`, `event_type`, `event_date`, `known_at`, `value`, `reference`, `details` kolonlariyla tanimlandi.
+- Bollinger lower/middle/upper testleri ve cross eventleri eklendi.
+- RSI peak/trough ve threshold exit eventleri eklendi.
+- Supertrend flip up/down eventleri eklendi.
+- KAMA price cross ve slope turn eventleri eklendi.
+- Ichimoku conversion/base cross ve cloud break eventleri eklendi.
+- Support/resistance touch eventleri toleransli olarak eklendi.
+- `detect_all_events` her detector'i ayri calistirip hatalari `DetectorError` olarak toplar; tek detector hatasi diger eventleri dusurmez.
+- Missing-column ve event-date parse problemleri icin acik hata mesajlari eklendi.
+- Event detector smoke testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 31 tests.
+- `python -c "from tests.test_events import event_frame; from src.events import detect_all_events; r=detect_all_events(event_frame()); print(len(r.events), len(r.errors), sorted(r.events.event_family.unique()))"` returned 21 events, 0 errors and all six event families.
 
 Notes:
 - Her aile icin bir kucuk detector yeterli; asiri parametre taramasi yapilmayacak.
+- Event `known_at` simdilik gunluk kapanis sonrasi Istanbul timestamp'i olarak `T18:10:00+03:00` formatinda yazilir.
 
 ### P07 - Sector Catch-Up Research
 
@@ -693,6 +708,7 @@ Notes:
 | 2026-09-23 | P03 | Market data adapter, normalized OHLCV cache helpers, missing-symbol report ve fetch script eklendi. | `python -m unittest discover -s tests` passed: 12 tests. | Aktif faz P04'e tasindi; live cache commitlenmedi. |
 | 2026-09-23 | P04 | Data-quality validator, point-in-time checks ve leakage blok kontrolleri eklendi. | `python -m unittest discover -s tests` passed: 20 tests. | Aktif faz P05'e tasindi. |
 | 2026-09-23 | P05 | Cekirdek teknik indikator fonksiyonlari ve sentetik veri testleri eklendi. | `python -m unittest discover -s tests` passed: 26 tests. | Aktif faz P06'ya tasindi. |
+| 2026-09-23 | P06 | Teknik event detectorleri, ortak event semasi ve detector-level error handling eklendi. | `python -m unittest discover -s tests` passed: 31 tests. | Aktif faz P07'ye tasindi. |
 
 ## Acik Riskler Ve Kararlar
 

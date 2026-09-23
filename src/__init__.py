@@ -3,6 +3,7 @@
 __all__ = [
     "backtest",
     "data",
+    "events",
     "harness",
     "indicators",
     "mcp_server",

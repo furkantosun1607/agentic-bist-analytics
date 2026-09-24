@@ -2,7 +2,7 @@
 
 A small, reproducible **educational research project** for 30 selected BIST 100 stocks. It studies sector catch-up, calendar patterns, technical reversals, and reactions to quarterly financial disclosures. Python performs calculations; a controlled AI assistant summarizes evidence. Results are historical observations, not investment advice. The project has no broker connection or real trading.
 
-This README is a practical implementation plan based on the course project PDF. The proposed file names and thresholds are implementation choices, not extra course requirements. **Project status: planned; the modules and reports below still need to be built.**
+This README is a practical implementation guide based on the course project PDF. The proposed file names and thresholds are implementation choices, not extra course requirements. **Project status: implementation infrastructure is ready; measured financial findings still require verified live/cache datasets.**
 
 ## What must be delivered
 
@@ -74,6 +74,28 @@ tests/                   # calculation, timing and workflow checks
 ```
 
 CSV/Parquet files and SQLite are sufficient. Cache a small, dated dataset so the classroom demo does not depend on live source availability. Document installation and one working demo command after implementation; do not commit API keys.
+
+## Install and Demo
+
+Use Python 3.11+ in a clean virtual environment.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python -m unittest discover -s tests
+python -m scripts.demo --offline
+```
+
+The offline demo performs no network calls. It validates settings and the fixed universe, regenerates `reports/report_index.md` and `reports/final_technical_report.md`, checks whether `data/cache` contains market CSV files, and writes `reports/demo_summary.md`.
+
+To populate a dated market cache before class, run this command only when live source access is available:
+
+```powershell
+python -m scripts.fetch_market_data
+```
+
+After the cache is populated, rerun `python -m scripts.demo --offline`. The demo remains usable without live source availability because it reads local project files and reports cache status instead of downloading data. If cache files are missing, the demo reports an infrastructure-only warning and does not invent measured returns.
 
 ## Data sources and one essential rule
 

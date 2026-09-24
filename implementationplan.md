@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Final technical reporting ready |
+| Proje durumu | Demo and documentation ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P23 - Demo Command And Documentation Polish |
-| Kritik sonraki hedef | Kurulum notlari, demo komutu ve final smoke testleri tamamlamak |
+| Aktif faz | Planned phases complete |
+| Kritik sonraki hedef | Kullanici commit/push sonrasi istege bagli live/cache veri doldurma |
 
 ## Degismez Proje Kurallari
 
@@ -895,7 +895,7 @@ Notes:
 
 ### P23 - Demo Command And Documentation Polish
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Projeyi kurulabilir, calistirilabilir ve sinif demosuna hazir hale getirmek.
 
@@ -911,10 +911,20 @@ Acceptance:
 - Teslim checklist'indeki ana maddeler tamamlanmistir.
 
 Completed:
-- Yok.
+- `src/demo.py` ile offline classroom demo orkestrasyonu eklendi.
+- `scripts/demo.py` CLI komutu eklendi: `python -m scripts.demo --offline`.
+- `reports/demo_summary.md` uretildi.
+- README kurulum, test, demo ve cache doldurma notlariyla guncellendi.
+- Demo smoke testleri eklendi.
+
+Tests:
+- `python -m unittest tests.test_demo` passed: 3 tests.
+- `python -m scripts.demo --offline --output reports/demo_summary.md` passed.
+- `python -m unittest discover -s tests` passed: 135 tests.
 
 Notes:
 - Web dashboard zorunlu degil; notebook veya CLI demo yeterli olabilir.
+- Cache yoklugu warning olarak raporlanir; measured financial finding uretilmez.
 
 ## Gelistirme Gunlugu
 
@@ -944,6 +954,7 @@ Notes:
 | 2026-09-24 | P20 | Strategy variant comparison A-E motoru, missing-component unavailable status, shared cost/data period ve markdown rapor iskeleti eklendi. | `python -m unittest discover -s tests` passed: 125 tests. | Aktif faz P21'e tasindi; live strategy sonucu uydurulmadi. |
 | 2026-09-24 | P21 | Harness variant comparison A-E motoru, fixed question-set semasi, capability metrikleri ve markdown rapor iskeleti eklendi. | `python -m unittest discover -s tests` passed: 129 tests. | Aktif faz P22'ye tasindi; live LLM run uydurulmadi. |
 | 2026-09-24 | P22 | Rapor manifest'i, report index, final technical report ve reporting testleri eklendi. | `python -m unittest discover -s tests` passed: 132 tests. | Aktif faz P23'e tasindi; measured result iddiasi eklenmedi. |
+| 2026-09-24 | P23 | Offline demo komutu, demo summary raporu, README kurulum/cache notlari ve demo smoke testleri eklendi. | `python -m unittest discover -s tests` passed: 135 tests. | Planlanan fazlar tamamlandi; cache yoklugu warning olarak raporlanir. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -969,4 +980,4 @@ Notes:
 - [x] Human-reviewed replayable decision log
 - [ ] Strategy variants A-E comparison
 - [ ] Harness variants A-E comparison
-- [ ] Final report and classroom demo command
+- [x] Final report and classroom demo command

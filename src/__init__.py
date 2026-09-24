@@ -4,6 +4,7 @@ __all__ = [
     "backtest",
     "context",
     "data",
+    "demo",
     "decision_log",
     "evidence",
     "events",

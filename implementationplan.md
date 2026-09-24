@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Quarterly fundamentals research ready |
+| Proje durumu | Macro/news/video context schema ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P12 - Macro, News And Video Context |
-| Kritik sonraki hedef | Makro, haber ve public-video baglamini kaynak ve timestamp ile kaydetmek |
+| Aktif faz | P13 - Backtest Engine |
+| Kritik sonraki hedef | Sinyaller icin point-in-time guvenli backtest motorunu kurmak |
 
 ## Degismez Proje Kurallari
 
@@ -480,7 +480,7 @@ Notes:
 
 ### P12 - Macro, News And Video Context
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Makro, haber ve public-video baglamini kaynak ve timestamp ile kaydetmek.
 
@@ -496,10 +496,24 @@ Acceptance:
 - Eksik kaynaklar uydurulmadan raporlanir.
 
 Completed:
-- Yok.
+- `src/context.py` macro, news ve video context semasi ve import akisi olarak eklendi.
+- Context kayitlari `context_id`, `context_type`, `scope`, observed period, publication timestamp, download timestamp, source ve source access metadata'siyle normalize ediliyor.
+- `source_access` yalnizca `public`, `licensed` veya `instructor_approved` degerlerini kabul edecek sekilde sinirlandi.
+- Macro kayitlari USD/TRY, EUR/TRY, TCMB policy rate, TUIK inflation ve Fed policy rate indikatorleriyle sinirlandi; numeric value zorunlu tutuldu.
+- News/video kayitlarinda title, claim ve source URL zorunlu; video kayitlarinda ayrica segment timestamp zorunlu tutuldu.
+- Import akisi row-level error handling ile kuruldu; hatali satirlar valid satirlari dusurmuyor.
+- Context kayitlari P04 point-in-time validator icin `PointInTimeRecord` listesine cevrilebiliyor.
+- Historical decision timestamp icin public olan context kayitlarini filtreleyen yardimci eklendi.
+- `config/context_dictionary.md`, `config/context_template.csv` ve `reports/context_sources.md` eklendi.
+- Context schema/import testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 70 tests.
 
 Notes:
 - TCMB/EVDS, TUIK ve Federal Reserve kaynaklari README'de belirtilmis.
+- Bu fazda canli makro/haber/video kaynagi cekilmedi; sema, import akisi ve kaynak uygunluk raporu hazirlandi.
+- Gercek kaynaklar ve lisans/erisim kosullari veri doldurma sirasinda dogrulanacak; kaynak uydurma yapilmadi.
 
 ### P13 - Backtest Engine
 
@@ -784,13 +798,14 @@ Notes:
 | 2026-09-24 | P09 | Teknik reversal analizi, individual/combined signal grouping, bounce/failure summary ve rapor yazici eklendi. | `python -m unittest discover -s tests` passed: 48 tests. | Aktif faz P10'a tasindi. |
 | 2026-09-24 | P10 | Point-in-time fundamentals semasi, bank/industrial metric profile ayrimi, import helperlari ve testler eklendi. | `python -m unittest discover -s tests` passed: 55 tests. | Aktif faz P11'e tasindi. |
 | 2026-09-24 | P11 | Quarterly fundamentals research, QoQ/YoY metrics, post-disclosure returns ve benchmark/sector-relative karsilastirmalar eklendi. | `python -m unittest discover -s tests` passed: 63 tests. | Aktif faz P12'ye tasindi. |
+| 2026-09-24 | P12 | Macro/news/video context semasi, source access kontrolleri, point-in-time donusumu, decision-time filtresi ve context dokumanlari eklendi. | `python -m unittest discover -s tests` passed: 70 tests. | Aktif faz P13'e tasindi; canli context verisi uydurulmadi. |
 
 ## Acik Riskler Ve Kararlar
 
 | Konu | Durum | Karar/Not |
 | --- | --- | --- |
 | Finansal veri erisimi | Open | Fintables erisim ve lisans kosullari uygulanirken dogrulanacak. |
-| Haber/video kaynaklari | Open | Yalnizca yasal erisilebilir ve timestamp dogrulanabilir kaynaklar kullanilacak. |
+| Haber/video kaynaklari | Open | P12 sema ve import akisi hazir; yalnizca yasal erisilebilir, instructor-approved ve timestamp dogrulanabilir kaynaklar doldurulacak. |
 | BIST/XU100 sembol uyumu | Open | P03 adapter ve missing-symbol rapor yazicisi eklendi; canli `python -m scripts.fetch_market_data` calistirildiginda rapor uretilecek. |
 | Unseen period tarihleri | Open | Veri kapsamindan sonra settings icinde sabitlenecek. |
 | Maliyet/slippage varsayimlari | Decided | Ilk varsayim `trading_cost_bps: 10` ve `slippage_bps: 5`; P14 sirasinda risk raporu icin tekrar gozden gecirilecek. |

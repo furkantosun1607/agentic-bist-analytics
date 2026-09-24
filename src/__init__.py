@@ -2,6 +2,7 @@
 
 __all__ = [
     "backtest",
+    "context",
     "data",
     "events",
     "fundamentals",

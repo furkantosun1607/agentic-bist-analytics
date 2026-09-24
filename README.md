@@ -94,6 +94,7 @@ python -m scripts.fetch_rss_news
 python -m scripts.normalize_rss_news
 python -m scripts.match_news_aliases
 python -m scripts.build_news_context
+python -m scripts.audit_market_cache
 ```
 
 Then run the offline demo:
@@ -102,7 +103,7 @@ Then run the offline demo:
 python -m scripts.demo --offline
 ```
 
-The offline demo performs no network calls. It validates settings and the fixed universe, regenerates `reports/report_index.md` and `reports/final_technical_report.md`, checks market cache, checks RSS raw/normalized/matched/context artifacts, and writes `reports/demo_summary.md`.
+The market audit writes `reports/market_cache_audit.md`. The offline demo performs no network calls. It validates settings and the fixed universe, regenerates `reports/report_index.md` and `reports/final_technical_report.md`, checks market cache, checks RSS raw/normalized/matched/context artifacts, and writes `reports/demo_summary.md`.
 
 Cache files under `data/cache/` and `data/rss/` are local artifacts and are not committed. If a cache is missing, the demo reports a warning and does not invent measured returns or news context.
 

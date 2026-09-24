@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Submission gap status ready |
+| Proje durumu | Market cache audit ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P31 - Market Cache Audit And Coverage Report |
-| Kritik sonraki hedef | Local market cache kapsamini ve kalite durumunu teslim raporuna cevirmek |
+| Aktif faz | P32 - Fundamentals Source Access And Import Completion |
+| Kritik sonraki hedef | Fintables veya alternatif finansal tablo kaynagi icin point-in-time veri akisini tamamlamak |
 
 ## Degismez Proje Kurallari
 
@@ -1211,7 +1211,7 @@ Notes:
 
 ### P31 - Market Cache Audit And Coverage Report
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: 30 hisse + XU100 fiyat cache'inin tarih kapsami, kolon kalitesi ve eksik sembol durumunu teslim edilebilir rapora cevirmek.
 
@@ -1227,10 +1227,21 @@ Acceptance:
 - Veri dosyalari commitlenmez; audit raporu commitlenir.
 
 Completed:
-- Yok.
+- `src/market_audit.py` ile market cache coverage ve kalite audit helperlari eklendi.
+- `scripts/audit_market_cache.py` CLI komutu eklendi.
+- `reports/market_cache_audit.md` uretildi.
+- README cache komutlarina market audit adimi eklendi.
+- `src.reporting.REPORT_MANIFEST` market cache audit raporunu kapsayacak sekilde guncellendi.
+- Market audit unit testleri eklendi.
+
+Tests:
+- `python -m unittest tests.test_market_audit` passed: 3 tests.
+- `python -m scripts.audit_market_cache` passed: expected 31, cached 31, pass 31, warning 0, error 0.
+- `python -m unittest discover -s tests` passed: 159 tests.
 
 Notes:
 - Local `data/cache/` su an ignore altinda; final rapor audit metadatasini kullanacak.
+- Current local cache covers 30 universe symbols plus XU100 from 2021-01-04 to 2026-09-24.
 
 ### P32 - Fundamentals Source Access And Import Completion
 
@@ -1473,6 +1484,7 @@ Notes:
 | 2026-09-24 | P29 | Strategy Variant E RSS context availability, evidence bundle baglantisi, quality warnings ve variant report notlari eklendi. | `python -m unittest discover -s tests` passed: 156 tests. | RSS extension fazlari tamamlandi; measured strategy comparison hala gercek sinyal/veri gerektirir. |
 | 2026-09-24 | Gap Planning | README teslim eksiklerine gore P30-P40 submission completion fazlari eklendi. | Dokuman guncellemesi. | Aktif faz P30'a tasindi; odak veri/rapor/deney tamamlama. |
 | 2026-09-24 | P30 | README cache/RSS/demo akisiyle guncellendi, video current flow icin optional netlestirildi ve submission gap status raporu eklendi. | `python -m unittest discover -s tests` passed: 156 tests. | Aktif faz P31'e tasindi; user action gereken dis veri alanlari listelendi. |
+| 2026-09-24 | P31 | Market cache audit helperlari, CLI, audit raporu, README audit komutu ve report manifest guncellemesi eklendi. | `python -m unittest discover -s tests` passed: 159 tests; `python -m scripts.audit_market_cache` 31/31 pass ile passed. | Aktif faz P32'ye tasindi; cache CSV'leri commitlenmez. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -1489,7 +1501,7 @@ Notes:
 ## Teslimat Checklist
 
 - [x] Fixed 30-stock universe and data dictionary
-- [ ] Market price and XU100 cache
+- [x] Market price and XU100 cache
 - [ ] Point-in-time fundamentals data
 - [ ] Macro/news/video context records
 - [x] RSS news cache and ticker/sector/macro context

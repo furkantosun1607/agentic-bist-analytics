@@ -24,6 +24,16 @@ class ReportManifestEntry:
 
 REPORT_MANIFEST: tuple[ReportManifestEntry, ...] = (
     ReportManifestEntry(
+        report_name="Market cache audit",
+        path="reports/market_cache_audit.md",
+        status="local_cache_audited",
+        data_period="2021-01-04 to 2026-09-24 in current local cache",
+        source="Yahoo Finance/yfinance local cache",
+        sample_size="31 cached symbols audited; 30 universe symbols plus XU100 benchmark",
+        assumptions="adjusted close available, local cache files are not committed",
+        limitations="BIST 100 membership over the full period still requires external documentation",
+    ),
+    ReportManifestEntry(
         report_name="Sector catch-up",
         path="reports/sector_catch_up.md",
         status="infrastructure_ready_no_measured_result",

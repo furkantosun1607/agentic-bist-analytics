@@ -4,6 +4,7 @@ This index tracks report readiness and prevents unverified data from being prese
 
 | Report | Status | Data period | Source | Sample size | Assumptions | Limitations |
 | --- | --- | --- | --- | --- | --- | --- |
+| Market cache audit | local_cache_audited | 2021-01-04 to 2026-09-24 in current local cache | Yahoo Finance/yfinance local cache | 31 cached symbols audited; 30 universe symbols plus XU100 benchmark | adjusted close available, local cache files are not committed | BIST 100 membership over the full period still requires external documentation |
 | Sector catch-up | infrastructure_ready_no_measured_result | not available until market cache is generated | Yahoo Finance/yfinance cache planned | not measured | 20-day lookback, 5/10/20-day horizons, same-sector self-excluding peers | live/cache market data is not committed |
 | Weekday and multi-day patterns | infrastructure_ready_no_measured_result | not available until market cache is generated | Yahoo Finance/yfinance cache planned | not measured | 1-5 trading-day holds, configured costs/slippage, optional regime split | multiple-testing risk and no live/cache market data yet |
 | Technical reversals | infrastructure_ready_no_measured_result | not available until market cache is generated | deterministic indicators/events from cached OHLCV planned | not measured | 1/3/5/10-day post-event returns, combined same-day signals | event rules are simple and no live/cache market data yet |

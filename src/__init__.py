@@ -13,6 +13,7 @@ __all__ = [
     "indicators",
     "mcp_server",
     "research",
+    "reporting",
     "settings",
     "splits",
     "strategy_variants",

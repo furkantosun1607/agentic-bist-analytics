@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Harness variant comparison engine ready |
+| Proje durumu | Final technical reporting ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P22 - Reports And Final Technical Narrative |
-| Kritik sonraki hedef | Senaryo raporlari, context raporu, backtest raporlari ve final teknik anlatimi toparlamak |
+| Aktif faz | P23 - Demo Command And Documentation Polish |
+| Kritik sonraki hedef | Kurulum notlari, demo komutu ve final smoke testleri tamamlamak |
 
 ## Degismez Proje Kurallari
 
@@ -856,7 +856,7 @@ Notes:
 
 ### P22 - Reports And Final Technical Narrative
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Dört senaryo raporu, context raporu, backtest raporlari ve final teknik raporu tamamlamak.
 
@@ -875,10 +875,23 @@ Acceptance:
 - Sonuclar investment advice dili kullanmaz.
 
 Completed:
-- Yok.
+- `src/reporting.py` rapor manifest'i ve final teknik anlatim yardimcilari olarak eklendi.
+- `REPORT_MANIFEST` ile senaryo raporlari, context, backtest/risk, split/regime, strategy variants, harness variants ve decision log raporlari tek envanterde toplandi.
+- Her manifest girdisi status, data period, source, sample size, assumptions ve limitations metadata'si icerir.
+- `validate_report_manifest` rapor dosyalarinin mevcut oldugunu ve metadata alanlarinin bos olmadigini kontrol eder.
+- `write_report_index` rapor envanterini markdown tablo olarak uretir.
+- `write_final_technical_report` current implementation state icin final teknik anlatimi uretir.
+- `reports/report_index.md` eklendi.
+- `reports/final_technical_report.md` eklendi.
+- Final rapor empirical findings icin `inconclusive` dilini kullanir ve investment advice dili kullanmaz.
+- Reporting unit testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 132 tests.
 
 Notes:
 - README'deki PDF kaynakli sinirlar korunacak.
+- Canli/cache veri ve verified source records olmadigi icin final rapor measured result iddia etmez.
 
 ### P23 - Demo Command And Documentation Polish
 
@@ -930,6 +943,7 @@ Notes:
 | 2026-09-24 | P19 | Replayable decision log semasi, JSONL append/load, human review guard, record hash ve replay integrity check eklendi. | `python -m unittest discover -s tests` passed: 120 tests. | Aktif faz P20'ye tasindi; live decision kaydi uydurulmadi. |
 | 2026-09-24 | P20 | Strategy variant comparison A-E motoru, missing-component unavailable status, shared cost/data period ve markdown rapor iskeleti eklendi. | `python -m unittest discover -s tests` passed: 125 tests. | Aktif faz P21'e tasindi; live strategy sonucu uydurulmadi. |
 | 2026-09-24 | P21 | Harness variant comparison A-E motoru, fixed question-set semasi, capability metrikleri ve markdown rapor iskeleti eklendi. | `python -m unittest discover -s tests` passed: 129 tests. | Aktif faz P22'ye tasindi; live LLM run uydurulmadi. |
+| 2026-09-24 | P22 | Rapor manifest'i, report index, final technical report ve reporting testleri eklendi. | `python -m unittest discover -s tests` passed: 132 tests. | Aktif faz P23'e tasindi; measured result iddiasi eklenmedi. |
 
 ## Acik Riskler Ve Kararlar
 

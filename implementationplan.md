@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Backtest costs and risk metrics ready |
+| Proje durumu | Unseen split and market-regime helpers ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P15 - Unseen Period And Regime Splits |
-| Kritik sonraki hedef | Kural secimi ve nihai test icin unseen period ve piyasa rejimi ayrimini eklemek |
+| Aktif faz | P16 - Deterministic MCP Tool Set |
+| Kritik sonraki hedef | README'deki arac kategorilerini kapsayan deterministik MCP araclarini eklemek |
 
 ## Degismez Proje Kurallari
 
@@ -591,7 +591,7 @@ Notes:
 
 ### P15 - Unseen Period And Regime Splits
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Kural secimi ve nihai test icin unseen period ve piyasa rejimi ayrimini eklemek.
 
@@ -606,10 +606,23 @@ Acceptance:
 - Raporlarda donem ayrimi acikca gorunur.
 
 Completed:
-- Yok.
+- `src/splits.py` selection/unseen split ve market-regime yardimci modulu olarak eklendi.
+- `label_period_split` ile `selection`, `unseen` ve unseen tarihi yoksa `full_sample` etiketleri deterministik uretiliyor.
+- `build_market_regime_frame` ve `label_market_regime` ile benchmark veya lokal price history uzerinden `rising`, `falling`, `unknown` regime etiketleri uretiliyor.
+- `apply_split_and_regime_labels` split ve regime etiketlerini tek akista uyguluyor.
+- `summarize_unseen_stability` predefined grup kolonlari icin selection vs unseen average return, count, delta ve stability label uretiyor.
+- Stability label degerleri `stable_positive`, `stable_negative`, `sign_flip`, `inconclusive` ve `unavailable` olarak sinirlandi.
+- `write_split_regime_report` markdown rapor yazicisi ve `reports/split_regime.md` baslangic raporu eklendi.
+- `config/settings.yaml` icine `experiment.unseen_start_date` ve `experiment.regime_lookback_days` alanlari eklendi.
+- `src.settings` experiment config'i okuyacak sekilde genisletildi.
+- Split/regime unit testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 89 tests.
 
 Notes:
 - Bu faz verification asamasinin ana parcasi.
+- `experiment.unseen_start_date` simdilik `null`; veri kapsami dogrulanmadan unseen tarihi uydurulmadi.
 
 ### P16 - Deterministic MCP Tool Set
 
@@ -827,6 +840,7 @@ Notes:
 | 2026-09-24 | P12 | Macro/news/video context semasi, source access kontrolleri, point-in-time donusumu, decision-time filtresi ve context dokumanlari eklendi. | `python -m unittest discover -s tests` passed: 70 tests. | Aktif faz P13'e tasindi; canli context verisi uydurulmadi. |
 | 2026-09-24 | P13 | Point-in-time guvenli backtest motoru, signal semasi, entry/exit timing, benchmark hook'lari, summary ve rapor yazici eklendi. | `python -m unittest discover -s tests` passed: 77 tests. | Aktif faz P14'e tasindi; maliyet/risk metrikleri sonraki fazda. |
 | 2026-09-24 | P14 | Backtest maliyet/slippage kesintileri, settings baglantisi, cost-adjusted return, cumulative return, Sharpe, max drawdown, win rate ve benchmark difference eklendi. | `python -m unittest discover -s tests` passed: 81 tests. | Aktif faz P15'e tasindi; gercek backtest verisi henuz uydurulmadi. |
+| 2026-09-24 | P15 | Selection/unseen split, benchmark regime labels, stability comparison helperlari, experiment settings ve split/regime rapor iskeleti eklendi. | `python -m unittest discover -s tests` passed: 89 tests. | Aktif faz P16'ya tasindi; unseen tarihi veri kapsami dogrulaninca sabitlenecek. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -835,7 +849,7 @@ Notes:
 | Finansal veri erisimi | Open | Fintables erisim ve lisans kosullari uygulanirken dogrulanacak. |
 | Haber/video kaynaklari | Open | P12 sema ve import akisi hazir; yalnizca yasal erisilebilir, instructor-approved ve timestamp dogrulanabilir kaynaklar doldurulacak. |
 | BIST/XU100 sembol uyumu | Open | P03 adapter ve missing-symbol rapor yazicisi eklendi; canli `python -m scripts.fetch_market_data` calistirildiginda rapor uretilecek. |
-| Unseen period tarihleri | Open | Veri kapsamindan sonra settings icinde sabitlenecek. |
+| Unseen period tarihleri | Open | P15 altyapisi ve settings alani hazir; `experiment.unseen_start_date` veri kapsami dogrulandiktan sonra sabitlenecek. |
 | Maliyet/slippage varsayimlari | Decided | `settings.yaml` icindeki `trading_cost_bps: 10` ve `slippage_bps: 5` backtest motoruna baglandi; sifir toplam maliyet reddedilir. |
 
 ## Teslimat Checklist

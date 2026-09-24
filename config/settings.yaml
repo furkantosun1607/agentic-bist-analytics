@@ -22,6 +22,10 @@ backtest:
   slippage_bps: 5
   horizons: [1, 3, 5, 10, 20]
 
+experiment:
+  unseen_start_date: null
+  regime_lookback_days: 20
+
 validation:
   expected_universe_size: 30
   block_on_future_leakage: true

@@ -46,6 +46,12 @@ class BacktestConfig:
 
 
 @dataclass(frozen=True)
+class ExperimentConfig:
+    unseen_start_date: str | None
+    regime_lookback_days: int
+
+
+@dataclass(frozen=True)
 class ValidationConfig:
     expected_universe_size: int
     block_on_future_leakage: bool
@@ -65,6 +71,7 @@ class Settings:
     paths: PathConfig
     market_data: MarketDataConfig
     backtest: BacktestConfig
+    experiment: ExperimentConfig
     validation: ValidationConfig
     outputs: OutputConfig
 
@@ -86,6 +93,7 @@ def parse_settings(raw: dict[str, Any]) -> Settings:
     paths = raw.get("paths", {})
     market_data = raw.get("market_data", {})
     backtest = raw.get("backtest", {})
+    experiment = raw.get("experiment", {})
     validation = raw.get("validation", {})
     outputs = raw.get("outputs", {})
 
@@ -113,6 +121,10 @@ def parse_settings(raw: dict[str, Any]) -> Settings:
             trading_cost_bps=_required_number(backtest, "trading_cost_bps"),
             slippage_bps=_required_number(backtest, "slippage_bps"),
             horizons=tuple(int(horizon) for horizon in backtest.get("horizons", [])),
+        ),
+        experiment=ExperimentConfig(
+            unseen_start_date=experiment.get("unseen_start_date"),
+            regime_lookback_days=_required_int(experiment, "regime_lookback_days"),
         ),
         validation=ValidationConfig(
             expected_universe_size=_required_int(validation, "expected_universe_size"),

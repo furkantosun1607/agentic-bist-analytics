@@ -11,5 +11,6 @@ __all__ = [
     "mcp_server",
     "research",
     "settings",
+    "splits",
     "validation",
 ]

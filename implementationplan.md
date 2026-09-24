@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | RSS alias matching ready |
+| Proje durumu | RSS context builder ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P27 - News Context Builder And Report Integration |
-| Kritik sonraki hedef | Alias eslesmeli haberlerden decision-time guvenli context ozeti uretmek |
+| Aktif faz | P28 - Demo Update With RSS Context Status |
+| Kritik sonraki hedef | Offline demo ciktisina RSS cache ve context durumunu eklemek |
 
 ## Degismez Proje Kurallari
 
@@ -1066,7 +1066,7 @@ Notes:
 
 ### P27 - News Context Builder And Report Integration
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: RSS haberlerini karar zamanina gore filtreleyip ticker/sektor/makro context ozeti uretmek.
 
@@ -1082,10 +1082,22 @@ Acceptance:
 - Her ticker icin news_count, source_count, latest_news_timestamp ve evidence_urls raporlanir.
 
 Completed:
-- Yok.
+- `src/news_context.py` ile decision-time guvenli RSS context builder eklendi.
+- `scripts/build_news_context.py` CLI komutu eklendi.
+- `data/rss/news_context.csv` cikti formati tanimlandi ve canli cache uzerinden uretildi.
+- `reports/context_sources.md` RSS context bolumuyle guncellendi.
+- `src.reporting.REPORT_MANIFEST`, `reports/report_index.md` ve `reports/final_technical_report.md` RSS context durumuyla uyumlu hale getirildi.
+- Decision-time filtre ve lookback unit testleri eklendi.
+
+Tests:
+- `python -m unittest tests.test_news_context` passed: 3 tests.
+- `python -m scripts.build_news_context` passed: 51 context rows, 24 active context rows.
+- `python -m unittest discover -s tests` passed: 151 tests.
 
 Notes:
 - Bu faz P12 context semasina baglanir; video zorunlu degildir.
+- Context builder yalnizca `published_timestamp <= decision_timestamp` haberlerini kullanir.
+- Her fixed-universe ticker icin context satiri uretilir; haber yoksa `news_count=0` kalir.
 
 ### P28 - Demo Update With RSS Context Status
 
@@ -1165,6 +1177,7 @@ Notes:
 | 2026-09-24 | P24 | RSS source config, raw RSS fetcher, JSONL cache writer, source-level fetch report ve testler eklendi. | `python -m unittest discover -s tests` passed: 139 tests; live `python -m scripts.fetch_rss_news` 8 kaynak ve 259 raw item ile passed. | Aktif faz P25'e tasindi; canli `data/rss/` cache commitlenmez. |
 | 2026-09-24 | P25 | RSS normalize/dedup akisi, source health hesaplari, normalize CLI ve health raporu eklendi. | `python -m unittest discover -s tests` passed: 143 tests; `python -m scripts.normalize_rss_news` 259 normalized item ile passed. | Aktif faz P26'ya tasindi; NTV ve Yahoo Finance stale warning verdi. |
 | 2026-09-24 | P26 | News alias sozlugu, deterministic alias matcher, matched news JSONL writer, coverage raporu ve testler eklendi. | `python -m unittest discover -s tests` passed: 148 tests; `python -m scripts.match_news_aliases` 259 total ve 97 matched item ile passed. | Aktif faz P27'ye tasindi; alias eslesmesi trade sinyali degildir. |
+| 2026-09-24 | P27 | Decision-time guvenli RSS context builder, context CSV, context report entegrasyonu, reporting manifest guncellemesi ve testler eklendi. | `python -m unittest discover -s tests` passed: 151 tests; `python -m scripts.build_news_context` 51 context row ve 24 active row ile passed. | Aktif faz P28'e tasindi; context evidence trade sinyali degildir. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -1183,7 +1196,7 @@ Notes:
 - [ ] Market price and XU100 cache
 - [ ] Point-in-time fundamentals data
 - [ ] Macro/news/video context records
-- [ ] RSS news cache and ticker/sector/macro context
+- [x] RSS news cache and ticker/sector/macro context
 - [ ] Four required scenario reports
 - [ ] Backtests with costs, benchmarks and risk metrics
 - [ ] Unseen test period and regime comparison

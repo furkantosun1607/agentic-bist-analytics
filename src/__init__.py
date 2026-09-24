@@ -14,6 +14,7 @@ __all__ = [
     "indicators",
     "mcp_server",
     "news_aliases",
+    "news_context",
     "research",
     "reporting",
     "rss_news",

@@ -10,6 +10,7 @@ class ImportTest(unittest.TestCase):
             indicators,
             mcp_server,
             news_aliases,
+            news_context,
             research,
             rss_news,
         )
@@ -20,6 +21,7 @@ class ImportTest(unittest.TestCase):
         self.assertIsNotNone(indicators)
         self.assertIsNotNone(mcp_server)
         self.assertIsNotNone(news_aliases)
+        self.assertIsNotNone(news_context)
         self.assertIsNotNone(research)
         self.assertIsNotNone(rss_news)
 

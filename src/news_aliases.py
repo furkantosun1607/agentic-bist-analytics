@@ -198,6 +198,31 @@ def write_matched_news_jsonl(
     return path
 
 
+def load_matched_news_jsonl(
+    path: str | Path = DEFAULT_MATCHED_NEWS_OUTPUT_PATH,
+) -> tuple[MatchedNewsItem, ...]:
+    """Load alias-enriched news JSONL records from disk."""
+
+    jsonl_path = Path(path)
+    if not jsonl_path.exists():
+        raise FileNotFoundError(f"matched news JSONL not found: {jsonl_path}")
+
+    items: list[MatchedNewsItem] = []
+    with jsonl_path.open(encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+                items.append(_matched_item_from_dict(row))
+            except Exception as exc:
+                raise ValueError(
+                    f"invalid matched news JSONL row {line_number}: {exc}"
+                ) from exc
+    return tuple(items)
+
+
+
 def summarize_alias_matches(
     items: tuple[MatchedNewsItem, ...] | list[MatchedNewsItem],
 ) -> AliasMatchSummary:
@@ -266,4 +291,36 @@ def _required_text(row: dict[str, str], key: str, row_number: int) -> str:
     value = row.get(key)
     if value is None or str(value).strip() == "":
         raise ValueError(f"row {row_number}: missing {key}")
+    return str(value).strip()
+
+
+def _matched_item_from_dict(row: dict[str, object]) -> MatchedNewsItem:
+    return MatchedNewsItem(
+        source_id=_required_loaded_text(row, "source_id"),
+        title=_required_loaded_text(row, "title"),
+        url=_required_loaded_text(row, "url"),
+        summary=_optional_loaded_text(row, "summary"),
+        published_timestamp=_optional_loaded_text(row, "published_timestamp"),
+        fetched_timestamp=_required_loaded_text(row, "fetched_timestamp"),
+        language=_required_loaded_text(row, "language"),
+        category=_required_loaded_text(row, "category"),
+        source_access=_required_loaded_text(row, "source_access"),
+        raw_source_url=_required_loaded_text(row, "raw_source_url"),
+        content_hash=_required_loaded_text(row, "content_hash"),
+        linked_entities=tuple(row.get("linked_entities") or ()),
+        matched_terms=tuple(row.get("matched_terms") or ()),
+    )
+
+
+def _required_loaded_text(row: dict[str, object], key: str) -> str:
+    value = row.get(key)
+    if value is None or str(value).strip() == "":
+        raise ValueError(f"missing {key}")
+    return str(value).strip()
+
+
+def _optional_loaded_text(row: dict[str, object], key: str) -> str | None:
+    value = row.get(key)
+    if value is None or str(value).strip() == "":
+        return None
     return str(value).strip()

@@ -1,0 +1,149 @@
+entity_type,entity_id,alias
+ticker,ASELS,ASELS
+ticker,ASELS,ASELSAN
+ticker,TUPRS,TUPRS
+ticker,TUPRS,Tupras
+ticker,TUPRS,TUPRAS
+ticker,TUPRS,Tüpraş
+ticker,BIMAS,BIMAS
+ticker,BIMAS,BIM
+ticker,BIMAS,BİM
+ticker,THYAO,THYAO
+ticker,THYAO,THY
+ticker,THYAO,Turk Hava Yollari
+ticker,THYAO,Türk Hava Yolları
+ticker,AKBNK,AKBNK
+ticker,AKBNK,Akbank
+ticker,KCHOL,KCHOL
+ticker,KCHOL,Koc Holding
+ticker,KCHOL,Koç Holding
+ticker,EREGL,EREGL
+ticker,EREGL,Erdemir
+ticker,EREGL,Eregli Demir Celik
+ticker,EREGL,Ereğli Demir Çelik
+ticker,TCELL,TCELL
+ticker,TCELL,Turkcell
+ticker,CCOLA,CCOLA
+ticker,CCOLA,Coca Cola Icecek
+ticker,CCOLA,Coca-Cola İçecek
+ticker,MGROS,MGROS
+ticker,MGROS,Migros
+ticker,SASA,SASA
+ticker,TRALT,TRALT
+ticker,FROTO,FROTO
+ticker,FROTO,Ford Otosan
+ticker,ENKAI,ENKAI
+ticker,ENKAI,Enka Insaat
+ticker,ENKAI,Enka İnşaat
+ticker,PGSUS,PGSUS
+ticker,PGSUS,Pegasus
+ticker,MPARK,MPARK
+ticker,MPARK,Medical Park
+ticker,EKGYO,EKGYO
+ticker,EKGYO,Emlak Konut
+ticker,GUBRF,GUBRF
+ticker,GUBRF,Gubre Fabrikalari
+ticker,GUBRF,Gübre Fabrikaları
+ticker,TURSG,TURSG
+ticker,TURSG,Turkiye Sigorta
+ticker,TURSG,Türkiye Sigorta
+ticker,ENJSA,ENJSA
+ticker,ENJSA,Enerjisa
+ticker,TTKOM,TTKOM
+ticker,TTKOM,Turk Telekom
+ticker,TTKOM,Türk Telekom
+ticker,OYAKC,OYAKC
+ticker,OYAKC,Oyak Cimento
+ticker,OYAKC,Oyak Çimento
+ticker,AKSEN,AKSEN
+ticker,AKSEN,Aksa Enerji
+ticker,ISMEN,ISMEN
+ticker,ISMEN,Is Yatirim
+ticker,ISMEN,İş Yatırım
+ticker,ARCLK,ARCLK
+ticker,ARCLK,Arcelik
+ticker,ARCLK,Arçelik
+ticker,ECILC,ECILC
+ticker,ECILC,Eczacibasi Ilac
+ticker,ECILC,Eczacıbaşı İlaç
+ticker,MAVI,MAVI
+ticker,MAVI,Mavi Giyim
+ticker,PETKM,PETKM
+ticker,PETKM,Petkim
+ticker,TOASO,TOASO
+ticker,TOASO,Tofas
+ticker,TOASO,Tofaş
+ticker,KRDMD,KRDMD
+ticker,KRDMD,Kardemir
+sector,Technology / Defense,savunma
+sector,Technology / Defense,defense
+sector,Technology / Defense,teknoloji
+sector,Petroleum / Refining,petrol
+sector,Petroleum / Refining,rafineri
+sector,Retail Trade,perakende
+sector,Retail Trade,retail
+sector,Transportation / Airlines,havacilik
+sector,Transportation / Airlines,havacılık
+sector,Transportation / Airlines,airlines
+sector,Banking,banka
+sector,Banking,bankacilik
+sector,Banking,bankacılık
+sector,Holding / Investment,holding
+sector,Holding / Investment,yatirim
+sector,Holding / Investment,yatırım
+sector,Basic Metals / Steel,celik
+sector,Basic Metals / Steel,çelik
+sector,Basic Metals / Steel,steel
+sector,Telecommunications,telekom
+sector,Telecommunications,telecommunications
+sector,Food & Beverage,gida
+sector,Food & Beverage,gıda
+sector,Food & Beverage,icecek
+sector,Food & Beverage,içecek
+sector,Chemicals / Plastics,kimya
+sector,Chemicals / Plastics,plastik
+sector,Chemicals / Fertilizer,gubre
+sector,Chemicals / Fertilizer,gübre
+sector,Mining,madencilik
+sector,Automotive,otomotiv
+sector,Automotive,automotive
+sector,Construction,insaat
+sector,Construction,inşaat
+sector,Healthcare,saglik
+sector,Healthcare,sağlık
+sector,Healthcare / Pharmaceuticals,ilac
+sector,Healthcare / Pharmaceuticals,ilaç
+sector,Real Estate Investment Trust,gyo
+sector,Real Estate Investment Trust,gayrimenkul
+sector,Insurance,sigorta
+sector,Electric Utilities,elektrik
+sector,Electric Utilities,enerji
+sector,Cement,cimento
+sector,Cement,çimento
+sector,Brokerage / Capital Markets,araci kurum
+sector,Brokerage / Capital Markets,aracı kurum
+sector,Brokerage / Capital Markets,sermaye piyasasi
+sector,Brokerage / Capital Markets,sermaye piyasası
+sector,Durables / Machinery,beyaz esya
+sector,Durables / Machinery,beyaz eşya
+sector,Retail / Apparel,hazir giyim
+sector,Retail / Apparel,hazır giyim
+sector,Petrochemicals,petrokimya
+macro,policy_rate,TCMB
+macro,policy_rate,Merkez Bankasi
+macro,policy_rate,Merkez Bankası
+macro,policy_rate,faiz
+macro,inflation,enflasyon
+macro,inflation,TUIK
+macro,inflation,TÜİK
+macro,fx,kur
+macro,fx,doviz
+macro,fx,döviz
+macro,fx,dolar
+macro,fx,euro
+macro,global_rates,Fed
+macro,global_rates,tahvil faizi
+macro,global_rates,bond yield
+macro,commodities,altin
+macro,commodities,altın
+macro,commodities,petrol

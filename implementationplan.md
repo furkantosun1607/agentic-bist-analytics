@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | RSS normalization and source health ready |
+| Proje durumu | RSS alias matching ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P26 - News Alias Matching |
-| Kritik sonraki hedef | Haberleri ticker, sektor ve makro konu alias'lariyla eslestirmek |
+| Aktif faz | P27 - News Context Builder And Report Integration |
+| Kritik sonraki hedef | Alias eslesmeli haberlerden decision-time guvenli context ozeti uretmek |
 
 ## Degismez Proje Kurallari
 
@@ -1031,7 +1031,7 @@ Notes:
 
 ### P26 - News Alias Matching
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Haberleri hisse, sektor ve makro konu basliklariyla eslestirmek.
 
@@ -1047,10 +1047,22 @@ Acceptance:
 - Alias eslesmesi trade sinyali sayilmaz; sadece context evidence olur.
 
 Completed:
-- Yok.
+- `config/news_aliases.csv` ile ticker, sektor ve makro alias sozlugu eklendi.
+- `src/news_aliases.py` ile deterministic alias loader, Turkish/English text normalization, matcher, JSONL writer ve coverage summary eklendi.
+- Alias matcher `linked_entities` ve `matched_terms` alanlarini uretir.
+- `scripts/match_news_aliases.py` CLI komutu eklendi.
+- `reports/news_alias_matches.md` coverage raporu uretildi.
+- Alias matching unit testleri eklendi.
+
+Tests:
+- `python -m unittest tests.test_news_aliases` passed: 5 tests.
+- `python -m scripts.match_news_aliases` passed: 259 total items, 97 matched items.
+- `python -m unittest discover -s tests` passed: 148 tests.
 
 Notes:
 - Ilk fazda sentiment modeli yok; yanlis pozitifleri azaltmak icin basit, acik alias sozlugu kullanilacak.
+- Alias eslesmesi trade sinyali degildir; yalnizca RSS context evidence baglantisi uretir.
+- Current live alias report 259 normalized haberden 97 eslesmeli haber bulmustur.
 
 ### P27 - News Context Builder And Report Integration
 
@@ -1152,6 +1164,7 @@ Notes:
 | 2026-09-24 | RSS Planning | RSS haber kaynaklari icin polling, cache, dedup, alias matching, context builder ve Strategy Variant E entegrasyon fazlari plana eklendi. | Dokuman guncellemesi. | Aktif faz P24'e tasindi; RSS anlik dinlenmeyecek, periyodik polling yapilacak. |
 | 2026-09-24 | P24 | RSS source config, raw RSS fetcher, JSONL cache writer, source-level fetch report ve testler eklendi. | `python -m unittest discover -s tests` passed: 139 tests; live `python -m scripts.fetch_rss_news` 8 kaynak ve 259 raw item ile passed. | Aktif faz P25'e tasindi; canli `data/rss/` cache commitlenmez. |
 | 2026-09-24 | P25 | RSS normalize/dedup akisi, source health hesaplari, normalize CLI ve health raporu eklendi. | `python -m unittest discover -s tests` passed: 143 tests; `python -m scripts.normalize_rss_news` 259 normalized item ile passed. | Aktif faz P26'ya tasindi; NTV ve Yahoo Finance stale warning verdi. |
+| 2026-09-24 | P26 | News alias sozlugu, deterministic alias matcher, matched news JSONL writer, coverage raporu ve testler eklendi. | `python -m unittest discover -s tests` passed: 148 tests; `python -m scripts.match_news_aliases` 259 total ve 97 matched item ile passed. | Aktif faz P27'ye tasindi; alias eslesmesi trade sinyali degildir. |
 
 ## Acik Riskler Ve Kararlar
 

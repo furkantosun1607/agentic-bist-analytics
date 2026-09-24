@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | RSS raw fetcher ready |
+| Proje durumu | RSS normalization and source health ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P25 - RSS Normalization Dedup And Source Health |
-| Kritik sonraki hedef | RSS haberlerini tekillestirmek ve kaynak sagligi raporunu olgunlastirmak |
+| Aktif faz | P26 - News Alias Matching |
+| Kritik sonraki hedef | Haberleri ticker, sektor ve makro konu alias'lariyla eslestirmek |
 
 ## Degismez Proje Kurallari
 
@@ -995,7 +995,7 @@ Notes:
 
 ### P25 - RSS Normalization Dedup And Source Health
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Raw RSS kayitlarini tekillestirip kaynak sagligi raporunu uretmek.
 
@@ -1011,10 +1011,23 @@ Acceptance:
 - Bos feed tum pipeline'i durdurmaz, warning olarak islenir.
 
 Completed:
-- Yok.
+- `deduplicate_news_items` ile URL, normalize title ve content hash tabanli deterministik dedup eklendi.
+- `normalize_news_item` ile title/summary HTML temizleme ve normalized content hash uretimi eklendi.
+- `normalize_rss_news_cache` raw RSS cache'i okuyup `data/rss/news.jsonl` ve source health raporu uretir.
+- `build_source_health` ile raw count, normalized count, duplicate count, latest published ve stale/error/empty durumlari hesaplanir.
+- `scripts/normalize_rss_news.py` CLI komutu eklendi.
+- `reports/rss_source_health.md` uretildi.
+- RSS normalization ve source health unit testleri eklendi.
+
+Tests:
+- `python -m unittest tests.test_rss_news` passed: 8 tests.
+- `python -m scripts.normalize_rss_news` passed: 259 normalized items, 8 source health rows.
+- `python -m unittest discover -s tests` passed: 143 tests.
 
 Notes:
 - Dedup deterministik olacak; LLM kullanilmayacak.
+- Canli normalize cache `data/rss/news.jsonl` ignore altindadir ve commitlenmez.
+- Current live health report NTV ve Yahoo Finance icin 24 saat stale warning uretmistir; bu kaynak sagligi notudur, pipeline hatasi degildir.
 
 ### P26 - News Alias Matching
 
@@ -1138,6 +1151,7 @@ Notes:
 | 2026-09-24 | P23 | Offline demo komutu, demo summary raporu, README kurulum/cache notlari ve demo smoke testleri eklendi. | `python -m unittest discover -s tests` passed: 135 tests. | Planlanan fazlar tamamlandi; cache yoklugu warning olarak raporlanir. |
 | 2026-09-24 | RSS Planning | RSS haber kaynaklari icin polling, cache, dedup, alias matching, context builder ve Strategy Variant E entegrasyon fazlari plana eklendi. | Dokuman guncellemesi. | Aktif faz P24'e tasindi; RSS anlik dinlenmeyecek, periyodik polling yapilacak. |
 | 2026-09-24 | P24 | RSS source config, raw RSS fetcher, JSONL cache writer, source-level fetch report ve testler eklendi. | `python -m unittest discover -s tests` passed: 139 tests; live `python -m scripts.fetch_rss_news` 8 kaynak ve 259 raw item ile passed. | Aktif faz P25'e tasindi; canli `data/rss/` cache commitlenmez. |
+| 2026-09-24 | P25 | RSS normalize/dedup akisi, source health hesaplari, normalize CLI ve health raporu eklendi. | `python -m unittest discover -s tests` passed: 143 tests; `python -m scripts.normalize_rss_news` 259 normalized item ile passed. | Aktif faz P26'ya tasindi; NTV ve Yahoo Finance stale warning verdi. |
 
 ## Acik Riskler Ve Kararlar
 

@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Unseen split and market-regime helpers ready |
+| Proje durumu | Deterministic MCP tool surface ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P16 - Deterministic MCP Tool Set |
-| Kritik sonraki hedef | README'deki arac kategorilerini kapsayan deterministik MCP araclarini eklemek |
+| Aktif faz | P17 - Harness State Machine |
+| Kritik sonraki hedef | Analiz akisini state order ve permitted tool kurallariyla enforce etmek |
 
 ## Degismez Proje Kurallari
 
@@ -626,7 +626,7 @@ Notes:
 
 ### P16 - Deterministic MCP Tool Set
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: README'deki arac kategorilerini kapsayan kucuk, deterministik MCP araclarini eklemek.
 
@@ -647,10 +647,27 @@ Acceptance:
 - Gecersiz veya eksik veri durumunda warning/block status uretilebilir.
 
 Completed:
-- Yok.
+- `src/mcp_server.py` deterministic MCP-like tool registry ve callable tool surface olarak dolduruldu.
+- `ToolSpec`, `ToolResponse`, `list_tools()` ve `call_tool(name, args)` public arayuzu eklendi.
+- `market_history` araci cache veya verilen price frame'leri icin symbol/date/source metadata ozeti donuyor.
+- `indicators_events` araci teknik indikatorleri ve event detector ciktisini deterministik hesapliyor.
+- `sector_ranking` araci fixed-universe sector catch-up analizini tool payload'i olarak donuyor.
+- `weekday_test` araci weekday/multi-day pattern analizini summary ile donuyor.
+- `point_in_time_fundamentals` araci fundamentals point-in-time gate ve opsiyonel quarterly fundamentals research ciktisi uretiyor.
+- `context` araci macro/news/video context normalize etme, decision-time filtreleme ve point-in-time gate islemini yapiyor.
+- `backtest` araci P13/P14 backtest motorunu structured response olarak calistiriyor.
+- `data_quality` araci market data kalite kontrollerini ve future-outcome feature leakage kontrolunu expose ediyor.
+- `evidence_bundle` araci observed feature ve source alanlarindan source-linked evidence bundle uretiyor.
+- Bilinmeyen tool, gecersiz input ve alt modul hatalari `ToolResponse.errors` / `warnings` icinde structured olarak donuyor.
+- `reports/mcp_tools.md` tool katalog raporu eklendi.
+- MCP tool surface unit testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 99 tests.
 
 Notes:
 - Tool sayisi kucuk tutulacak; ders prototipi icin yeterli kapsama hedeflenecek.
+- Bu faz stdio/SSE MCP transport wrapper'i eklemedi; test edilebilir deterministik tool surface hazirlandi.
 
 ### P17 - Harness State Machine
 
@@ -841,6 +858,7 @@ Notes:
 | 2026-09-24 | P13 | Point-in-time guvenli backtest motoru, signal semasi, entry/exit timing, benchmark hook'lari, summary ve rapor yazici eklendi. | `python -m unittest discover -s tests` passed: 77 tests. | Aktif faz P14'e tasindi; maliyet/risk metrikleri sonraki fazda. |
 | 2026-09-24 | P14 | Backtest maliyet/slippage kesintileri, settings baglantisi, cost-adjusted return, cumulative return, Sharpe, max drawdown, win rate ve benchmark difference eklendi. | `python -m unittest discover -s tests` passed: 81 tests. | Aktif faz P15'e tasindi; gercek backtest verisi henuz uydurulmadi. |
 | 2026-09-24 | P15 | Selection/unseen split, benchmark regime labels, stability comparison helperlari, experiment settings ve split/regime rapor iskeleti eklendi. | `python -m unittest discover -s tests` passed: 89 tests. | Aktif faz P16'ya tasindi; unseen tarihi veri kapsami dogrulaninca sabitlenecek. |
+| 2026-09-24 | P16 | Deterministic tool registry, market/indicator/event/sector/weekday/fundamentals/context/backtest/data-quality/evidence tools ve tool katalog raporu eklendi. | `python -m unittest discover -s tests` passed: 99 tests. | Aktif faz P17'ye tasindi; transport wrapper gerekirse sonra eklenecek. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -861,7 +879,7 @@ Notes:
 - [ ] Four required scenario reports
 - [ ] Backtests with costs, benchmarks and risk metrics
 - [ ] Unseen test period and regime comparison
-- [ ] Deterministic MCP tools
+- [x] Deterministic MCP tools
 - [ ] Stateful harness with evidence and quality gate
 - [ ] Human-reviewed replayable decision log
 - [ ] Strategy variants A-E comparison

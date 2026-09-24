@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Evidence bundle and quality gate ready |
+| Proje durumu | Replayable decision log ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P19 - Human Review And Replayable Decision Log |
-| Kritik sonraki hedef | Insan onayi ve tekrar oynatilabilir karar kaydi eklemek |
+| Aktif faz | P20 - Strategy Variant Comparison A-E |
+| Kritik sonraki hedef | Finansal strateji kombinasyonlari A-E'yi ayni veri uzerinde karsilastirmak |
 
 ## Degismez Proje Kurallari
 
@@ -748,7 +748,7 @@ Notes:
 
 ### P19 - Human Review And Replayable Decision Log
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Insan onayi ve tekrar oynatilabilir karar kaydi eklemek.
 
@@ -764,10 +764,23 @@ Acceptance:
 - Raporlama karar loguna link verebilir.
 
 Completed:
-- Yok.
+- `src/decision_log.py` human-reviewed replayable decision log modulu olarak eklendi.
+- `DecisionRecord` JSONL semasi `schema_version`, `decision_id`, `created_at`, output label, review status, reviewer, harness snapshot, inputs, tool outputs, evidence hash ve quality gate alanlarini kapsar.
+- `create_decision_record` harness output label, human review, saved decision ve evidence hash olmadan kayit olusturmayacak sekilde guard eder.
+- Review status degerleri `accept`, `modify`, `reject` ile sinirlandi.
+- `append_decision_record` karar kaydini `decisions.jsonl` dosyasina append eder.
+- `load_decision_records` JSONL kayitlarini typed `DecisionRecord` listesine yukler.
+- `replay_decision_record` record hash, evidence hash, harness output label/review status ve zorunlu bolumleri dogrular.
+- `write_decision_log_report` markdown rapor yazicisi eklendi.
+- `reports/decision_log.md` karar logu durum raporu olarak eklendi.
+- Decision log unit testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 120 tests.
 
 Notes:
 - Classroom demo icin en az bir tam replay ornegi yeterli.
+- Bu fazda live reviewed investment/strategy decision kaydi uydurulmadi; testler sentetik kayit kullanir.
 
 ### P20 - Strategy Variant Comparison A-E
 
@@ -892,6 +905,7 @@ Notes:
 | 2026-09-24 | P16 | Deterministic tool registry, market/indicator/event/sector/weekday/fundamentals/context/backtest/data-quality/evidence tools ve tool katalog raporu eklendi. | `python -m unittest discover -s tests` passed: 99 tests. | Aktif faz P17'ye tasindi; transport wrapper gerekirse sonra eklenecek. |
 | 2026-09-24 | P17 | Harness state machine, state order enforcement, permitted tool rules, educational labels, human review guard ve event log eklendi. | `python -m unittest discover -s tests` passed: 107 tests. | Aktif faz P18'e tasindi; quality gate semantigi sonraki fazda. |
 | 2026-09-24 | P18 | Evidence bundle, committed evidence hash, quality gate, MCP evidence tool entegrasyonu ve harness risk-gate baglantisi eklendi. | `python -m unittest discover -s tests` passed: 115 tests. | Aktif faz P19'a tasindi; karar logu sonraki fazda. |
+| 2026-09-24 | P19 | Replayable decision log semasi, JSONL append/load, human review guard, record hash ve replay integrity check eklendi. | `python -m unittest discover -s tests` passed: 120 tests. | Aktif faz P20'ye tasindi; live decision kaydi uydurulmadi. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -914,7 +928,7 @@ Notes:
 - [ ] Unseen test period and regime comparison
 - [x] Deterministic MCP tools
 - [x] Stateful harness with evidence and quality gate
-- [ ] Human-reviewed replayable decision log
+- [x] Human-reviewed replayable decision log
 - [ ] Strategy variants A-E comparison
 - [ ] Harness variants A-E comparison
 - [ ] Final report and classroom demo command

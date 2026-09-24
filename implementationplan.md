@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Macro/news/video context schema ready |
+| Proje durumu | Backtest engine ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P13 - Backtest Engine |
-| Kritik sonraki hedef | Sinyaller icin point-in-time guvenli backtest motorunu kurmak |
+| Aktif faz | P14 - Costs, Slippage And Risk Metrics |
+| Kritik sonraki hedef | Backtest sonuclarina maliyet, slippage ve risk metriklerini eklemek |
 
 ## Degismez Proje Kurallari
 
@@ -517,7 +517,7 @@ Notes:
 
 ### P13 - Backtest Engine
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Sinyaller icin temel tarihsel degerlendirme motorunu kurmak.
 
@@ -533,10 +533,24 @@ Acceptance:
 - Her backtest structured result dondurur.
 
 Completed:
-- Yok.
+- `src/backtest.py` point-in-time guvenli backtest motoru olarak dolduruldu.
+- Signal input semasi `signal_id`, `symbol`, `known_at`, opsiyonel `horizon`, `direction` ve `source` alanlariyla desteklendi.
+- Entry kuralı `known_at` timestamp'inden sonraki ilk trading day olarak uygulanir; sinyal bilinmeden once trade acilmaz.
+- Entry fiyatinda `open` varsa kullanilir, yoksa `close` fallback olarak kullanilir.
+- Exit kuralı horizon sonrasi kapanis fiyatidir.
+- Long-only trade generation eklendi; unsupported direction acik `status` ile raporlanir.
+- Missing price history, insufficient forward history ve invalid price history durumlari structured status/error olarak ele alinir.
+- XU100 benchmark, sector benchmark ve buy-and-hold comparison hook'lari eklendi.
+- Signal count, tradable trade count ve temel gross/relative return summary alanlari eklendi.
+- `write_backtest_report` markdown rapor yazicisi ve `reports/backtest.md` baslangic raporu eklendi.
+- Backtest unit testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 77 tests.
 
 Notes:
 - Baslangicta basit long-only varsayim yeterli.
+- Maliyet, slippage, Sharpe, max drawdown ve win rate hesaplari P14'e birakildi.
 
 ### P14 - Costs, Slippage And Risk Metrics
 
@@ -799,6 +813,7 @@ Notes:
 | 2026-09-24 | P10 | Point-in-time fundamentals semasi, bank/industrial metric profile ayrimi, import helperlari ve testler eklendi. | `python -m unittest discover -s tests` passed: 55 tests. | Aktif faz P11'e tasindi. |
 | 2026-09-24 | P11 | Quarterly fundamentals research, QoQ/YoY metrics, post-disclosure returns ve benchmark/sector-relative karsilastirmalar eklendi. | `python -m unittest discover -s tests` passed: 63 tests. | Aktif faz P12'ye tasindi. |
 | 2026-09-24 | P12 | Macro/news/video context semasi, source access kontrolleri, point-in-time donusumu, decision-time filtresi ve context dokumanlari eklendi. | `python -m unittest discover -s tests` passed: 70 tests. | Aktif faz P13'e tasindi; canli context verisi uydurulmadi. |
+| 2026-09-24 | P13 | Point-in-time guvenli backtest motoru, signal semasi, entry/exit timing, benchmark hook'lari, summary ve rapor yazici eklendi. | `python -m unittest discover -s tests` passed: 77 tests. | Aktif faz P14'e tasindi; maliyet/risk metrikleri sonraki fazda. |
 
 ## Acik Riskler Ve Kararlar
 

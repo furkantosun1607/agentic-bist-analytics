@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | RSS Strategy Variant E integration ready |
+| Proje durumu | Submission gap status ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | RSS extension phases complete |
-| Kritik sonraki hedef | Gercek strateji sinyalleri ve final measured comparison icin veri tamamlama |
+| Aktif faz | P31 - Market Cache Audit And Coverage Report |
+| Kritik sonraki hedef | Local market cache kapsamini ve kalite durumunu teslim raporuna cevirmek |
 
 ## Degismez Proje Kurallari
 
@@ -1167,6 +1167,274 @@ Notes:
 - RSS context metadata trade sinyali uretmez; `news_video` component sinyali ayrica saglanmazsa Variant E yine unavailable kalir.
 - Haber yogunlugu alpha veya strateji ustunlugu iddiasi olarak raporlanmaz.
 
+## Submission Completion Gap Plan
+
+Bu bolum README'deki teslim kriterlerine gore kalan eksikleri kapatmak icin P30 sonrasi uygulanacak fazlari tanimlar. Amac yeni altyapi icat etmekten cok, mevcut motorlari gercek/cache veriyle calistirip olculmus fakat temkinli raporlar uretmektir.
+
+Genel kabul kurallari:
+- Canli/cache veri dosyalari buyukse veya lisansliysa commitlenmez; yalnizca manifest, health report ve ozet rapor commitlenir.
+- Her measured sonuc veri donemi, kaynak, sample size, varsayim ve limitasyon ile yazilir.
+- Eksik Fintables/makro/veri kaynagi varsa faz `Blocked` veya `Partial` notuyla kapatilir; deger uydurulmaz.
+- RSS haber context'i video yerine kullanilabilir, fakat README'de video current flow icin optional olarak netlestirilir.
+- Piyasa verisi ve RSS cache local artifact olarak kabul edilir; final raporlarda cache olusturma komutlari ve timestamp'ler raporlanir.
+
+### P30 - Submission Gap Plan And README Sync
+
+Status: `Done`
+
+Goal: README ile mevcut proje durumunu esitlemek ve kalan teslim eksiklerini komut/rapor bazli takip edilebilir hale getirmek.
+
+Deliverables:
+- README RSS komutlari ve current RSS-only context akisiyle guncellenir.
+- README'deki video ifadesi optional/currently not used olarak netlestirilir.
+- `reports/submission_gap_status.md` olusturulur.
+- Kalan teslim checklist'i README ve implementation plan ile uyumlu hale getirilir.
+
+Acceptance:
+- README'deki calistirma adimlari market cache + RSS cache + demo akisini kapsar.
+- Kalan eksikler veri eksigi, rapor eksigi veya deney eksigi olarak ayrilir.
+- Yeni plan P31+ fazlarini referans verir.
+
+Completed:
+- README market cache + RSS pipeline + offline demo komutlariyla guncellendi.
+- README'de video context current RSS-only flow icin optional olarak netlestirildi.
+- RSS context'in evidence metadata oldugu ve standalone trade signal olmadigi README'ye yazildi.
+- `reports/submission_gap_status.md` olusturuldu.
+- Kalan eksikler veri, rapor ve deney gap'leri olarak P31-P40 fazlarina baglandi.
+
+Tests:
+- Documentation-only phase; `python -m unittest discover -s tests` passed: 156 tests.
+
+Notes:
+- Bu faz koddan cok dokumantasyon ve teslim gap status fazidir.
+- User action gerektiren alanlar `reports/submission_gap_status.md` icinde ayrica listelendi.
+
+### P31 - Market Cache Audit And Coverage Report
+
+Status: `Not Started`
+
+Goal: 30 hisse + XU100 fiyat cache'inin tarih kapsami, kolon kalitesi ve eksik sembol durumunu teslim edilebilir rapora cevirmek.
+
+Deliverables:
+- `scripts/audit_market_cache.py`
+- `reports/market_cache_audit.md`
+- XU100 ve 30 hisse icin start/end date, row count, missing symbol ve adjusted price policy ozeti
+- README/demo notlarina market cache audit komutu
+
+Acceptance:
+- 31 sembolun cache durumu raporlanir.
+- Eksik veya stale sembol varsa warning olarak yazilir.
+- Veri dosyalari commitlenmez; audit raporu commitlenir.
+
+Completed:
+- Yok.
+
+Notes:
+- Local `data/cache/` su an ignore altinda; final rapor audit metadatasini kullanacak.
+
+### P32 - Fundamentals Source Access And Import Completion
+
+Status: `Not Started`
+
+Goal: Fintables veya kullanilabilir instructor-approved finansal tablo kaynagi icin point-in-time fundamentals import akisini gercek veriyle hazirlamak.
+
+Deliverables:
+- Fundamentals source access decision record
+- `config/fundamentals_template.csv` doldurma/ithal talimati
+- `reports/fundamentals_import_status.md`
+- Bank/industrial metric coverage ozeti
+
+Acceptance:
+- Her fundamentals kaydinda disclosure/publication timestamp bulunur.
+- Access/lisans kosulu net degilse measured fundamentals analizi bloklanir.
+- En az bir valid sample yoksa quarterly fundamentals raporu inconclusive kalir.
+
+Completed:
+- Yok.
+
+Notes:
+- Bu faz dis veri erisimine bagimli olabilir; gerekirse `Blocked` olarak isaretlenecek.
+
+### P33 - Macro Context Data Import
+
+Status: `Not Started`
+
+Goal: TCMB/EVDS, TUIK ve Fed makro kayitlarini P12 context semasina point-in-time guvenli sekilde eklemek.
+
+Deliverables:
+- Macro context import/update script veya documented CSV workflow
+- `reports/macro_context_status.md`
+- USD/TRY, EUR/TRY, TCMB policy rate, TUIK inflation, Fed policy rate coverage ozeti
+
+Acceptance:
+- Her makro kayitta observed period, publication timestamp, download timestamp ve source_url olur.
+- Decision-time filtresi future leakage uretmez.
+- Veri erisilemezse source gap raporlanir.
+
+Completed:
+- Yok.
+
+Notes:
+- RSS macro alias context bu fazin yerine gecmez; sadece haber evidence saglar.
+
+### P34 - Research Reports From Cached Data
+
+Status: `Not Started`
+
+Goal: Dort ana research senaryosunu mevcut market cache ve mevcut fundamentals/macro/RSS durumuna gore calistirip raporlari olculmus veya inconclusive olarak guncellemek.
+
+Deliverables:
+- `scripts/run_research_reports.py`
+- `reports/sector_catch_up.md`
+- `reports/weekday_patterns.md`
+- `reports/technical_reversals.md`
+- `reports/quarterly_fundamentals.md`
+
+Acceptance:
+- Her raporda data period, source, sample size, assumptions ve limitations bulunur.
+- Fundamentals veri yoksa quarterly report explicit inconclusive olur.
+- False positives/failure counts ve sample counts uydurulmaz; motor ciktisindan gelir.
+
+Completed:
+- Yok.
+
+Notes:
+- Bu faz market cache audit ve fundamentals/macro durumuna baglidir.
+
+### P35 - Backtest Execution And Risk Report
+
+Status: `Not Started`
+
+Goal: Uretilen sinyallerle backtest motorunu calistirip cost, benchmark ve risk metriklerini raporlamak.
+
+Deliverables:
+- `scripts/run_backtests.py`
+- `reports/backtest.md` measured/inconclusive update
+- Trade count, cumulative return, Sharpe, max drawdown, win rate, benchmark difference
+
+Acceptance:
+- Sinyal bilinmeden trade acilmaz.
+- Nonzero cost/slippage settings uygulanir.
+- Yetersiz sinyal varsa rapor no_trades veya inconclusive der.
+
+Completed:
+- Yok.
+
+Notes:
+- Finansal tavsiye dili kullanilmayacak.
+
+### P36 - Unseen Period And Regime Finalization
+
+Status: `Not Started`
+
+Goal: Veri kapsamina gore `experiment.unseen_start_date` degerini sabitlemek ve rising/falling market regime raporunu uretmek.
+
+Deliverables:
+- `config/settings.yaml` unseen date update
+- `reports/split_regime.md` measured/inconclusive update
+- Selection/unseen sample counts
+
+Acceptance:
+- Unseen date veri kapsamiyla uyumlu olur.
+- Rule selection ve unseen test ayrimi raporda acik yazilir.
+- Regime comparison sample size cok kucukse warning verir.
+
+Completed:
+- Yok.
+
+Notes:
+- Bu faz market cache audit tamamlanmadan yapilmayacak.
+
+### P37 - Strategy Variants A-E Measured Comparison
+
+Status: `Not Started`
+
+Goal: A-E strategy variants icin gercek sinyal setleriyle comparison raporunu uretmek.
+
+Deliverables:
+- Strategy signals assembly workflow
+- `reports/strategy_variants.md` measured/inconclusive update
+- Variant E RSS context availability ve missing executable news signal ayrimi
+
+Acceptance:
+- A-E ayni veri donemi, ayni maliyet ve ayni benchmark ayarlariyla calisir.
+- Eksik component varsa variant unavailable kalir.
+- RSS context metadata trade sinyali olarak sayilmaz.
+
+Completed:
+- Yok.
+
+Notes:
+- P29 metadata entegrasyonu hazir; executable `news_video`/context signal ayri uretilmelidir.
+
+### P38 - Harness Variants A-E Experiment Run
+
+Status: `Not Started`
+
+Goal: Harness comparison A-E icin fixed question set ile replayable experiment ciktisi uretmek.
+
+Deliverables:
+- Fixed question set fixture
+- Harness variant run script veya documented runner
+- `reports/harness_variants.md` measured/inconclusive update
+
+Acceptance:
+- A-E ayni soru setiyle karsilastirilir.
+- Unsupported number, invalid tool call, evidence completeness ve replayability metrikleri raporlanir.
+- Live LLM kullanilmazsa synthetic/deterministic limitation acik yazilir.
+
+Completed:
+- Yok.
+
+Notes:
+- External LLM run gerektiren kisimlar izin/ortam yoksa inconclusive kalabilir.
+
+### P39 - Human Reviewed Replay And Decision Log
+
+Status: `Not Started`
+
+Goal: En az bir tam analiz akisini human review ile karar loguna kaydetmek ve replay integrity kontrolunu raporlamak.
+
+Deliverables:
+- One reviewed decision JSONL record
+- `reports/decision_log.md` live/replay status update
+- Replay integrity verification output
+
+Acceptance:
+- Kayit human action olarak accept/modify/reject icerir.
+- Evidence hash ve quality gate payload replay edilebilir olur.
+- Gercek karar finansal tavsiye gibi yazilmaz.
+
+Completed:
+- Yok.
+
+Notes:
+- Bu faz P34-P35 ciktisindan en az bir aday analiz secildikten sonra yapilmali.
+
+### P40 - Final Submission Refresh
+
+Status: `Not Started`
+
+Goal: Tum rapor manifest'ini, final technical report'u, demo summary'yi ve submission gap status'u son duruma gore yenilemek.
+
+Deliverables:
+- `reports/report_index.md` final update
+- `reports/final_technical_report.md` final update
+- `reports/demo_summary.md` final update
+- `reports/submission_gap_status.md` final update
+- README final run commands
+
+Acceptance:
+- Her rapor metadata alanlarini icerir.
+- Measured result varsa source/data period/sample size vardir.
+- Eksik kalan alanlar explicit inconclusive/blocked olarak yazilir.
+
+Completed:
+- Yok.
+
+Notes:
+- Bu faz teslim oncesi son toparlama fazidir.
+
 ## Gelistirme Gunlugu
 
 | Tarih | Faz | Degisiklik | Test/Dogrulama | Not |
@@ -1203,6 +1471,8 @@ Notes:
 | 2026-09-24 | P27 | Decision-time guvenli RSS context builder, context CSV, context report entegrasyonu, reporting manifest guncellemesi ve testler eklendi. | `python -m unittest discover -s tests` passed: 151 tests; `python -m scripts.build_news_context` 51 context row ve 24 active row ile passed. | Aktif faz P28'e tasindi; context evidence trade sinyali degildir. |
 | 2026-09-24 | P28 | Offline demo RSS raw/normalized/matched/context/source-health artifact kontrolleriyle genisletildi ve demo summary guncellendi. | `python -m unittest discover -s tests` passed: 153 tests; `python -m scripts.demo --offline` RSS checks ile passed. | Aktif faz P29'a tasindi; demo live RSS cekmez. |
 | 2026-09-24 | P29 | Strategy Variant E RSS context availability, evidence bundle baglantisi, quality warnings ve variant report notlari eklendi. | `python -m unittest discover -s tests` passed: 156 tests. | RSS extension fazlari tamamlandi; measured strategy comparison hala gercek sinyal/veri gerektirir. |
+| 2026-09-24 | Gap Planning | README teslim eksiklerine gore P30-P40 submission completion fazlari eklendi. | Dokuman guncellemesi. | Aktif faz P30'a tasindi; odak veri/rapor/deney tamamlama. |
+| 2026-09-24 | P30 | README cache/RSS/demo akisiyle guncellendi, video current flow icin optional netlestirildi ve submission gap status raporu eklendi. | `python -m unittest discover -s tests` passed: 156 tests. | Aktif faz P31'e tasindi; user action gereken dis veri alanlari listelendi. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -1214,6 +1484,7 @@ Notes:
 | BIST/XU100 sembol uyumu | Open | P03 adapter ve missing-symbol rapor yazicisi eklendi; canli `python -m scripts.fetch_market_data` calistirildiginda rapor uretilecek. |
 | Unseen period tarihleri | Open | P15 altyapisi ve settings alani hazir; `experiment.unseen_start_date` veri kapsami dogrulandiktan sonra sabitlenecek. |
 | Maliyet/slippage varsayimlari | Decided | `settings.yaml` icindeki `trading_cost_bps: 10` ve `slippage_bps: 5` backtest motoruna baglandi; sifir toplam maliyet reddedilir. |
+| Measured final results | Open | P30-P40 fazlari mevcut motorlari gercek/cache veriyle calistirip measured veya inconclusive raporlara cevirecek. |
 
 ## Teslimat Checklist
 

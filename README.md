@@ -75,7 +75,7 @@ tests/                   # calculation, timing and workflow checks
 
 CSV/Parquet files and SQLite are sufficient. Cache a small, dated dataset so the classroom demo does not depend on live source availability. Document installation and one working demo command after implementation; do not commit API keys.
 
-## Install and Demo
+## Install, Cache, and Demo
 
 Use Python 3.11+ in a clean virtual environment.
 
@@ -84,18 +84,27 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 python -m unittest discover -s tests
-python -m scripts.demo --offline
 ```
 
-The offline demo performs no network calls. It validates settings and the fixed universe, regenerates `reports/report_index.md` and `reports/final_technical_report.md`, checks whether `data/cache` contains market CSV files, and writes `reports/demo_summary.md`.
-
-To populate a dated market cache before class, run this command only when live source access is available:
+Populate local market and RSS caches when live source access is available:
 
 ```powershell
 python -m scripts.fetch_market_data
+python -m scripts.fetch_rss_news
+python -m scripts.normalize_rss_news
+python -m scripts.match_news_aliases
+python -m scripts.build_news_context
 ```
 
-After the cache is populated, rerun `python -m scripts.demo --offline`. The demo remains usable without live source availability because it reads local project files and reports cache status instead of downloading data. If cache files are missing, the demo reports an infrastructure-only warning and does not invent measured returns.
+Then run the offline demo:
+
+```powershell
+python -m scripts.demo --offline
+```
+
+The offline demo performs no network calls. It validates settings and the fixed universe, regenerates `reports/report_index.md` and `reports/final_technical_report.md`, checks market cache, checks RSS raw/normalized/matched/context artifacts, and writes `reports/demo_summary.md`.
+
+Cache files under `data/cache/` and `data/rss/` are local artifacts and are not committed. If a cache is missing, the demo reports a warning and does not invent measured returns or news context.
 
 ## Data sources and one essential rule
 
@@ -105,10 +114,12 @@ After the cache is populated, rerun `python -m scripts.demo --offline`. The demo
 | Company finances | Fintables | Quarterly growth, profitability, leverage, liquidity, valuation and cash flow |
 | Turkish macro | TCMB/EVDS and TÜİK | USD/TRY, EUR/TRY, policy rate and inflation |
 | Global rates | Federal Reserve | Policy-rate changes |
-| Financial news | Legally accessible news source | A small set of dated company/sector/macro events |
-| Public commentary | Instructor-approved public videos | A few short timestamped segments and verified claims |
+| Financial news | Legally accessible RSS/news source | Dated company, sector and macro RSS context records |
+| Public commentary | Instructor-approved public videos | Optional; not used in the current RSS-only context flow |
 
-For every historical decision at time `t`, use only information **publicly available by `t`**. Store the observation period separately from the publication time and the download time. A quarter-end date alone is not enough for a financial signal. Apply the same publication-time rule to macro, news, and video context. If essential release times cannot be established, report the gap instead of guessing. Use sources within their access and licensing terms.
+For every historical decision at time `t`, use only information **publicly available by `t`**. Store the observation period separately from the publication time and the download time. A quarter-end date alone is not enough for a financial signal. Apply the same publication-time rule to macro, RSS news, and optional video context. If essential release times cannot be established, report the gap instead of guessing. Use sources within their access and licensing terms.
+
+Current RSS policy: feeds are not streamed in real time. They are fetched by polling, cached locally with `published_timestamp` and `fetched_timestamp`, normalized, deduplicated, alias-matched to ticker/sector/macro entities, and then filtered by decision time. RSS context is evidence metadata; it is not a standalone trading signal.
 
 ## Four required research scenarios
 

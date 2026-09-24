@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | RSS context builder ready |
+| Proje durumu | RSS demo status ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P28 - Demo Update With RSS Context Status |
-| Kritik sonraki hedef | Offline demo ciktisina RSS cache ve context durumunu eklemek |
+| Aktif faz | P29 - Strategy Variant E RSS Context Integration |
+| Kritik sonraki hedef | RSS context'i Strategy Variant E availability ve evidence akisina baglamak |
 
 ## Degismez Proje Kurallari
 
@@ -1101,7 +1101,7 @@ Notes:
 
 ### P28 - Demo Update With RSS Context Status
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Offline demo komutuna RSS cache ve context durumunu eklemek.
 
@@ -1116,10 +1116,20 @@ Acceptance:
 - RSS context varsa kac haber/kaynak/ticker eslestigi ozetlenir.
 
 Completed:
-- Yok.
+- `src.demo.run_offline_demo` RSS raw, normalized, matched, context CSV ve source health artifact kontrolleriyle genisletildi.
+- `reports/demo_summary.md` RSS News Context bolumuyle guncellendi.
+- Demo hicbir live RSS istegi yapmadan local artifact durumunu raporlar.
+- Missing RSS artifact durumlari warning olarak ele alinir; demo akisi durmaz.
+- Demo smoke testleri RSS artifact kontrollerini kapsayacak sekilde genisletildi.
+
+Tests:
+- `python -m unittest tests.test_demo` passed: 5 tests.
+- `python -m scripts.demo --offline` passed with RSS raw/normalized/matched/context/source-health checks.
+- `python -m unittest discover -s tests` passed: 153 tests.
 
 Notes:
 - Demo anlik haber cekmez; once fetch komutu calistirilir, demo cache'i okur.
+- Current demo 259 raw, 259 normalized, 259 matched RSS row ve 51 context row raporlamistir.
 
 ### P29 - Strategy Variant E RSS Context Integration
 
@@ -1178,6 +1188,7 @@ Notes:
 | 2026-09-24 | P25 | RSS normalize/dedup akisi, source health hesaplari, normalize CLI ve health raporu eklendi. | `python -m unittest discover -s tests` passed: 143 tests; `python -m scripts.normalize_rss_news` 259 normalized item ile passed. | Aktif faz P26'ya tasindi; NTV ve Yahoo Finance stale warning verdi. |
 | 2026-09-24 | P26 | News alias sozlugu, deterministic alias matcher, matched news JSONL writer, coverage raporu ve testler eklendi. | `python -m unittest discover -s tests` passed: 148 tests; `python -m scripts.match_news_aliases` 259 total ve 97 matched item ile passed. | Aktif faz P27'ye tasindi; alias eslesmesi trade sinyali degildir. |
 | 2026-09-24 | P27 | Decision-time guvenli RSS context builder, context CSV, context report entegrasyonu, reporting manifest guncellemesi ve testler eklendi. | `python -m unittest discover -s tests` passed: 151 tests; `python -m scripts.build_news_context` 51 context row ve 24 active row ile passed. | Aktif faz P28'e tasindi; context evidence trade sinyali degildir. |
+| 2026-09-24 | P28 | Offline demo RSS raw/normalized/matched/context/source-health artifact kontrolleriyle genisletildi ve demo summary guncellendi. | `python -m unittest discover -s tests` passed: 153 tests; `python -m scripts.demo --offline` RSS checks ile passed. | Aktif faz P29'a tasindi; demo live RSS cekmez. |
 
 ## Acik Riskler Ve Kararlar
 

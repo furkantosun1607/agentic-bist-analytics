@@ -1,5 +1,6 @@
 import tempfile
 import unittest
+from unittest.mock import patch
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
@@ -31,6 +32,36 @@ class DemoTests(unittest.TestCase):
 
             cache_check = next(check for check in result.checks if check.name == "cache")
             self.assertEqual(WARNING, cache_check.status)
+
+    def test_offline_demo_marks_missing_rss_artifacts_as_warnings(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_path = Path(tmpdir)
+            output = temp_path / "demo_summary.md"
+
+            with (
+                patch("src.demo.DEFAULT_RSS_OUTPUT_PATH", temp_path / "missing_raw.jsonl"),
+                patch("src.demo.DEFAULT_NORMALIZED_RSS_OUTPUT_PATH", temp_path / "missing_news.jsonl"),
+                patch("src.demo.DEFAULT_MATCHED_NEWS_OUTPUT_PATH", temp_path / "missing_matched.jsonl"),
+                patch("src.demo.DEFAULT_NEWS_CONTEXT_OUTPUT_PATH", temp_path / "missing_context.csv"),
+                patch("src.demo.DEFAULT_RSS_SOURCE_HEALTH_PATH", temp_path / "missing_health.md"),
+            ):
+                result = run_offline_demo(output_path=output)
+
+            by_name = {check.name: check for check in result.checks}
+            self.assertEqual(WARNING, by_name["rss_raw_cache"].status)
+            self.assertEqual(WARNING, by_name["rss_normalized_cache"].status)
+            self.assertEqual(WARNING, by_name["rss_matched_cache"].status)
+            self.assertEqual(WARNING, by_name["rss_context"].status)
+            self.assertEqual(WARNING, by_name["rss_source_health"].status)
+
+    def test_offline_demo_reports_existing_rss_context_artifacts(self):
+        result = run_offline_demo()
+
+        by_name = {check.name: check for check in result.checks}
+        self.assertIn(by_name["rss_raw_cache"].status, {"pass", "warning"})
+        self.assertIn(by_name["rss_context"].status, {"pass", "warning"})
+        summary = result.summary_path.read_text(encoding="utf-8")
+        self.assertIn("## RSS News Context", summary)
 
     def test_demo_cli_returns_success_in_offline_mode(self):
         with tempfile.TemporaryDirectory() as tmpdir:

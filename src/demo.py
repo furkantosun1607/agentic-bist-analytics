@@ -2,15 +2,24 @@
 
 from __future__ import annotations
 
+import csv
 from dataclasses import dataclass
 from pathlib import Path
 
 from src.data import load_universe, validate_universe
+from src.news_context import DEFAULT_NEWS_CONTEXT_OUTPUT_PATH
 from src.reporting import (
     validate_report_manifest,
     write_final_technical_report,
     write_report_index,
 )
+from src.rss_news import (
+    DEFAULT_NORMALIZED_RSS_OUTPUT_PATH,
+    DEFAULT_RSS_OUTPUT_PATH,
+    DEFAULT_RSS_SOURCE_HEALTH_PATH,
+    load_news_jsonl,
+)
+from src.news_aliases import DEFAULT_MATCHED_NEWS_OUTPUT_PATH, load_matched_news_jsonl
 from src.settings import DEFAULT_SETTINGS_PATH, Settings, load_settings
 
 
@@ -55,7 +64,7 @@ def run_offline_demo(
             DemoCheck(
                 name="settings",
                 status=PASS,
-                detail=f"loaded {Path(settings_path)}",
+                detail=f"loaded {_display_path(Path(settings_path).resolve())}",
             )
         )
     except Exception as exc:
@@ -65,6 +74,7 @@ def run_offline_demo(
         checks.extend(_check_universe(settings))
         checks.extend(_check_reports())
         checks.append(_check_cache(settings, strict_cache=strict_cache))
+        checks.extend(_check_rss_cache())
 
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text(_render_demo_summary(checks), encoding="utf-8")
@@ -159,13 +169,91 @@ def _check_cache(settings: Settings, strict_cache: bool) -> DemoCheck:
     )
 
 
+def _check_rss_cache() -> list[DemoCheck]:
+    checks: list[DemoCheck] = []
+    checks.append(
+        _check_jsonl_count(
+            name="rss_raw_cache",
+            path=DEFAULT_RSS_OUTPUT_PATH,
+            loader=load_news_jsonl,
+            missing_detail="raw RSS cache missing; run python -m scripts.fetch_rss_news",
+        )
+    )
+    checks.append(
+        _check_jsonl_count(
+            name="rss_normalized_cache",
+            path=DEFAULT_NORMALIZED_RSS_OUTPUT_PATH,
+            loader=load_news_jsonl,
+            missing_detail="normalized RSS cache missing; run python -m scripts.normalize_rss_news",
+        )
+    )
+    checks.append(
+        _check_jsonl_count(
+            name="rss_matched_cache",
+            path=DEFAULT_MATCHED_NEWS_OUTPUT_PATH,
+            loader=load_matched_news_jsonl,
+            missing_detail="matched RSS cache missing; run python -m scripts.match_news_aliases",
+        )
+    )
+    checks.append(_check_news_context_csv(DEFAULT_NEWS_CONTEXT_OUTPUT_PATH))
+    checks.append(_check_report_file("rss_source_health", DEFAULT_RSS_SOURCE_HEALTH_PATH))
+    return checks
+
+
+def _check_jsonl_count(name: str, path: Path, loader, missing_detail: str) -> DemoCheck:
+    if not path.exists():
+        return DemoCheck(name=name, status=WARNING, detail=missing_detail)
+    try:
+        items = loader(path)
+    except Exception as exc:
+        return DemoCheck(name=name, status=FAIL, detail=str(exc))
+    if not items:
+        return DemoCheck(name=name, status=WARNING, detail=f"{_display_path(path)} has 0 rows")
+    return DemoCheck(
+        name=name,
+        status=PASS,
+        detail=f"{len(items)} rows found in {_display_path(path)}",
+    )
+
+
+def _check_news_context_csv(path: Path) -> DemoCheck:
+    if not path.exists():
+        return DemoCheck(
+            name="rss_context",
+            status=WARNING,
+            detail="RSS context CSV missing; run python -m scripts.build_news_context",
+        )
+    try:
+        with path.open(newline="", encoding="utf-8") as handle:
+            rows = list(csv.DictReader(handle))
+    except Exception as exc:
+        return DemoCheck(name="rss_context", status=FAIL, detail=str(exc))
+    active_rows = [row for row in rows if row.get("news_count") not in ("", "0", None)]
+    if not rows:
+        return DemoCheck(name="rss_context", status=WARNING, detail="RSS context CSV has no rows")
+    return DemoCheck(
+        name="rss_context",
+        status=PASS,
+        detail=(
+            f"{len(rows)} context rows and {len(active_rows)} active rows found in "
+            f"{_display_path(path)}"
+        ),
+    )
+
+
+def _check_report_file(name: str, path: Path) -> DemoCheck:
+    if not path.exists():
+        return DemoCheck(name=name, status=WARNING, detail=f"{_display_path(path)} missing")
+    return DemoCheck(name=name, status=PASS, detail=f"{_display_path(path)} present")
+
+
 def _render_demo_summary(checks: list[DemoCheck]) -> str:
     lines = [
         "# Classroom Demo Summary",
         "",
         "Command: `python -m scripts.demo --offline`",
         "",
-        "This demo performs no network calls. It validates the fixed universe, regenerates the report index and final technical report, checks for an optional cached market dataset, and records whether the run is infrastructure-only.",
+        "This demo performs no network calls. It validates the fixed universe, regenerates the report index and final technical report, checks cached market data, checks RSS news/context artifacts, and records whether the run is infrastructure-only.",
         "",
         "| Check | Status | Detail |",
         "| --- | --- | --- |",
@@ -179,6 +267,10 @@ def _render_demo_summary(checks: list[DemoCheck]) -> str:
             "## Cached Dataset",
             "",
             "To populate a live cache before class, run `python -m scripts.fetch_market_data` with source access available. The offline demo command can then be rerun without live source availability and will read the cache status from `data/cache`.",
+            "",
+            "## RSS News Context",
+            "",
+            "To refresh RSS context, run `python -m scripts.fetch_rss_news`, `python -m scripts.normalize_rss_news`, `python -m scripts.match_news_aliases`, then `python -m scripts.build_news_context`. The offline demo reads those local artifacts and does not fetch live news.",
             "",
             "## Interpretation",
             "",

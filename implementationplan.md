@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Deterministic MCP tool surface ready |
+| Proje durumu | Harness state machine ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P17 - Harness State Machine |
-| Kritik sonraki hedef | Analiz akisini state order ve permitted tool kurallariyla enforce etmek |
+| Aktif faz | P18 - Evidence Bundle And Quality Gate |
+| Kritik sonraki hedef | Aciklamalarda kullanilacak kanit setini ve kalite kapisini uygulamak |
 
 ## Degismez Proje Kurallari
 
@@ -671,7 +671,7 @@ Notes:
 
 ### P17 - Harness State Machine
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Analiz akisini README'deki sira ile enforce eden stateful harness kurmak.
 
@@ -687,10 +687,26 @@ Acceptance:
 - Cikti durumlari `WATCH`, `INVESTIGATE`, `POTENTIAL_CATCH_UP_CANDIDATE`, `REJECT_SIGNAL`, `ANALYSIS_UNSAFE` gibi sinirli etiketlerden gelir.
 
 Completed:
-- Yok.
+- `src/harness.py` stateful analysis harness olarak dolduruldu.
+- Zorunlu akis sirasi `select_universe -> load_validate -> run_analyses -> add_context -> build_evidence -> compare_variants -> backtest -> risk_gate -> explain -> human_review -> save_decision` olarak tanimlandi.
+- `PERMITTED_TOOLS_BY_STATE` ile her state icin izinli tool listesi belirlendi.
+- `AnalysisHarness.call_tool` P16 tool registry'sini cagirmadan once state/tool iznini kontrol ediyor.
+- Siradisi tool kullanimi `HarnessStepResult(status="error")` ve event log kaydi ile bloklaniyor.
+- `advance(expected_state=...)` ile out-of-order state tamamlama girisimleri bloklaniyor.
+- Educational output label seti `WATCH`, `INVESTIGATE`, `POTENTIAL_CATCH_UP_CANDIDATE`, `REJECT_SIGNAL`, `ANALYSIS_UNSAFE` olarak sinirlandi.
+- Output label sadece `explain` state'inde set edilebiliyor.
+- Human review sadece `human_review` state'inde `accept`, `modify`, `reject` degerleriyle kaydedilebiliyor.
+- Decision save islemi output label ve human review olmadan bloklaniyor.
+- Harness snapshot ve replay-friendly event log eklendi.
+- `reports/harness_state_machine.md` akisi belgelemek icin eklendi.
+- Harness state machine unit testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 107 tests.
 
 Notes:
 - Ayrik reasoning servisleri gerekmiyor; tek orchestrator yeterli.
+- P18 evidence bundle ve quality gate semantigini bu state machine uzerine ekleyecek.
 
 ### P18 - Evidence Bundle And Quality Gate
 
@@ -859,6 +875,7 @@ Notes:
 | 2026-09-24 | P14 | Backtest maliyet/slippage kesintileri, settings baglantisi, cost-adjusted return, cumulative return, Sharpe, max drawdown, win rate ve benchmark difference eklendi. | `python -m unittest discover -s tests` passed: 81 tests. | Aktif faz P15'e tasindi; gercek backtest verisi henuz uydurulmadi. |
 | 2026-09-24 | P15 | Selection/unseen split, benchmark regime labels, stability comparison helperlari, experiment settings ve split/regime rapor iskeleti eklendi. | `python -m unittest discover -s tests` passed: 89 tests. | Aktif faz P16'ya tasindi; unseen tarihi veri kapsami dogrulaninca sabitlenecek. |
 | 2026-09-24 | P16 | Deterministic tool registry, market/indicator/event/sector/weekday/fundamentals/context/backtest/data-quality/evidence tools ve tool katalog raporu eklendi. | `python -m unittest discover -s tests` passed: 99 tests. | Aktif faz P17'ye tasindi; transport wrapper gerekirse sonra eklenecek. |
+| 2026-09-24 | P17 | Harness state machine, state order enforcement, permitted tool rules, educational labels, human review guard ve event log eklendi. | `python -m unittest discover -s tests` passed: 107 tests. | Aktif faz P18'e tasindi; quality gate semantigi sonraki fazda. |
 
 ## Acik Riskler Ve Kararlar
 

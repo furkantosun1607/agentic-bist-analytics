@@ -10,7 +10,7 @@ This demo performs no network calls. It validates the fixed universe, regenerate
 | universe | pass | 30 fixed symbols validated |
 | report_generation | pass | wrote reports\report_index.md and reports\final_technical_report.md |
 | report_manifest | pass | all report metadata paths are present |
-| cache | warning | no cached market files found; demo still runs in infrastructure-only mode |
+| cache | pass | 31 cached market files found in data\cache |
 
 ## Cached Dataset
 

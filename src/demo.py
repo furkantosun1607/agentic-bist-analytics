@@ -143,7 +143,10 @@ def _check_cache(settings: Settings, strict_cache: bool) -> DemoCheck:
         return DemoCheck(
             name="cache",
             status=PASS,
-            detail=f"{len(cache_files)} cached market files found in {settings.paths.cache_dir}",
+            detail=(
+                f"{len(cache_files)} cached market files found in "
+                f"{_display_path(settings.paths.cache_dir)}"
+            ),
         )
 
     status = FAIL if strict_cache else WARNING

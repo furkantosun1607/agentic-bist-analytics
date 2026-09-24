@@ -31,6 +31,17 @@ class SettingsTest(unittest.TestCase):
         self.assertTrue(settings.validation.block_on_future_leakage)
         self.assertTrue(settings.validation.block_on_critical_date_mismatch)
 
+    def test_fundamentals_settings_define_synthetic_disclosure_policy(self):
+        settings = load_settings()
+
+        self.assertEqual("yahoo_finance", settings.fundamentals.source)
+        self.assertEqual(40, settings.fundamentals.synthetic_disclosure_lag_days)
+        self.assertEqual("18:30:00", settings.fundamentals.synthetic_disclosure_time)
+        self.assertEqual(
+            PROJECT_ROOT / "data" / "fundamentals" / "fundamentals.csv",
+            settings.fundamentals.output_path,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

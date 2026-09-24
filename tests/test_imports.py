@@ -6,6 +6,7 @@ class ImportTest(unittest.TestCase):
         from src import (
             backtest,
             data,
+            fundamentals_status,
             harness,
             indicators,
             market_audit,
@@ -14,10 +15,12 @@ class ImportTest(unittest.TestCase):
             news_context,
             research,
             rss_news,
+            yfinance_fundamentals,
         )
 
         self.assertIsNotNone(backtest)
         self.assertIsNotNone(data)
+        self.assertIsNotNone(fundamentals_status)
         self.assertIsNotNone(harness)
         self.assertIsNotNone(indicators)
         self.assertIsNotNone(market_audit)
@@ -26,6 +29,7 @@ class ImportTest(unittest.TestCase):
         self.assertIsNotNone(news_context)
         self.assertIsNotNone(research)
         self.assertIsNotNone(rss_news)
+        self.assertIsNotNone(yfinance_fundamentals)
 
 
 if __name__ == "__main__":

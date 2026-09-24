@@ -9,6 +9,7 @@ __all__ = [
     "evidence",
     "events",
     "fundamentals",
+    "fundamentals_status",
     "harness",
     "harness_variants",
     "indicators",
@@ -23,4 +24,5 @@ __all__ = [
     "splits",
     "strategy_variants",
     "validation",
+    "yfinance_fundamentals",
 ]

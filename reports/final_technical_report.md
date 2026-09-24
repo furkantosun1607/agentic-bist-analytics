@@ -8,7 +8,7 @@ This project implements an educational BIST 100 research harness for a fixed 30-
 
 ## Report Status
 
-The scenario reports, context report, backtest/risk report and variant reports are present as reproducible infrastructure reports. RSS news context can be generated from local cache, but the repository still does not contain verified fundamentals, macro records, approved video context or final measured strategy outputs.
+The scenario reports, context report, backtest/risk report and variant reports are present as reproducible infrastructure reports. RSS news context can be generated from local cache. Local yfinance fundamentals import is ready with synthetic disclosure timestamps, but macro records, approved video context and final measured strategy outputs are still missing.
 
 ## Inconclusive Findings
 
@@ -29,7 +29,8 @@ All empirical findings are currently inconclusive. The repository contains calcu
 ## Limitations
 
 - Market price, XU100 and RSS cache files are not committed.
-- Verified fundamentals, macro, news and video records are not committed.
+- Raw local fundamentals, market and RSS cache files are not committed.
+- Macro records, approved video context and final measured strategy outputs are not committed.
 - Strategy and harness variant reports are engines, not live experiment results.
 - No broker connection or investment advice is included.
 

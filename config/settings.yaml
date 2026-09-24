@@ -15,6 +15,12 @@ market_data:
   start_date: 2021-01-01
   end_date: null
 
+fundamentals:
+  source: yahoo_finance
+  output_path: data/fundamentals/fundamentals.csv
+  synthetic_disclosure_lag_days: 40
+  synthetic_disclosure_time: "18:30:00"
+
 backtest:
   entry_timing: next_trading_day_open
   exit_timing: close_after_horizon

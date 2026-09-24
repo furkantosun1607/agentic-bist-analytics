@@ -97,6 +97,15 @@ python -m scripts.build_news_context
 python -m scripts.audit_market_cache
 ```
 
+Prepare fundamentals data only from a permitted source. Fintables access is not assumed; the current workflow uses the instructor-approved `yfinance` fallback and generates conservative synthetic disclosure timestamps as `period_end + 40 days at 18:30 Europe/Istanbul`. This prevents quarter-end data from being used as if it were known immediately, but it is not an exact KAP publication time. Generate the local CSV and audit it with:
+
+```powershell
+python -m scripts.fetch_yfinance_fundamentals
+python -m scripts.audit_fundamentals_import
+```
+
+The CSV is written to `data/fundamentals/fundamentals.csv` and ignored by git. If the CSV is missing, has no mapped rows, or fails point-in-time validation, `reports/fundamentals_import_status.md` blocks measured fundamentals and the quarterly report remains inconclusive. Detailed field rules are in `config/fundamentals_import_instructions.md`.
+
 Then run the offline demo:
 
 ```powershell
@@ -112,7 +121,7 @@ Cache files under `data/cache/` and `data/rss/` are local artifacts and are not 
 | Data | Source named in the PDF | Minimum use |
 | --- | --- | --- |
 | Stock and XU100 prices | Yahoo Finance / yfinance | Dated OHLCV, adjusted-price policy, benchmark history |
-| Company finances | Fintables | Quarterly growth, profitability, leverage, liquidity, valuation and cash flow |
+| Company finances | Fintables in the PDF; current fallback is Yahoo Finance / yfinance with synthetic disclosure lag | Quarterly growth, profitability, leverage, liquidity and cash flow |
 | Turkish macro | TCMB/EVDS and TÜİK | USD/TRY, EUR/TRY, policy rate and inflation |
 | Global rates | Federal Reserve | Policy-rate changes |
 | Financial news | Legally accessible RSS/news source | Dated company, sector and macro RSS context records |

@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Market cache audit ready |
+| Proje durumu | Market and yfinance fundamentals local data ready; macro context import next |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P32 - Fundamentals Source Access And Import Completion |
-| Kritik sonraki hedef | Fintables veya alternatif finansal tablo kaynagi icin point-in-time veri akisini tamamlamak |
+| Aktif faz | P33 - Macro Context Data Import |
+| Kritik sonraki hedef | TCMB/TUIK/Fed makro kayitlari icin point-in-time import/status akisini tamamlamak |
 
 ## Degismez Proje Kurallari
 
@@ -1245,9 +1245,9 @@ Notes:
 
 ### P32 - Fundamentals Source Access And Import Completion
 
-Status: `Not Started`
+Status: `Done`
 
-Goal: Fintables veya kullanilabilir instructor-approved finansal tablo kaynagi icin point-in-time fundamentals import akisini gercek veriyle hazirlamak.
+Goal: Fintables yerine instructor-approved yfinance fallback ile point-in-time fundamentals import akisini gercek veriyle hazirlamak.
 
 Deliverables:
 - Fundamentals source access decision record
@@ -1256,15 +1256,41 @@ Deliverables:
 - Bank/industrial metric coverage ozeti
 
 Acceptance:
-- Her fundamentals kaydinda disclosure/publication timestamp bulunur.
+- Her fundamentals kaydinda disclosure/publication timestamp veya acikca dokumante edilmis sentetik disclosure timestamp bulunur.
 - Access/lisans kosulu net degilse measured fundamentals analizi bloklanir.
 - En az bir valid sample yoksa quarterly fundamentals raporu inconclusive kalir.
 
 Completed:
-- Yok.
+- Fintables Pro erisimi olmadigi icin instructor-approved yfinance fallback karari plana islendi.
+- `config/settings.yaml` icine `fundamentals` ayarlari eklendi: `source: yahoo_finance`, local output path ve `synthetic_disclosure_lag_days: 40`.
+- `src/yfinance_fundamentals.py` ile yfinance quarterly income/balance/cashflow tablolarini project fundamentals semasina ceviren adapter eklendi.
+- Sentetik disclosure kurali eklendi: `period_end + 40 days at 18:30 Europe/Istanbul`.
+- `scripts/fetch_yfinance_fundamentals.py` local fundamentals CSV uretim komutu olarak eklendi.
+- `config/fundamentals_import_instructions.md` ile yfinance fallback, sentetik disclosure ve manual CSV kurallari dokumante edildi.
+- `data/fundamentals/` ignore altina alindi; lisansli/yerel CSV repoya alinmayacak.
+- `src/fundamentals_status.py` ile local fundamentals CSV import audit, coverage ozeti ve point-in-time gate status uretimi eklendi.
+- `scripts/audit_fundamentals_import.py` CLI komutu eklendi.
+- `reports/fundamentals_import_status.md` olusturuldu; mevcut durumda `blocked_missing_fundamentals_csv`.
+- `src.reporting.REPORT_MANIFEST` ve `reports/report_index.md` fundamentals import status raporunu kapsayacak sekilde guncellendi.
+- README'ye fundamentals CSV path'i, audit komutu ve blocked/inconclusive davranisi eklendi.
+- Fundamentals status, yfinance adapter, settings ve import smoke testleri eklendi.
+- User local run sonrasi yfinance fundamentals fetch 160 row ve 30/30 coverage ile basarili oldu.
+- `reports/fundamentals_fetch_status.md` ve `reports/fundamentals_import_status.md` ready durumuna guncellendi.
+
+Tests:
+- `python -m unittest tests.test_yfinance_fundamentals tests.test_settings tests.test_imports` passed: 9 tests.
+- `python -m unittest tests.test_fundamentals_status tests.test_imports tests.test_reporting` passed: 8 tests.
+- `python -m scripts.audit_fundamentals_import` expected blocked: `blocked_missing_fundamentals_csv`, valid rows 0.
+- `python -m scripts.fetch_yfinance_fundamentals --help` passed.
+- `python -m unittest discover -s tests` passed: 167 tests.
+- `python -m scripts.demo --offline` passed and regenerated report index/final report/demo summary.
+- User local `python -m scripts.fetch_yfinance_fundamentals` returned rows 160, errors 0.
+- User local `python -m scripts.audit_fundamentals_import` returned status ready, valid rows 160, import errors 0, universe coverage 30.
 
 Notes:
-- Bu faz dis veri erisimine bagimli olabilir; gerekirse `Blocked` olarak isaretlenecek.
+- Fazin import/status altyapisi tamamlandi ve local yfinance fundamentals CSV uretildi.
+- Sentetik disclosure timestamp gercek KAP aciklanma saati degil; konservatif proje varsayimi olarak raporlanacak.
+- P34 quarterly fundamentals artik local CSV ile measured run deneyebilir; yfinance coverage sinirlamalari ve sentetik timestamp varsayimi raporda kalacak.
 
 ### P33 - Macro Context Data Import
 
@@ -1485,12 +1511,13 @@ Notes:
 | 2026-09-24 | Gap Planning | README teslim eksiklerine gore P30-P40 submission completion fazlari eklendi. | Dokuman guncellemesi. | Aktif faz P30'a tasindi; odak veri/rapor/deney tamamlama. |
 | 2026-09-24 | P30 | README cache/RSS/demo akisiyle guncellendi, video current flow icin optional netlestirildi ve submission gap status raporu eklendi. | `python -m unittest discover -s tests` passed: 156 tests. | Aktif faz P31'e tasindi; user action gereken dis veri alanlari listelendi. |
 | 2026-09-24 | P31 | Market cache audit helperlari, CLI, audit raporu, README audit komutu ve report manifest guncellemesi eklendi. | `python -m unittest discover -s tests` passed: 159 tests; `python -m scripts.audit_market_cache` 31/31 pass ile passed. | Aktif faz P32'ye tasindi; cache CSV'leri commitlenmez. |
+| 2026-09-24 | P32 | Yfinance fundamentals fallback, sentetik disclosure +40 gun kurali, local CSV fetch CLI, import audit/status raporu, README/report manifest guncellemesi ve testler eklendi. | `python -m unittest discover -s tests` passed: 167 tests; user local fetch returned 160 rows and audit `ready` with 30/30 coverage. | Aktif faz P33'e tasindi; raw CSV commitlenmez, status raporlari commitlenir. |
 
 ## Acik Riskler Ve Kararlar
 
 | Konu | Durum | Karar/Not |
 | --- | --- | --- |
-| Finansal veri erisimi | Open | Fintables erisim ve lisans kosullari uygulanirken dogrulanacak. |
+| Finansal veri erisimi | Ready local metadata | Fintables Pro kullanilmayacak; instructor-approved yfinance fallback ve `period_end + 40 days` sentetik disclosure kurali secildi. Local fetch 160 row, 30/30 coverage ve audit `ready`. |
 | Haber/video kaynaklari | Open | P12 sema ve import akisi hazir; yalnizca yasal erisilebilir, instructor-approved ve timestamp dogrulanabilir kaynaklar doldurulacak. |
 | RSS cekim sikligi | Decided | RSS kaynaklari anlik dinlenmez; piyasa saatinde 15 dakikada bir, piyasa disinda 60 dakikada bir polling yapilir. Backtest/replay yalnizca cache snapshot kullanir. |
 | BIST/XU100 sembol uyumu | Open | P03 adapter ve missing-symbol rapor yazicisi eklendi; canli `python -m scripts.fetch_market_data` calistirildiginda rapor uretilecek. |
@@ -1502,7 +1529,7 @@ Notes:
 
 - [x] Fixed 30-stock universe and data dictionary
 - [x] Market price and XU100 cache
-- [ ] Point-in-time fundamentals data
+- [x] Point-in-time fundamentals data
 - [ ] Macro/news/video context records
 - [x] RSS news cache and ticker/sector/macro context
 - [ ] Four required scenario reports

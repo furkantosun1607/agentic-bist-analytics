@@ -37,6 +37,14 @@ class MarketDataConfig:
 
 
 @dataclass(frozen=True)
+class FundamentalsConfig:
+    source: str
+    output_path: Path
+    synthetic_disclosure_lag_days: int
+    synthetic_disclosure_time: str
+
+
+@dataclass(frozen=True)
 class BacktestConfig:
     entry_timing: str
     exit_timing: str
@@ -70,6 +78,7 @@ class Settings:
     project: ProjectConfig
     paths: PathConfig
     market_data: MarketDataConfig
+    fundamentals: FundamentalsConfig
     backtest: BacktestConfig
     experiment: ExperimentConfig
     validation: ValidationConfig
@@ -92,6 +101,7 @@ def parse_settings(raw: dict[str, Any]) -> Settings:
     project = raw.get("project", {})
     paths = raw.get("paths", {})
     market_data = raw.get("market_data", {})
+    fundamentals = raw.get("fundamentals", {})
     backtest = raw.get("backtest", {})
     experiment = raw.get("experiment", {})
     validation = raw.get("validation", {})
@@ -114,6 +124,16 @@ def parse_settings(raw: dict[str, Any]) -> Settings:
             adjusted_price_policy=_required_str(market_data, "adjusted_price_policy"),
             start_date=_required_str(market_data, "start_date"),
             end_date=market_data.get("end_date"),
+        ),
+        fundamentals=FundamentalsConfig(
+            source=_required_str(fundamentals, "source"),
+            output_path=_project_path(_required_str(fundamentals, "output_path")),
+            synthetic_disclosure_lag_days=_required_int(
+                fundamentals, "synthetic_disclosure_lag_days"
+            ),
+            synthetic_disclosure_time=_required_str(
+                fundamentals, "synthetic_disclosure_time"
+            ),
         ),
         backtest=BacktestConfig(
             entry_timing=_required_str(backtest, "entry_timing"),

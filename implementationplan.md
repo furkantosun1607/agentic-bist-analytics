@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | RSS dynamic context planning ready |
+| Proje durumu | RSS raw fetcher ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P24 - RSS Source Config And Fetcher |
-| Kritik sonraki hedef | RSS kaynaklarini timestamp'li, cache'li ve replay edilebilir haber context katmanina almak |
+| Aktif faz | P25 - RSS Normalization Dedup And Source Health |
+| Kritik sonraki hedef | RSS haberlerini tekillestirmek ve kaynak sagligi raporunu olgunlastirmak |
 
 ## Degismez Proje Kurallari
 
@@ -959,7 +959,7 @@ Ilk RSS kaynaklari:
 
 ### P24 - RSS Source Config And Fetcher
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: RSS kaynaklarini konfigurasyona alip, haberleri timestamp'li raw cache olarak cekmek.
 
@@ -976,11 +976,22 @@ Acceptance:
 - Fetch komutu exit code ve raporda kaynak bazli basari/uyari bilgisini verir.
 
 Completed:
-- Yok.
+- `config/rss_sources.yaml` ile 8 RSS kaynagi ve polling ayarlari eklendi.
+- `src/rss_news.py` ile RSS source loader, urllib client, RSS/Atom parser, timestamp normalization, JSONL writer ve fetch status report writer eklendi.
+- `scripts/fetch_rss_news.py` CLI komutu eklendi.
+- `.gitignore` icine `data/rss/` eklendi; canli haber cache'i commitlenmeyecek.
+- `reports/rss_fetch_status.md` source-level fetch raporu uretildi.
+- RSS fetch unit testleri eklendi.
+
+Tests:
+- `python -m unittest tests.test_rss_news` passed: 4 tests.
+- `python -m unittest discover -s tests` passed: 139 tests.
+- `python -m scripts.fetch_rss_news` passed with 8 sources and 259 cached raw items.
 
 Notes:
 - Canli RSS ciktilari commitlenmez; replay icin gerekirse kucuk fixture kullanilir.
 - `published_timestamp` yoksa kayit `warning` alir ve decision-time filtrelerinde guvenli sekilde ele alinir.
+- P24 raw cache fazidir; dedup ve source health olgunlastirma P25'e ayrildi.
 
 ### P25 - RSS Normalization Dedup And Source Health
 
@@ -1126,6 +1137,7 @@ Notes:
 | 2026-09-24 | P22 | Rapor manifest'i, report index, final technical report ve reporting testleri eklendi. | `python -m unittest discover -s tests` passed: 132 tests. | Aktif faz P23'e tasindi; measured result iddiasi eklenmedi. |
 | 2026-09-24 | P23 | Offline demo komutu, demo summary raporu, README kurulum/cache notlari ve demo smoke testleri eklendi. | `python -m unittest discover -s tests` passed: 135 tests. | Planlanan fazlar tamamlandi; cache yoklugu warning olarak raporlanir. |
 | 2026-09-24 | RSS Planning | RSS haber kaynaklari icin polling, cache, dedup, alias matching, context builder ve Strategy Variant E entegrasyon fazlari plana eklendi. | Dokuman guncellemesi. | Aktif faz P24'e tasindi; RSS anlik dinlenmeyecek, periyodik polling yapilacak. |
+| 2026-09-24 | P24 | RSS source config, raw RSS fetcher, JSONL cache writer, source-level fetch report ve testler eklendi. | `python -m unittest discover -s tests` passed: 139 tests; live `python -m scripts.fetch_rss_news` 8 kaynak ve 259 raw item ile passed. | Aktif faz P25'e tasindi; canli `data/rss/` cache commitlenmez. |
 
 ## Acik Riskler Ve Kararlar
 

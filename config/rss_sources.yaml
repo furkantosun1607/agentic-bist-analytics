@@ -1,0 +1,46 @@
+polling:
+  market_hours_minutes: 15
+  off_hours_minutes: 60
+  timezone: Europe/Istanbul
+
+sources:
+  - id: cnnturk_ekonomi
+    url: https://www.cnnturk.com/feed/rss/ekonomi/news
+    language: tr
+    category: economy
+    enabled: true
+  - id: ntv_ekonomi
+    url: https://www.ntv.com.tr/ekonomi.rss
+    language: tr
+    category: economy
+    enabled: true
+  - id: milliyet_sondakika
+    url: https://www.milliyet.com.tr/rss/rssnew/sondakikarss.xml
+    language: tr
+    category: economy
+    enabled: true
+  - id: yeniakit_ekonomi
+    url: https://www.yeniakit.com.tr/rss/haber/ekonomi
+    language: tr
+    category: economy
+    enabled: true
+  - id: yenisafak_ekonomi
+    url: https://www.yenisafak.com/rss?category=ekonomi
+    language: tr
+    category: economy
+    enabled: true
+  - id: ft_global_economy
+    url: https://www.ft.com/global-economy?format=rss
+    language: en
+    category: global_macro
+    enabled: true
+  - id: investing_news
+    url: https://www.investing.com/rss/news.rss
+    language: en
+    category: markets
+    enabled: true
+  - id: yahoo_finance_news
+    url: https://finance.yahoo.com/news/rssindex
+    language: en
+    category: markets
+    enabled: true

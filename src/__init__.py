@@ -15,6 +15,7 @@ __all__ = [
     "mcp_server",
     "research",
     "reporting",
+    "rss_news",
     "settings",
     "splits",
     "strategy_variants",

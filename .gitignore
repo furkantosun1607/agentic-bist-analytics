@@ -6,6 +6,7 @@ venv/
 data/cache/
 data/rss/
 data/fundamentals/
+data/macro/
 *.parquet
 *.sqlite
 *.db

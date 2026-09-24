@@ -8,7 +8,7 @@ This project implements an educational BIST 100 research harness for a fixed 30-
 
 ## Report Status
 
-The scenario reports, context report, backtest/risk report and variant reports are present as reproducible infrastructure reports. RSS news context can be generated from local cache. Local yfinance fundamentals import is ready with synthetic disclosure timestamps, but macro records, approved video context and final measured strategy outputs are still missing.
+The scenario reports, context report, backtest/risk report and variant reports are present as reproducible infrastructure reports. RSS news context can be generated from local cache. Local yfinance fundamentals import is ready with synthetic disclosure timestamps, but numeric macro records, approved video context and final measured strategy outputs are still missing.
 
 ## Inconclusive Findings
 

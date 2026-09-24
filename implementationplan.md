@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Market and yfinance fundamentals local data ready; macro context import next |
+| Proje durumu | Market and yfinance fundamentals local data ready; macro context workflow ready with missing CSV |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P33 - Macro Context Data Import |
-| Kritik sonraki hedef | TCMB/TUIK/Fed makro kayitlari icin point-in-time import/status akisini tamamlamak |
+| Aktif faz | P34 - Research Reports From Cached Data |
+| Kritik sonraki hedef | Mevcut market cache, fundamentals ve RSS context ile dort research raporunu measured/inconclusive olarak yenilemek |
 
 ## Degismez Proje Kurallari
 
@@ -1294,7 +1294,7 @@ Notes:
 
 ### P33 - Macro Context Data Import
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: TCMB/EVDS, TUIK ve Fed makro kayitlarini P12 context semasina point-in-time guvenli sekilde eklemek.
 
@@ -1309,10 +1309,25 @@ Acceptance:
 - Veri erisilemezse source gap raporlanir.
 
 Completed:
-- Yok.
+- `config/macro_context_import_instructions.md` ile local macro CSV workflow dokumante edildi.
+- `data/macro/` ignore altina alindi; local macro exports repoya alinmayacak.
+- `src/macro_context_status.py` ile macro context import audit, required indicator coverage ve point-in-time gate status uretimi eklendi.
+- `scripts/audit_macro_context.py` CLI komutu eklendi.
+- `reports/macro_context_status.md` olusturuldu; mevcut durumda `blocked_missing_macro_context_csv`.
+- `src.reporting.REPORT_MANIFEST`, `reports/report_index.md`, README ve `reports/submission_gap_status.md` macro context status ile guncellendi.
+- Macro status unit testleri ve import smoke testi eklendi.
+
+Tests:
+- `python -m unittest tests.test_macro_context_status tests.test_context tests.test_imports` passed: 13 tests.
+- `python -m scripts.audit_macro_context --help` passed.
+- `python -m scripts.audit_macro_context` expected blocked: `blocked_missing_macro_context_csv`, missing indicators 5.
+- `python -m unittest discover -s tests` passed: 172 tests.
+- `python -m scripts.demo --offline` passed and regenerated report index/final report/demo summary.
 
 Notes:
 - RSS macro alias context bu fazin yerine gecmez; sadece haber evidence saglar.
+- Numeric macro records icin kullanici `data/macro/macro_context.csv` saglamali veya otomatik fetch icin gerekli kaynak/credential kararini vermeli.
+- Macro CSV yoksa P34/P37 macro-dependent ciktisi explicit source gap/inconclusive olarak kalacak.
 
 ### P34 - Research Reports From Cached Data
 
@@ -1512,12 +1527,14 @@ Notes:
 | 2026-09-24 | P30 | README cache/RSS/demo akisiyle guncellendi, video current flow icin optional netlestirildi ve submission gap status raporu eklendi. | `python -m unittest discover -s tests` passed: 156 tests. | Aktif faz P31'e tasindi; user action gereken dis veri alanlari listelendi. |
 | 2026-09-24 | P31 | Market cache audit helperlari, CLI, audit raporu, README audit komutu ve report manifest guncellemesi eklendi. | `python -m unittest discover -s tests` passed: 159 tests; `python -m scripts.audit_market_cache` 31/31 pass ile passed. | Aktif faz P32'ye tasindi; cache CSV'leri commitlenmez. |
 | 2026-09-24 | P32 | Yfinance fundamentals fallback, sentetik disclosure +40 gun kurali, local CSV fetch CLI, import audit/status raporu, README/report manifest guncellemesi ve testler eklendi. | `python -m unittest discover -s tests` passed: 167 tests; user local fetch returned 160 rows and audit `ready` with 30/30 coverage. | Aktif faz P33'e tasindi; raw CSV commitlenmez, status raporlari commitlenir. |
+| 2026-09-24 | P33 | Macro context local CSV workflow, required indicator coverage audit, status CLI, macro status raporu, README/report manifest guncellemesi ve testler eklendi. | `python -m unittest discover -s tests` passed: 172 tests; `python -m scripts.audit_macro_context` expected blocked: missing local CSV and 5 indicators. | Aktif faz P34'e tasindi; macro CSV veya otomatik kaynak karari kullanici aksiyonu olarak acik. |
 
 ## Acik Riskler Ve Kararlar
 
 | Konu | Durum | Karar/Not |
 | --- | --- | --- |
 | Finansal veri erisimi | Ready local metadata | Fintables Pro kullanilmayacak; instructor-approved yfinance fallback ve `period_end + 40 days` sentetik disclosure kurali secildi. Local fetch 160 row, 30/30 coverage ve audit `ready`. |
+| Makro veri erisimi | User action needed | Macro import workflow hazir; `reports/macro_context_status.md` su an `blocked_missing_macro_context_csv`. USD/TRY, EUR/TRY, TCMB policy rate, TUIK inflation ve Fed policy rate CSV olarak saglanmali veya otomatik fetch kaynak/credential karari verilmeli. |
 | Haber/video kaynaklari | Open | P12 sema ve import akisi hazir; yalnizca yasal erisilebilir, instructor-approved ve timestamp dogrulanabilir kaynaklar doldurulacak. |
 | RSS cekim sikligi | Decided | RSS kaynaklari anlik dinlenmez; piyasa saatinde 15 dakikada bir, piyasa disinda 60 dakikada bir polling yapilir. Backtest/replay yalnizca cache snapshot kullanir. |
 | BIST/XU100 sembol uyumu | Open | P03 adapter ve missing-symbol rapor yazicisi eklendi; canli `python -m scripts.fetch_market_data` calistirildiginda rapor uretilecek. |

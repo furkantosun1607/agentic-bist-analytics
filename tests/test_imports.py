@@ -9,6 +9,7 @@ class ImportTest(unittest.TestCase):
             fundamentals_status,
             harness,
             indicators,
+            macro_context_status,
             market_audit,
             mcp_server,
             news_aliases,
@@ -23,6 +24,7 @@ class ImportTest(unittest.TestCase):
         self.assertIsNotNone(fundamentals_status)
         self.assertIsNotNone(harness)
         self.assertIsNotNone(indicators)
+        self.assertIsNotNone(macro_context_status)
         self.assertIsNotNone(market_audit)
         self.assertIsNotNone(mcp_server)
         self.assertIsNotNone(news_aliases)

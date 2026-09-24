@@ -106,6 +106,14 @@ python -m scripts.audit_fundamentals_import
 
 The CSV is written to `data/fundamentals/fundamentals.csv` and ignored by git. If the CSV is missing, has no mapped rows, or fails point-in-time validation, `reports/fundamentals_import_status.md` blocks measured fundamentals and the quarterly report remains inconclusive. Detailed field rules are in `config/fundamentals_import_instructions.md`.
 
+Prepare numeric macro context through the local CSV workflow in `config/macro_context_import_instructions.md`. The required indicators are USD/TRY, EUR/TRY, TCMB policy rate, TUIK inflation, and Fed policy rate. Audit macro readiness with:
+
+```powershell
+python -m scripts.audit_macro_context
+```
+
+If `data/macro/macro_context.csv` is missing or incomplete, `reports/macro_context_status.md` records the source gap. RSS macro news aliases do not replace numeric macro records.
+
 Then run the offline demo:
 
 ```powershell

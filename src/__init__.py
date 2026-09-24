@@ -13,6 +13,7 @@ __all__ = [
     "harness",
     "harness_variants",
     "indicators",
+    "macro_context_status",
     "market_audit",
     "mcp_server",
     "news_aliases",

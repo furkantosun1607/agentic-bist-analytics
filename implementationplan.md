@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Harness state machine ready |
+| Proje durumu | Evidence bundle and quality gate ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P18 - Evidence Bundle And Quality Gate |
-| Kritik sonraki hedef | Aciklamalarda kullanilacak kanit setini ve kalite kapisini uygulamak |
+| Aktif faz | P19 - Human Review And Replayable Decision Log |
+| Kritik sonraki hedef | Insan onayi ve tekrar oynatilabilir karar kaydi eklemek |
 
 ## Degismez Proje Kurallari
 
@@ -710,7 +710,7 @@ Notes:
 
 ### P18 - Evidence Bundle And Quality Gate
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Aciklamalarda kullanilacak kanit setini ve kalite kapisini uygulamak.
 
@@ -726,10 +726,25 @@ Acceptance:
 - Future leakage, broken history veya critical date mismatch sonucu bloklar.
 
 Completed:
-- Yok.
+- `src/evidence.py` evidence bundle ve quality gate modulu olarak eklendi.
+- `build_evidence_bundle` observed feature listelerini source metadata ile source-linked evidence kayitlarina donusturuyor.
+- `commit_evidence_set` ile committed evidence set icin stable SHA-256 hash uretiliyor.
+- `evaluate_quality_gate` evidence completeness, future-outcome feature leakage ve dis validation report'larini tek gate sonucunda birlestiriyor.
+- Missing evidence bundle blocking issue uretir; missing source ve small evidence set warning olarak kalir.
+- Future-outcome feature leakage, future information leakage, broken history veya critical date mismatch gibi blocking validation issue'lari `ANALYSIS_UNSAFE` uretir.
+- `quality_gate_to_dict` ve `write_evidence_report` yardimcilari eklendi.
+- P16 `evidence_bundle` tool'u yeni evidence modulu uzerinden evidence hash ve quality gate payload'i donecek sekilde guncellendi.
+- P17 harness'e `apply_quality_gate` eklendi; gate sonucu sadece `risk_gate` state'inde uygulanabilir.
+- `ANALYSIS_UNSAFE` gate sonucu harness output label'ini otomatik `ANALYSIS_UNSAFE` yapar.
+- `reports/evidence_quality_gate.md` baslangic raporu eklendi.
+- Evidence/gate unit testleri ve MCP evidence tool testi eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 115 tests.
 
 Notes:
 - Bu faz harness guvenilirligini belirleyen ana parca.
+- Canli karar veya strategy sonucu uydurulmadi; moduller verified tool outputlari icin hazirlandi.
 
 ### P19 - Human Review And Replayable Decision Log
 
@@ -876,6 +891,7 @@ Notes:
 | 2026-09-24 | P15 | Selection/unseen split, benchmark regime labels, stability comparison helperlari, experiment settings ve split/regime rapor iskeleti eklendi. | `python -m unittest discover -s tests` passed: 89 tests. | Aktif faz P16'ya tasindi; unseen tarihi veri kapsami dogrulaninca sabitlenecek. |
 | 2026-09-24 | P16 | Deterministic tool registry, market/indicator/event/sector/weekday/fundamentals/context/backtest/data-quality/evidence tools ve tool katalog raporu eklendi. | `python -m unittest discover -s tests` passed: 99 tests. | Aktif faz P17'ye tasindi; transport wrapper gerekirse sonra eklenecek. |
 | 2026-09-24 | P17 | Harness state machine, state order enforcement, permitted tool rules, educational labels, human review guard ve event log eklendi. | `python -m unittest discover -s tests` passed: 107 tests. | Aktif faz P18'e tasindi; quality gate semantigi sonraki fazda. |
+| 2026-09-24 | P18 | Evidence bundle, committed evidence hash, quality gate, MCP evidence tool entegrasyonu ve harness risk-gate baglantisi eklendi. | `python -m unittest discover -s tests` passed: 115 tests. | Aktif faz P19'a tasindi; karar logu sonraki fazda. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -897,7 +913,7 @@ Notes:
 - [ ] Backtests with costs, benchmarks and risk metrics
 - [ ] Unseen test period and regime comparison
 - [x] Deterministic MCP tools
-- [ ] Stateful harness with evidence and quality gate
+- [x] Stateful harness with evidence and quality gate
 - [ ] Human-reviewed replayable decision log
 - [ ] Strategy variants A-E comparison
 - [ ] Harness variants A-E comparison

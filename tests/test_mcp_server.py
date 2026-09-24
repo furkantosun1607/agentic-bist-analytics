@@ -187,6 +187,8 @@ class McpServerTests(unittest.TestCase):
 
         self.assertEqual("ok", response.status)
         self.assertEqual(1, response.data["evidence_count"])
+        self.assertIn("evidence_hash", response.data)
+        self.assertEqual("ANALYSIS_SAFE", response.data["quality_gate"]["gate_status"])
         self.assertEqual(0.42, response.data["evidence"][0]["observed_features"]["score"])
 
 

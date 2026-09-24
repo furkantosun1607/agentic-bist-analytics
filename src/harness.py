@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 
+from src.evidence import QualityGateResult
 from src.mcp_server import ToolResponse, call_tool
 
 
@@ -72,6 +73,7 @@ class AnalysisHarness:
     state: str = HARNESS_STATES[0]
     output_label: str | None = None
     review_status: str | None = None
+    gate_status: str | None = None
     saved: bool = False
     events: list[HarnessEvent] = field(default_factory=list)
 
@@ -183,6 +185,24 @@ class AnalysisHarness:
         self._record("review_recorded", message, status="ok")
         return HarnessStepResult(status="ok", state=self.state, message=message)
 
+    def apply_quality_gate(self, gate_result: QualityGateResult) -> HarnessStepResult:
+        if self.state != "risk_gate":
+            message = f"quality gate can only be applied in risk_gate state, not {self.state}"
+            self._record("quality_gate_blocked", message, status="error")
+            return HarnessStepResult(
+                status="error",
+                state=self.state,
+                message=message,
+                errors=(message,),
+            )
+
+        self.gate_status = gate_result.gate_status
+        if gate_result.gate_status == "ANALYSIS_UNSAFE":
+            self.output_label = "ANALYSIS_UNSAFE"
+        message = f"quality gate applied as {gate_result.gate_status}"
+        self._record("quality_gate_applied", message, status=gate_result.gate_status)
+        return HarnessStepResult(status="ok", state=self.state, message=message)
+
     def save_decision(self) -> HarnessStepResult:
         if self.state != "save_decision":
             message = f"decision can only be saved in save_decision state, not {self.state}"
@@ -222,6 +242,7 @@ class AnalysisHarness:
             "state": self.state,
             "output_label": self.output_label,
             "review_status": self.review_status,
+            "gate_status": self.gate_status,
             "saved": self.saved,
             "permitted_tools": self.permitted_tools(),
             "events": [asdict(event) for event in self.events],

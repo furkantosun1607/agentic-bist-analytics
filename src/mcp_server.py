@@ -20,6 +20,11 @@ from src.data import (
     load_universe,
     read_price_cache,
 )
+from src.evidence import (
+    build_evidence_bundle,
+    evaluate_quality_gate,
+    quality_gate_to_dict,
+)
 from src.fundamentals import fundamentals_to_point_in_time_records
 from src.indicators import add_all_indicators
 from src.events import detect_all_events
@@ -375,34 +380,24 @@ def evidence_bundle_tool(args: dict[str, object]) -> ToolResponse:
     records = _required_frame(args, "records")
     feature_columns = list(args.get("feature_columns", ()))
     source_columns = list(args.get("source_columns", ("source", "known_at", "date")))
-    if not feature_columns:
-        raise ToolInputError("evidence_bundle requires feature_columns")
-
-    _require_columns(records, feature_columns, scope="evidence records")
-    available_source_columns = [column for column in source_columns if column in records.columns]
-    evidence = []
-    for index, row in records.iterrows():
-        observed_features = {
-            column: _sanitize(row[column])
-            for column in feature_columns
-            if column in records.columns
-        }
-        sources = {
-            column: _sanitize(row[column])
-            for column in available_source_columns
-            if pd.notna(row[column])
-        }
-        evidence.append(
-            {
-                "evidence_id": str(row.get("signal_id") or row.get("context_id") or index),
-                "observed_features": observed_features,
-                "sources": sources,
-            }
-        )
+    bundle = build_evidence_bundle(
+        records=records,
+        feature_columns=feature_columns,
+        source_columns=source_columns,
+    )
+    gate = evaluate_quality_gate(
+        bundle,
+        minimum_evidence_count=int(args.get("minimum_evidence_count", 1)),
+    )
 
     return ToolResponse(
-        status="ok",
-        data={"evidence_count": len(evidence), "evidence": evidence},
+        status="ok" if gate.gate_status != "ANALYSIS_UNSAFE" else "warning",
+        data={
+            "evidence_count": len(bundle.evidence),
+            "evidence": list(bundle.evidence),
+            "evidence_hash": bundle.evidence_hash,
+            "quality_gate": quality_gate_to_dict(gate),
+        },
     )
 
 

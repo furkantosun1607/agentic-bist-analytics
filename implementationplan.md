@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | RSS demo status ready |
+| Proje durumu | RSS Strategy Variant E integration ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P29 - Strategy Variant E RSS Context Integration |
-| Kritik sonraki hedef | RSS context'i Strategy Variant E availability ve evidence akisina baglamak |
+| Aktif faz | RSS extension phases complete |
+| Kritik sonraki hedef | Gercek strateji sinyalleri ve final measured comparison icin veri tamamlama |
 
 ## Degismez Proje Kurallari
 
@@ -1133,7 +1133,7 @@ Notes:
 
 ### P29 - Strategy Variant E RSS Context Integration
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: RSS haber context'ini Strategy Variant E icin verified context girdisi yapmak.
 
@@ -1149,10 +1149,23 @@ Acceptance:
 - Haber yogunlugu tek basina performans iddiasi olarak yazilmaz.
 
 Completed:
-- Yok.
+- `src.strategy_variants` Strategy Variant E icin RSS context availability metadata alanlariyla genisletildi.
+- Variant summary kolonlarina `rss_context_status`, evidence count, source count, latest timestamp, warnings ve evidence URLs eklendi.
+- `summarize_rss_context_for_variant_e` ile RSS context safety/availability kontrolu eklendi.
+- RSS context evidence bundle uretimi `build_evidence_bundle` ile baglandi.
+- Future timestamp, missing RSS context ve missing evidence URL durumlari quality issue olarak raporlanir.
+- `reports/strategy_variants.md` RSS context entegrasyon notlariyla guncellendi.
+- Strategy Variant E RSS context unit testleri eklendi.
+
+Tests:
+- `python -m unittest tests.test_strategy_variants` passed: 8 tests.
+- `python -m unittest tests.test_evidence` passed: 8 tests.
+- `python -m unittest discover -s tests` passed: 156 tests.
 
 Notes:
 - Haber context'i finansal tavsiye degildir; strategy comparison icin destekleyici evidence olarak kullanilir.
+- RSS context metadata trade sinyali uretmez; `news_video` component sinyali ayrica saglanmazsa Variant E yine unavailable kalir.
+- Haber yogunlugu alpha veya strateji ustunlugu iddiasi olarak raporlanmaz.
 
 ## Gelistirme Gunlugu
 
@@ -1189,6 +1202,7 @@ Notes:
 | 2026-09-24 | P26 | News alias sozlugu, deterministic alias matcher, matched news JSONL writer, coverage raporu ve testler eklendi. | `python -m unittest discover -s tests` passed: 148 tests; `python -m scripts.match_news_aliases` 259 total ve 97 matched item ile passed. | Aktif faz P27'ye tasindi; alias eslesmesi trade sinyali degildir. |
 | 2026-09-24 | P27 | Decision-time guvenli RSS context builder, context CSV, context report entegrasyonu, reporting manifest guncellemesi ve testler eklendi. | `python -m unittest discover -s tests` passed: 151 tests; `python -m scripts.build_news_context` 51 context row ve 24 active row ile passed. | Aktif faz P28'e tasindi; context evidence trade sinyali degildir. |
 | 2026-09-24 | P28 | Offline demo RSS raw/normalized/matched/context/source-health artifact kontrolleriyle genisletildi ve demo summary guncellendi. | `python -m unittest discover -s tests` passed: 153 tests; `python -m scripts.demo --offline` RSS checks ile passed. | Aktif faz P29'a tasindi; demo live RSS cekmez. |
+| 2026-09-24 | P29 | Strategy Variant E RSS context availability, evidence bundle baglantisi, quality warnings ve variant report notlari eklendi. | `python -m unittest discover -s tests` passed: 156 tests. | RSS extension fazlari tamamlandi; measured strategy comparison hala gercek sinyal/veri gerektirir. |
 
 ## Acik Riskler Ve Kararlar
 

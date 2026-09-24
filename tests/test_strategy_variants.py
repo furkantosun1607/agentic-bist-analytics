@@ -8,6 +8,7 @@ from src.settings import load_settings
 from src.strategy_variants import (
     compare_strategy_variants,
     compare_strategy_variants_from_settings,
+    summarize_rss_context_for_variant_e,
     write_strategy_variants_report,
 )
 
@@ -35,6 +36,24 @@ def signal(component, day_offset=0):
                 "known_at": f"{date.date().isoformat()}T18:10:00+03:00",
                 "horizon": 2,
                 "source": component,
+            }
+        ]
+    )
+
+
+def rss_context(news_count=2, latest="2024-01-02T09:00:00+00:00"):
+    return pd.DataFrame(
+        [
+            {
+                "entity_type": "ticker",
+                "entity_id": "AAA",
+                "decision_timestamp": "2024-01-02T12:00:00+00:00",
+                "lookback_days": 7,
+                "news_count": news_count,
+                "source_count": 2,
+                "latest_news_timestamp": latest,
+                "evidence_urls": "https://example.com/a;https://example.com/b",
+                "matched_terms": "AAA;macro",
             }
         ]
     )
@@ -72,6 +91,7 @@ class StrategyVariantTests(unittest.TestCase):
                 "news_video": signal("news_video"),
             },
             prices_by_symbol={"AAA.IS": prices(rows=15)},
+            rss_context=rss_context(),
             trading_cost_bps=12,
             slippage_bps=3,
             default_horizon=1,
@@ -82,6 +102,54 @@ class StrategyVariantTests(unittest.TestCase):
         self.assertEqual({3.0}, set(result.summary["slippage_bps"]))
         self.assertEqual({"2024-01-01"}, set(result.summary["data_start"]))
         self.assertEqual({"2024-01-19"}, set(result.summary["data_end"]))
+
+    def test_variant_e_carries_rss_context_metadata_without_creating_signals(self):
+        result = compare_strategy_variants(
+            signals_by_component={
+                "technical": signal("technical"),
+                "sector": signal("sector"),
+                "fundamentals": signal("fundamentals"),
+                "macro": signal("macro"),
+                "news_video": signal("news_video"),
+            },
+            prices_by_symbol={"AAA.IS": prices(rows=15)},
+            rss_context=rss_context(),
+            default_horizon=1,
+        )
+
+        row = result.summary[result.summary["variant"] == "E"].iloc[0]
+
+        self.assertEqual("available", row["rss_context_status"])
+        self.assertEqual(2, row["rss_context_evidence_count"])
+        self.assertIn("https://example.com/a", row["rss_context_evidence_urls"])
+
+    def test_variant_e_marks_missing_rss_context_unavailable(self):
+        result = compare_strategy_variants(
+            signals_by_component={
+                "technical": signal("technical"),
+                "sector": signal("sector"),
+                "fundamentals": signal("fundamentals"),
+                "macro": signal("macro"),
+            },
+            prices_by_symbol={"AAA.IS": prices(rows=15)},
+            default_horizon=1,
+        )
+
+        row = result.summary[result.summary["variant"] == "E"].iloc[0]
+
+        self.assertEqual("unavailable", row["status"])
+        self.assertEqual("unavailable", row["rss_context_status"])
+        self.assertIn("MISSING_RSS_CONTEXT", row["rss_context_warnings"])
+
+    def test_future_rss_context_timestamp_is_not_available_for_variant_e(self):
+        status = summarize_rss_context_for_variant_e(
+            rss_context(latest="2024-01-03T09:00:00+00:00"),
+            decision_timestamp="2024-01-02T12:00:00+00:00",
+        )
+
+        self.assertEqual("unavailable", status.status)
+        self.assertIn("RSS_CONTEXT_FUTURE_TIMESTAMP", status.warnings)
+        self.assertIsNone(status.evidence_bundle)
 
     def test_variant_trades_include_variant_and_component_metadata(self):
         result = compare_strategy_variants(

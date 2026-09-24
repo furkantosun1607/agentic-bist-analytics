@@ -7,7 +7,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from src.evidence import EvidenceBundle, build_evidence_bundle
 from src.backtest import BACKTEST_SUMMARY_COLUMNS, run_backtest
+from src.validation import BLOCKING, WARNING, QualityIssue, QualityReport
 
 
 VARIANT_BACKTEST_SUMMARY_COLUMNS = tuple(
@@ -23,6 +25,12 @@ VARIANT_SUMMARY_COLUMNS = (
     "data_end",
     "trading_cost_bps",
     "slippage_bps",
+    "rss_context_status",
+    "rss_context_evidence_count",
+    "rss_context_source_count",
+    "rss_context_latest_timestamp",
+    "rss_context_warnings",
+    "rss_context_evidence_urls",
     *VARIANT_BACKTEST_SUMMARY_COLUMNS,
 )
 VARIANT_TRADE_COLUMNS = ("variant", "component", "component_signal_id")
@@ -50,6 +58,18 @@ class StrategyVariantComparisonResult:
 
 class StrategyVariantInputError(ValueError):
     """Raised when strategy variant inputs are structurally invalid."""
+
+
+@dataclass(frozen=True)
+class RssContextVariantStatus:
+    status: str
+    evidence_count: int
+    source_count: int
+    latest_timestamp: str | None
+    evidence_urls: tuple[str, ...]
+    warnings: tuple[str, ...]
+    quality_report: QualityReport
+    evidence_bundle: EvidenceBundle | None
 
 
 STRATEGY_VARIANTS = (
@@ -93,6 +113,7 @@ def compare_strategy_variants(
     benchmark_prices: pd.DataFrame | None = None,
     sector_benchmark_prices: dict[str, pd.DataFrame] | None = None,
     symbol_to_sector: dict[str, str] | None = None,
+    rss_context: pd.DataFrame | str | Path | None = None,
     default_horizon: int = 5,
     trading_cost_bps: float = 10.0,
     slippage_bps: float = 5.0,
@@ -101,6 +122,7 @@ def compare_strategy_variants(
 
     _validate_inputs(signals_by_component, prices_by_symbol)
     data_start, data_end = _price_data_period(prices_by_symbol)
+    rss_status = summarize_rss_context_for_variant_e(rss_context)
     summaries: list[dict[str, object]] = []
     trade_frames: list[pd.DataFrame] = []
     errors: list[StrategyVariantError] = []
@@ -116,6 +138,7 @@ def compare_strategy_variants(
                     data_end=data_end,
                     trading_cost_bps=trading_cost_bps,
                     slippage_bps=slippage_bps,
+                    rss_context=rss_status if variant.name == "E" else None,
                 )
             )
             continue
@@ -140,6 +163,7 @@ def compare_strategy_variants(
                     data_end=data_end,
                     trading_cost_bps=trading_cost_bps,
                     slippage_bps=slippage_bps,
+                    rss_context=rss_status if variant.name == "E" else None,
                 )
             )
             if not result.trades.empty:
@@ -164,6 +188,7 @@ def compare_strategy_variants(
                     data_end=data_end,
                     trading_cost_bps=trading_cost_bps,
                     slippage_bps=slippage_bps,
+                    rss_context=rss_status if variant.name == "E" else None,
                 )
             )
 
@@ -186,6 +211,7 @@ def compare_strategy_variants_from_settings(
     benchmark_prices: pd.DataFrame | None = None,
     sector_benchmark_prices: dict[str, pd.DataFrame] | None = None,
     symbol_to_sector: dict[str, str] | None = None,
+    rss_context: pd.DataFrame | str | Path | None = None,
 ) -> StrategyVariantComparisonResult:
     """Compare strategy variants using configured horizon and cost assumptions."""
 
@@ -198,6 +224,7 @@ def compare_strategy_variants_from_settings(
         benchmark_prices=benchmark_prices,
         sector_benchmark_prices=sector_benchmark_prices,
         symbol_to_sector=symbol_to_sector,
+        rss_context=rss_context,
         default_horizon=int(settings.backtest.horizons[0]),
         trading_cost_bps=float(settings.backtest.trading_cost_bps),
         slippage_bps=float(settings.backtest.slippage_bps),
@@ -223,6 +250,11 @@ def write_strategy_variants_report(
         "- D: C + macro",
         "- E: D + verified news/video context",
         "",
+        "RSS context policy:",
+        "- RSS context metadata can make Variant E context availability explicit.",
+        "- RSS context does not create trade signals by itself.",
+        "- Future-dated or missing source metadata remains a warning/blocking quality issue.",
+        "",
     ]
     if result.summary.empty:
         lines.extend(["Status: no variant summary generated.", ""])
@@ -239,6 +271,7 @@ def write_strategy_variants_report(
         [
             "Limitations:",
             "- Missing-source variants are marked unavailable; values are not invented.",
+            "- RSS news density is context evidence only and is not reported as a performance claim.",
             "- All variants use the same provided price data, benchmark hooks and cost assumptions.",
             "- This report is historical research infrastructure, not investment advice.",
             "",
@@ -299,6 +332,7 @@ def _summary_row_from_backtest(
     data_end: str,
     trading_cost_bps: float,
     slippage_bps: float,
+    rss_context: RssContextVariantStatus | None = None,
 ) -> dict[str, object]:
     base = _summary_base(
         variant=variant,
@@ -308,6 +342,7 @@ def _summary_row_from_backtest(
         data_end=data_end,
         trading_cost_bps=trading_cost_bps,
         slippage_bps=slippage_bps,
+        rss_context=rss_context,
     )
     if result_summary.empty:
         return base
@@ -323,6 +358,7 @@ def _unavailable_summary_row(
     data_end: str,
     trading_cost_bps: float,
     slippage_bps: float,
+    rss_context: RssContextVariantStatus | None = None,
 ) -> dict[str, object]:
     return _summary_base(
         variant=variant,
@@ -332,6 +368,7 @@ def _unavailable_summary_row(
         data_end=data_end,
         trading_cost_bps=trading_cost_bps,
         slippage_bps=slippage_bps,
+        rss_context=rss_context,
     )
 
 
@@ -342,6 +379,7 @@ def _error_summary_row(
     data_end: str,
     trading_cost_bps: float,
     slippage_bps: float,
+    rss_context: RssContextVariantStatus | None = None,
 ) -> dict[str, object]:
     row = _summary_base(
         variant=variant,
@@ -351,6 +389,7 @@ def _error_summary_row(
         data_end=data_end,
         trading_cost_bps=trading_cost_bps,
         slippage_bps=slippage_bps,
+        rss_context=rss_context,
     )
     row["missing_components"] = message
     return row
@@ -364,6 +403,7 @@ def _summary_base(
     data_end: str,
     trading_cost_bps: float,
     slippage_bps: float,
+    rss_context: RssContextVariantStatus | None = None,
 ) -> dict[str, object]:
     row = {
         "variant": variant.name,
@@ -375,10 +415,244 @@ def _summary_base(
         "data_end": data_end,
         "trading_cost_bps": float(trading_cost_bps),
         "slippage_bps": float(slippage_bps),
+        "rss_context_status": pd.NA,
+        "rss_context_evidence_count": pd.NA,
+        "rss_context_source_count": pd.NA,
+        "rss_context_latest_timestamp": pd.NA,
+        "rss_context_warnings": pd.NA,
+        "rss_context_evidence_urls": pd.NA,
     }
+    if rss_context is not None:
+        row.update(_rss_context_summary_fields(rss_context))
     for column in VARIANT_BACKTEST_SUMMARY_COLUMNS:
         row[column] = pd.NA
     return row
+
+
+def summarize_rss_context_for_variant_e(
+    rss_context: pd.DataFrame | str | Path | None,
+    decision_timestamp: str | None = None,
+) -> RssContextVariantStatus:
+    """Summarize RSS context availability for Strategy Variant E."""
+
+    if rss_context is None:
+        report = QualityReport(
+            (
+                QualityIssue(
+                    severity=WARNING,
+                    code="MISSING_RSS_CONTEXT",
+                    message="RSS context was not provided for Variant E",
+                ),
+            )
+        )
+        return RssContextVariantStatus(
+            status="unavailable",
+            evidence_count=0,
+            source_count=0,
+            latest_timestamp=None,
+            evidence_urls=(),
+            warnings=("MISSING_RSS_CONTEXT",),
+            quality_report=report,
+            evidence_bundle=None,
+        )
+
+    frame = _load_rss_context_frame(rss_context)
+    missing_columns = [
+        column
+        for column in (
+            "entity_type",
+            "entity_id",
+            "news_count",
+            "source_count",
+            "latest_news_timestamp",
+            "evidence_urls",
+            "decision_timestamp",
+        )
+        if column not in frame.columns
+    ]
+    if missing_columns:
+        report = QualityReport(
+            (
+                QualityIssue(
+                    severity=BLOCKING,
+                    code="RSS_CONTEXT_SCHEMA_ERROR",
+                    message=f"RSS context missing columns: {', '.join(missing_columns)}",
+                ),
+            )
+        )
+        return RssContextVariantStatus(
+            status="warning",
+            evidence_count=0,
+            source_count=0,
+            latest_timestamp=None,
+            evidence_urls=(),
+            warnings=("RSS_CONTEXT_SCHEMA_ERROR",),
+            quality_report=report,
+            evidence_bundle=None,
+        )
+
+    active = frame[pd.to_numeric(frame["news_count"], errors="coerce").fillna(0) > 0].copy()
+    if active.empty:
+        report = QualityReport(
+            (
+                QualityIssue(
+                    severity=WARNING,
+                    code="EMPTY_RSS_CONTEXT",
+                    message="RSS context has no active evidence rows",
+                ),
+            )
+        )
+        return RssContextVariantStatus(
+            status="unavailable",
+            evidence_count=0,
+            source_count=0,
+            latest_timestamp=None,
+            evidence_urls=(),
+            warnings=("EMPTY_RSS_CONTEXT",),
+            quality_report=report,
+            evidence_bundle=None,
+        )
+
+    issues = _rss_context_issues(active, decision_timestamp)
+    safe_active = _safe_rss_context_rows(active, decision_timestamp)
+    evidence_urls = _collect_evidence_urls(safe_active)
+    warnings = tuple(issue.code for issue in issues)
+    latest = _latest_timestamp(safe_active)
+    evidence_count = int(pd.to_numeric(safe_active["news_count"], errors="coerce").fillna(0).sum())
+    source_count = int(pd.to_numeric(safe_active["source_count"], errors="coerce").fillna(0).sum())
+    bundle = _build_rss_context_evidence_bundle(safe_active) if not safe_active.empty else None
+    status = "available" if evidence_count > 0 else "unavailable"
+    if warnings:
+        status = "warning" if evidence_count > 0 else "unavailable"
+    return RssContextVariantStatus(
+        status=status,
+        evidence_count=evidence_count,
+        source_count=source_count,
+        latest_timestamp=latest,
+        evidence_urls=evidence_urls,
+        warnings=warnings,
+        quality_report=QualityReport(tuple(issues)),
+        evidence_bundle=bundle,
+    )
+
+
+def _load_rss_context_frame(rss_context: pd.DataFrame | str | Path) -> pd.DataFrame:
+    if isinstance(rss_context, pd.DataFrame):
+        return rss_context.copy()
+    return pd.read_csv(rss_context)
+
+
+def _rss_context_issues(
+    active: pd.DataFrame,
+    decision_timestamp: str | None,
+) -> list[QualityIssue]:
+    issues: list[QualityIssue] = []
+    if active["latest_news_timestamp"].isna().any() or (active["latest_news_timestamp"].astype(str).str.strip() == "").any():
+        issues.append(
+            QualityIssue(
+                severity=WARNING,
+                code="RSS_CONTEXT_MISSING_TIMESTAMP",
+                message="one or more RSS context rows have no latest_news_timestamp",
+            )
+        )
+    if active["evidence_urls"].isna().any() or (active["evidence_urls"].astype(str).str.strip() == "").any():
+        issues.append(
+            QualityIssue(
+                severity=WARNING,
+                code="RSS_CONTEXT_MISSING_EVIDENCE_URLS",
+                message="one or more RSS context rows have no evidence URLs",
+            )
+        )
+    decision = decision_timestamp or _first_non_empty(active["decision_timestamp"])
+    if decision:
+        decision_time = pd.to_datetime(decision, utc=True, errors="coerce")
+        latest = pd.to_datetime(active["latest_news_timestamp"], utc=True, errors="coerce")
+        if latest.isna().any():
+            issues.append(
+                QualityIssue(
+                    severity=WARNING,
+                    code="RSS_CONTEXT_INVALID_TIMESTAMP",
+                    message="one or more RSS context timestamps could not be parsed",
+                )
+            )
+        if latest.notna().any() and (latest > decision_time).any():
+            issues.append(
+                QualityIssue(
+                    severity=BLOCKING,
+                    code="RSS_CONTEXT_FUTURE_TIMESTAMP",
+                    message="RSS context includes news after the decision timestamp",
+                )
+            )
+    return issues
+
+
+def _safe_rss_context_rows(
+    active: pd.DataFrame,
+    decision_timestamp: str | None,
+) -> pd.DataFrame:
+    decision = decision_timestamp or _first_non_empty(active["decision_timestamp"])
+    latest = pd.to_datetime(active["latest_news_timestamp"], utc=True, errors="coerce")
+    safe = active.loc[latest.notna()].copy()
+    if decision:
+        decision_time = pd.to_datetime(decision, utc=True, errors="coerce")
+        safe = safe.loc[latest.loc[safe.index] <= decision_time]
+    return safe
+
+
+def _build_rss_context_evidence_bundle(active: pd.DataFrame) -> EvidenceBundle:
+    evidence = active.copy()
+    evidence["source"] = "rss_context"
+    evidence["source_url"] = evidence["evidence_urls"].astype(str).map(
+        lambda value: value.split(";")[0] if value else ""
+    )
+    evidence["known_at"] = evidence["latest_news_timestamp"]
+    evidence["record_id"] = (
+        "rss_context:"
+        + evidence["entity_type"].astype(str)
+        + ":"
+        + evidence["entity_id"].astype(str)
+    )
+    return build_evidence_bundle(
+        evidence,
+        feature_columns=["news_count", "source_count"],
+        source_columns=["source", "source_url", "known_at", "decision_timestamp"],
+    )
+
+
+def _rss_context_summary_fields(status: RssContextVariantStatus) -> dict[str, object]:
+    return {
+        "rss_context_status": status.status,
+        "rss_context_evidence_count": status.evidence_count,
+        "rss_context_source_count": status.source_count,
+        "rss_context_latest_timestamp": status.latest_timestamp or pd.NA,
+        "rss_context_warnings": "+".join(status.warnings),
+        "rss_context_evidence_urls": ";".join(status.evidence_urls[:5]),
+    }
+
+
+def _collect_evidence_urls(frame: pd.DataFrame) -> tuple[str, ...]:
+    urls: list[str] = []
+    if frame.empty:
+        return ()
+    for value in frame["evidence_urls"].fillna(""):
+        urls.extend(url.strip() for url in str(value).split(";") if url.strip())
+    return tuple(dict.fromkeys(urls))
+
+
+def _latest_timestamp(frame: pd.DataFrame) -> str | None:
+    if frame.empty:
+        return None
+    latest = pd.to_datetime(frame["latest_news_timestamp"], utc=True, errors="coerce")
+    if latest.dropna().empty:
+        return None
+    return latest.max().isoformat()
+
+
+def _first_non_empty(values: pd.Series) -> str | None:
+    for value in values:
+        if pd.notna(value) and str(value).strip():
+            return str(value).strip()
+    return None
 
 
 def _price_data_period(prices_by_symbol: dict[str, pd.DataFrame]) -> tuple[str, str]:

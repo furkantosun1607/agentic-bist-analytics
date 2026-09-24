@@ -23,6 +23,10 @@ BACKTEST_TRADE_COLUMNS = (
     "exit_date",
     "exit_price",
     "gross_return",
+    "trading_cost_bps",
+    "slippage_bps",
+    "total_cost_bps",
+    "cost_adjusted_return",
     "benchmark_return",
     "benchmark_relative_return",
     "sector",
@@ -37,6 +41,14 @@ BACKTEST_SUMMARY_COLUMNS = (
     "symbol_count",
     "average_gross_return",
     "median_gross_return",
+    "average_cost_adjusted_return",
+    "median_cost_adjusted_return",
+    "cumulative_return",
+    "sharpe_ratio",
+    "maximum_drawdown",
+    "win_rate",
+    "cumulative_benchmark_return",
+    "benchmark_difference",
     "average_benchmark_relative_return",
     "average_sector_relative_return",
 )
@@ -70,6 +82,8 @@ def run_backtest(
     default_horizon: int = 5,
     entry_timing: str = "next_trading_day_open",
     exit_timing: str = "close_after_horizon",
+    trading_cost_bps: float = 10.0,
+    slippage_bps: float = 5.0,
 ) -> BacktestResult:
     """Evaluate timestamped long-only signals without trading before they are knowable."""
 
@@ -80,6 +94,8 @@ def run_backtest(
             default_horizon=default_horizon,
             entry_timing=entry_timing,
             exit_timing=exit_timing,
+            trading_cost_bps=trading_cost_bps,
+            slippage_bps=slippage_bps,
         )
     except Exception as exc:
         return BacktestResult(
@@ -127,6 +143,8 @@ def run_backtest(
                     default_horizon=default_horizon,
                     entry_timing=entry_timing,
                     exit_timing=exit_timing,
+                    trading_cost_bps=trading_cost_bps,
+                    slippage_bps=slippage_bps,
                 )
             )
         except Exception as exc:
@@ -149,8 +167,45 @@ def run_backtest(
     )
 
 
+def run_backtest_from_settings(
+    signals: pd.DataFrame,
+    prices_by_symbol: dict[str, pd.DataFrame],
+    settings,
+    benchmark_prices: pd.DataFrame | None = None,
+    sector_benchmark_prices: dict[str, pd.DataFrame] | None = None,
+    symbol_to_sector: dict[str, str] | None = None,
+) -> BacktestResult:
+    """Run backtest using timing, horizon and cost assumptions from settings."""
+
+    backtest_config = settings.backtest
+    if not backtest_config.horizons:
+        return BacktestResult(
+            trades=empty_backtest_trades_frame(),
+            summary=empty_backtest_summary_frame(),
+            errors=(
+                BacktestError(
+                    scope="settings",
+                    message="settings.backtest.horizons must contain at least one value",
+                ),
+            ),
+        )
+
+    return run_backtest(
+        signals=signals,
+        prices_by_symbol=prices_by_symbol,
+        benchmark_prices=benchmark_prices,
+        sector_benchmark_prices=sector_benchmark_prices,
+        symbol_to_sector=symbol_to_sector,
+        default_horizon=int(backtest_config.horizons[0]),
+        entry_timing=backtest_config.entry_timing,
+        exit_timing=backtest_config.exit_timing,
+        trading_cost_bps=float(backtest_config.trading_cost_bps),
+        slippage_bps=float(backtest_config.slippage_bps),
+    )
+
+
 def summarize_backtest(trades: pd.DataFrame) -> pd.DataFrame:
-    """Summarize eligible backtest trades without adding P14 risk metrics yet."""
+    """Summarize eligible backtest trades with cost-adjusted risk metrics."""
 
     if trades.empty:
         return empty_backtest_summary_frame()
@@ -166,6 +221,14 @@ def summarize_backtest(trades: pd.DataFrame) -> pd.DataFrame:
                     "symbol_count": 0,
                     "average_gross_return": pd.NA,
                     "median_gross_return": pd.NA,
+                    "average_cost_adjusted_return": pd.NA,
+                    "median_cost_adjusted_return": pd.NA,
+                    "cumulative_return": pd.NA,
+                    "sharpe_ratio": pd.NA,
+                    "maximum_drawdown": pd.NA,
+                    "win_rate": pd.NA,
+                    "cumulative_benchmark_return": pd.NA,
+                    "benchmark_difference": pd.NA,
                     "average_benchmark_relative_return": pd.NA,
                     "average_sector_relative_return": pd.NA,
                 }
@@ -173,6 +236,7 @@ def summarize_backtest(trades: pd.DataFrame) -> pd.DataFrame:
             columns=list(BACKTEST_SUMMARY_COLUMNS),
         )
 
+    risk = calculate_risk_metrics(ok)
     return pd.DataFrame(
         [
             {
@@ -182,6 +246,14 @@ def summarize_backtest(trades: pd.DataFrame) -> pd.DataFrame:
                 "symbol_count": ok["symbol"].nunique(),
                 "average_gross_return": ok["gross_return"].mean(),
                 "median_gross_return": ok["gross_return"].median(),
+                "average_cost_adjusted_return": ok["cost_adjusted_return"].mean(),
+                "median_cost_adjusted_return": ok["cost_adjusted_return"].median(),
+                "cumulative_return": risk["cumulative_return"],
+                "sharpe_ratio": risk["sharpe_ratio"],
+                "maximum_drawdown": risk["maximum_drawdown"],
+                "win_rate": risk["win_rate"],
+                "cumulative_benchmark_return": risk["cumulative_benchmark_return"],
+                "benchmark_difference": risk["benchmark_difference"],
                 "average_benchmark_relative_return": ok[
                     "benchmark_relative_return"
                 ].dropna().mean(),
@@ -190,6 +262,43 @@ def summarize_backtest(trades: pd.DataFrame) -> pd.DataFrame:
         ],
         columns=list(BACKTEST_SUMMARY_COLUMNS),
     )
+
+
+def calculate_risk_metrics(trades: pd.DataFrame) -> dict[str, object]:
+    """Calculate deterministic trade-level risk metrics from eligible trades."""
+
+    if trades.empty:
+        return {
+            "cumulative_return": pd.NA,
+            "sharpe_ratio": pd.NA,
+            "maximum_drawdown": pd.NA,
+            "win_rate": pd.NA,
+            "cumulative_benchmark_return": pd.NA,
+            "benchmark_difference": pd.NA,
+        }
+
+    ordered = trades.copy()
+    ordered["exit_sort"] = pd.to_datetime(ordered["exit_date"], errors="coerce")
+    ordered = ordered.sort_values(["exit_sort", "signal_id"]).reset_index(drop=True)
+    returns = pd.to_numeric(ordered["cost_adjusted_return"], errors="coerce").dropna()
+    benchmark_returns = pd.to_numeric(ordered["benchmark_return"], errors="coerce").dropna()
+
+    cumulative_return = _compound_return(returns)
+    cumulative_benchmark_return = _compound_return(benchmark_returns)
+    benchmark_difference = (
+        cumulative_return - cumulative_benchmark_return
+        if pd.notna(cumulative_return) and pd.notna(cumulative_benchmark_return)
+        else pd.NA
+    )
+
+    return {
+        "cumulative_return": cumulative_return,
+        "sharpe_ratio": _sharpe_ratio(returns),
+        "maximum_drawdown": _maximum_drawdown(returns),
+        "win_rate": float((returns > 0).sum() / len(returns)) if len(returns) else pd.NA,
+        "cumulative_benchmark_return": cumulative_benchmark_return,
+        "benchmark_difference": benchmark_difference,
+    }
 
 
 def write_backtest_report(result: BacktestResult, output_path: str | Path) -> Path:
@@ -202,7 +311,7 @@ def write_backtest_report(result: BacktestResult, output_path: str | Path) -> Pa
         "# Backtest Report",
         "",
         "Timing: signals are entered on the first trading day after `known_at` and exited at the configured horizon close.",
-        "Scope: P13 implements trade generation, benchmark hooks and signal counts; costs and risk metrics are added in P14.",
+        "Scope: trade generation, configured costs, benchmark hooks and risk metrics.",
         "",
     ]
 
@@ -237,7 +346,7 @@ def write_backtest_report(result: BacktestResult, output_path: str | Path) -> Pa
         [
             "Limitations:",
             "- This report is historical research output, not investment advice.",
-            "- P13 does not yet calculate transaction costs, slippage, Sharpe ratio or maximum drawdown.",
+            "- Sharpe ratio is calculated on trade-level cost-adjusted returns, not daily portfolio returns.",
             "- Benchmark and sector benchmark returns are reported only when matching benchmark histories are provided.",
             "",
         ]
@@ -265,6 +374,8 @@ def _backtest_signal(
     default_horizon: int,
     entry_timing: str,
     exit_timing: str,
+    trading_cost_bps: float,
+    slippage_bps: float,
 ) -> dict[str, object]:
     signal_id = _required_text(signal, "signal_id")
     symbol = _required_text(signal, "symbol")
@@ -282,6 +393,8 @@ def _backtest_signal(
         horizon=horizon,
         entry_timing=entry_timing,
         exit_timing=exit_timing,
+        trading_cost_bps=trading_cost_bps,
+        slippage_bps=slippage_bps,
         sector=sector,
     )
 
@@ -321,6 +434,8 @@ def _backtest_signal(
         entry_price=float(entry["entry_price"]),
         exit_price=float(exit_row["close"]),
     )
+    total_cost = _total_cost_rate(trading_cost_bps, slippage_bps)
+    row["cost_adjusted_return"] = row["gross_return"] - total_cost
     row["buy_hold_return"] = _return_between_prices(
         entry_price=float(prices.iloc[0]["close"]),
         exit_price=float(exit_row["close"]),
@@ -358,7 +473,10 @@ def _base_trade_row(
     entry_timing: str,
     exit_timing: str,
     sector: str | None,
+    trading_cost_bps: float,
+    slippage_bps: float,
 ) -> dict[str, object]:
+    total_cost_bps = float(trading_cost_bps) + float(slippage_bps)
     return {
         "signal_id": signal_id,
         "symbol": symbol,
@@ -374,6 +492,10 @@ def _base_trade_row(
         "exit_date": pd.NA,
         "exit_price": pd.NA,
         "gross_return": pd.NA,
+        "trading_cost_bps": float(trading_cost_bps),
+        "slippage_bps": float(slippage_bps),
+        "total_cost_bps": total_cost_bps,
+        "cost_adjusted_return": pd.NA,
         "benchmark_return": pd.NA,
         "benchmark_relative_return": pd.NA,
         "sector": sector,
@@ -406,6 +528,34 @@ def _return_between_prices(entry_price: float, exit_price: float) -> float:
     return float(exit_price / entry_price - 1)
 
 
+def _total_cost_rate(trading_cost_bps: float, slippage_bps: float) -> float:
+    return float(trading_cost_bps + slippage_bps) / 10000
+
+
+def _compound_return(returns: pd.Series) -> float | object:
+    if returns.empty:
+        return pd.NA
+    return float((1 + returns).prod() - 1)
+
+
+def _sharpe_ratio(returns: pd.Series) -> float | object:
+    if len(returns) < 2:
+        return pd.NA
+    standard_deviation = returns.std(ddof=1)
+    if pd.isna(standard_deviation) or standard_deviation == 0:
+        return pd.NA
+    return float((returns.mean() / standard_deviation) * (len(returns) ** 0.5))
+
+
+def _maximum_drawdown(returns: pd.Series) -> float | object:
+    if returns.empty:
+        return pd.NA
+    equity = (1 + returns).cumprod()
+    running_peak = equity.cummax()
+    drawdown = equity / running_peak - 1
+    return float(drawdown.min())
+
+
 def _prepare_price_frame(prices: pd.DataFrame, scope: str) -> pd.DataFrame:
     _require_columns(prices, ["date", "close"], scope=scope)
     frame = prices.copy()
@@ -431,6 +581,8 @@ def _validate_backtest_args(
     default_horizon: int,
     entry_timing: str,
     exit_timing: str,
+    trading_cost_bps: float,
+    slippage_bps: float,
 ) -> None:
     if signals is None or signals.empty:
         raise BacktestInputError("signals are empty")
@@ -443,6 +595,12 @@ def _validate_backtest_args(
         raise BacktestInputError("entry_timing must be next_trading_day_open")
     if exit_timing != "close_after_horizon":
         raise BacktestInputError("exit_timing must be close_after_horizon")
+    if trading_cost_bps < 0:
+        raise BacktestInputError("trading_cost_bps cannot be negative")
+    if slippage_bps < 0:
+        raise BacktestInputError("slippage_bps cannot be negative")
+    if trading_cost_bps + slippage_bps <= 0:
+        raise BacktestInputError("trading_cost_bps plus slippage_bps must be nonzero")
 
 
 def _require_columns(frame: pd.DataFrame, columns: list[str], scope: str) -> None:

@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Backtest engine ready |
+| Proje durumu | Backtest costs and risk metrics ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P14 - Costs, Slippage And Risk Metrics |
-| Kritik sonraki hedef | Backtest sonuclarina maliyet, slippage ve risk metriklerini eklemek |
+| Aktif faz | P15 - Unseen Period And Regime Splits |
+| Kritik sonraki hedef | Kural secimi ve nihai test icin unseen period ve piyasa rejimi ayrimini eklemek |
 
 ## Degismez Proje Kurallari
 
@@ -554,7 +554,7 @@ Notes:
 
 ### P14 - Costs, Slippage And Risk Metrics
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Backtest sonuclarina gercekci maliyet ve risk olcumlerini eklemek.
 
@@ -572,10 +572,22 @@ Acceptance:
 - Risk metrikleri icin testler vardir.
 
 Completed:
-- Yok.
+- `src.backtest.run_backtest` trading cost ve slippage parametreleriyle genisletildi.
+- Varsayilan maliyetler `settings.yaml` ile uyumlu olacak sekilde `trading_cost_bps=10` ve `slippage_bps=5` olarak korundu.
+- `run_backtest_from_settings` helper'i eklendi; timing, horizon ve maliyet varsayimlari merkezi settings nesnesinden okunabiliyor.
+- Trade ciktisina `trading_cost_bps`, `slippage_bps`, `total_cost_bps` ve `cost_adjusted_return` alanlari eklendi.
+- Sifir toplam maliyet varsayimi reddediliyor; negatif cost/slippage icin acik hata mesaji donuyor.
+- `calculate_risk_metrics` ile cumulative return, Sharpe ratio, maximum drawdown, win rate, cumulative benchmark return ve benchmark difference hesaplari eklendi.
+- Backtest summary maliyet oncesi ve maliyet sonrasi ortalama/medyan getirileri, risk metriklerini ve benchmark farkini raporlayacak sekilde genisletildi.
+- `reports/backtest.md` P14 kapsamiyla guncellendi.
+- Cost/slippage ve risk metric unit testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 81 tests.
 
 Notes:
 - Maliyetler sifir varsayilmamali.
+- Sharpe ratio trade-level cost-adjusted return serisi uzerinden hesaplanir; daily portfolio return Sharpe'i degildir.
 
 ### P15 - Unseen Period And Regime Splits
 
@@ -814,6 +826,7 @@ Notes:
 | 2026-09-24 | P11 | Quarterly fundamentals research, QoQ/YoY metrics, post-disclosure returns ve benchmark/sector-relative karsilastirmalar eklendi. | `python -m unittest discover -s tests` passed: 63 tests. | Aktif faz P12'ye tasindi. |
 | 2026-09-24 | P12 | Macro/news/video context semasi, source access kontrolleri, point-in-time donusumu, decision-time filtresi ve context dokumanlari eklendi. | `python -m unittest discover -s tests` passed: 70 tests. | Aktif faz P13'e tasindi; canli context verisi uydurulmadi. |
 | 2026-09-24 | P13 | Point-in-time guvenli backtest motoru, signal semasi, entry/exit timing, benchmark hook'lari, summary ve rapor yazici eklendi. | `python -m unittest discover -s tests` passed: 77 tests. | Aktif faz P14'e tasindi; maliyet/risk metrikleri sonraki fazda. |
+| 2026-09-24 | P14 | Backtest maliyet/slippage kesintileri, settings baglantisi, cost-adjusted return, cumulative return, Sharpe, max drawdown, win rate ve benchmark difference eklendi. | `python -m unittest discover -s tests` passed: 81 tests. | Aktif faz P15'e tasindi; gercek backtest verisi henuz uydurulmadi. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -823,7 +836,7 @@ Notes:
 | Haber/video kaynaklari | Open | P12 sema ve import akisi hazir; yalnizca yasal erisilebilir, instructor-approved ve timestamp dogrulanabilir kaynaklar doldurulacak. |
 | BIST/XU100 sembol uyumu | Open | P03 adapter ve missing-symbol rapor yazicisi eklendi; canli `python -m scripts.fetch_market_data` calistirildiginda rapor uretilecek. |
 | Unseen period tarihleri | Open | Veri kapsamindan sonra settings icinde sabitlenecek. |
-| Maliyet/slippage varsayimlari | Decided | Ilk varsayim `trading_cost_bps: 10` ve `slippage_bps: 5`; P14 sirasinda risk raporu icin tekrar gozden gecirilecek. |
+| Maliyet/slippage varsayimlari | Decided | `settings.yaml` icindeki `trading_cost_bps: 10` ve `slippage_bps: 5` backtest motoruna baglandi; sifir toplam maliyet reddedilir. |
 
 ## Teslimat Checklist
 

@@ -6,9 +6,12 @@ import pandas as pd
 
 from src.backtest import (
     BACKTEST_TRADE_COLUMNS,
+    calculate_risk_metrics,
     run_backtest,
+    run_backtest_from_settings,
     write_backtest_report,
 )
+from src.settings import load_settings
 
 
 def prices(symbol="AAA.IS", closes=None, opens=None):
@@ -79,6 +82,70 @@ class BacktestTests(unittest.TestCase):
         self.assertAlmostEqual(row["gross_return"] - expected_sector, row["sector_relative_return"])
         self.assertEqual(1, result.summary.iloc[0]["signal_count"])
         self.assertEqual(1, result.summary.iloc[0]["trade_count"])
+        self.assertIn("cumulative_return", result.summary.columns)
+
+    def test_cost_adjusted_return_deducts_trading_cost_and_slippage(self):
+        result = run_backtest(
+            signals=signals(),
+            prices_by_symbol={"AAA.IS": prices()},
+            trading_cost_bps=20,
+            slippage_bps=5,
+        )
+
+        row = result.trades.iloc[0]
+        self.assertEqual(20.0, row["trading_cost_bps"])
+        self.assertEqual(5.0, row["slippage_bps"])
+        self.assertEqual(25.0, row["total_cost_bps"])
+        self.assertAlmostEqual(row["gross_return"] - 0.0025, row["cost_adjusted_return"])
+        self.assertAlmostEqual(
+            row["cost_adjusted_return"],
+            result.summary.iloc[0]["average_cost_adjusted_return"],
+        )
+
+    def test_backtest_can_read_cost_and_timing_assumptions_from_settings(self):
+        settings = load_settings()
+
+        result = run_backtest_from_settings(
+            signals=signals().drop(columns=["horizon"]),
+            prices_by_symbol={"AAA.IS": prices()},
+            settings=settings,
+        )
+
+        row = result.trades.iloc[0]
+        self.assertEqual(settings.backtest.entry_timing, row["entry_timing"])
+        self.assertEqual(settings.backtest.exit_timing, row["exit_timing"])
+        self.assertEqual(settings.backtest.horizons[0], row["horizon"])
+        self.assertEqual(settings.backtest.trading_cost_bps, row["trading_cost_bps"])
+        self.assertEqual(settings.backtest.slippage_bps, row["slippage_bps"])
+
+    def test_risk_metrics_include_cumulative_return_drawdown_sharpe_and_win_rate(self):
+        trades = pd.DataFrame(
+            {
+                "signal_id": ["a", "b", "c"],
+                "exit_date": ["2024-01-03", "2024-01-04", "2024-01-05"],
+                "cost_adjusted_return": [0.10, -0.20, 0.05],
+                "benchmark_return": [0.05, -0.10, 0.02],
+            }
+        )
+
+        metrics = calculate_risk_metrics(trades)
+
+        self.assertAlmostEqual((1.10 * 0.80 * 1.05) - 1, metrics["cumulative_return"])
+        self.assertAlmostEqual((1.05 * 0.90 * 1.02) - 1, metrics["cumulative_benchmark_return"])
+        self.assertAlmostEqual(2 / 3, metrics["win_rate"])
+        self.assertLess(metrics["maximum_drawdown"], 0)
+        self.assertIsInstance(metrics["sharpe_ratio"], float)
+
+    def test_zero_total_cost_is_rejected(self):
+        result = run_backtest(
+            signals=signals(),
+            prices_by_symbol={"AAA.IS": prices()},
+            trading_cost_bps=0,
+            slippage_bps=0,
+        )
+
+        self.assertTrue(result.trades.empty)
+        self.assertIn("must be nonzero", result.errors[0].message)
 
     def test_missing_price_history_is_trade_status_not_crash(self):
         result = run_backtest(

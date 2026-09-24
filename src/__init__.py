@@ -14,5 +14,6 @@ __all__ = [
     "research",
     "settings",
     "splits",
+    "strategy_variants",
     "validation",
 ]

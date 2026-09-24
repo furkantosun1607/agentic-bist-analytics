@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Replayable decision log ready |
+| Proje durumu | Strategy variant comparison engine ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P20 - Strategy Variant Comparison A-E |
-| Kritik sonraki hedef | Finansal strateji kombinasyonlari A-E'yi ayni veri uzerinde karsilastirmak |
+| Aktif faz | P21 - Harness Variant Comparison A-E |
+| Kritik sonraki hedef | Agent harness varyantlarini ayni sabit sorularla karsilastirmak |
 
 ## Degismez Proje Kurallari
 
@@ -784,7 +784,7 @@ Notes:
 
 ### P20 - Strategy Variant Comparison A-E
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Finansal strateji kombinasyonlari A-E'yi ayni veri uzerinde karsilastirmak.
 
@@ -802,10 +802,22 @@ Acceptance:
 - Performans ve risk metrikleri yan yana raporlanir.
 
 Completed:
-- Yok.
+- `src/strategy_variants.py` strategy variant comparison modulu olarak eklendi.
+- A-E varyant tanimlari sabitlendi: A technical, B technical+sector, C B+fundamentals, D C+macro, E D+verified news/video context.
+- `compare_strategy_variants` bileşen bazli signal DataFrame'lerini ayni price data, benchmark hook'lari ve cost/slippage varsayimlariyla backtest eder.
+- Eksik bileşenli varyantlar `unavailable` status ve `missing_components` alanlariyla raporlanir; kaynak uydurma yapilmaz.
+- Varyant summary data period, cost/slippage, signal/trade count, risk metrikleri ve benchmark farkini yan yana raporlar.
+- Trade ciktisi `variant`, `component` ve `component_signal_id` metadata'sini korur.
+- `compare_strategy_variants_from_settings` merkezi settings'teki horizon ve cost varsayimlarini kullanir.
+- `write_strategy_variants_report` markdown rapor yazicisi ve `reports/strategy_variants.md` baslangic raporu eklendi.
+- Strategy variant unit testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 125 tests.
 
 Notes:
 - Kaynak yoksa deger uydurulmaz.
+- Bu fazda live/verified strateji sinyal kaydi uydurulmadi; motor verified signal records icin hazirlandi.
 
 ### P21 - Harness Variant Comparison A-E
 
@@ -906,6 +918,7 @@ Notes:
 | 2026-09-24 | P17 | Harness state machine, state order enforcement, permitted tool rules, educational labels, human review guard ve event log eklendi. | `python -m unittest discover -s tests` passed: 107 tests. | Aktif faz P18'e tasindi; quality gate semantigi sonraki fazda. |
 | 2026-09-24 | P18 | Evidence bundle, committed evidence hash, quality gate, MCP evidence tool entegrasyonu ve harness risk-gate baglantisi eklendi. | `python -m unittest discover -s tests` passed: 115 tests. | Aktif faz P19'a tasindi; karar logu sonraki fazda. |
 | 2026-09-24 | P19 | Replayable decision log semasi, JSONL append/load, human review guard, record hash ve replay integrity check eklendi. | `python -m unittest discover -s tests` passed: 120 tests. | Aktif faz P20'ye tasindi; live decision kaydi uydurulmadi. |
+| 2026-09-24 | P20 | Strategy variant comparison A-E motoru, missing-component unavailable status, shared cost/data period ve markdown rapor iskeleti eklendi. | `python -m unittest discover -s tests` passed: 125 tests. | Aktif faz P21'e tasindi; live strategy sonucu uydurulmadi. |
 
 ## Acik Riskler Ve Kararlar
 

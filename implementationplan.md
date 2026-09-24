@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Demo and documentation ready |
+| Proje durumu | RSS dynamic context planning ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | Planned phases complete |
-| Kritik sonraki hedef | Kullanici commit/push sonrasi istege bagli live/cache veri doldurma |
+| Aktif faz | P24 - RSS Source Config And Fetcher |
+| Kritik sonraki hedef | RSS kaynaklarini timestamp'li, cache'li ve replay edilebilir haber context katmanina almak |
 
 ## Degismez Proje Kurallari
 
@@ -35,6 +35,8 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 - Eksik veya dogrulanamayan kaynaklar uydurulmaz; raporda eksik olarak isaretlenir.
 - LLM fiyat, oran veya getiri hesaplamaz; hesaplamalar deterministik Python araclariyla yapilir.
 - Her rapor veri donemi, kaynak, orneklem sayisi, varsayimlar ve limitasyonlar icerir.
+- RSS haberleri gercek zamanli dinlenmez; zamanlanmis polling ile cekilir, `published_timestamp` ve `fetched_timestamp` birlikte saklanir.
+- Haber context'i tek basina al/sat aksiyonu uretmez; yalnizca kanit, risk ve Strategy Variant E girdisi olarak kullanilir.
 
 ## Hedef Dosya Yapisi
 
@@ -44,7 +46,10 @@ implementationplan.md
 requirements.txt
 config/universe.csv
 config/settings.yaml
+config/rss_sources.yaml
+config/news_aliases.csv
 src/data.py
+src/rss_news.py
 src/indicators.py
 src/research.py
 src/backtest.py
@@ -926,6 +931,171 @@ Notes:
 - Web dashboard zorunlu degil; notebook veya CLI demo yeterli olabilir.
 - Cache yoklugu warning olarak raporlanir; measured financial finding uretilmez.
 
+## RSS Haber Akisi Ve Zamanlama Politikasi
+
+Karar: RSS kaynaklari anlik stream gibi dinlenmeyecek. RSS feed'ler dogasi geregi polling ile calisir; bu yuzden sistem haberleri zamanlanmis araliklarla ceker, normalize eder, deduplicate eder ve replay edilebilir cache'e yazar.
+
+Varsayilan cekim sikligi:
+- Piyasa saatlerinde: 15 dakikada bir RSS polling.
+- Piyasa disinda: 60 dakikada bir RSS polling.
+- Sinif demosunda: once `python -m scripts.fetch_rss_news`, sonra `python -m scripts.demo --offline`.
+- Backtest/replay modunda: yalnizca cache'teki `published_timestamp <= decision_timestamp` haberleri kullanilir.
+
+Neden anlik dinleme degil:
+- RSS kaynaklari push/websocket garantisi vermez.
+- Tekrarlanabilir akademik deney icin snapshot/cache gerekir.
+- Rate-limit, kaynak hatasi veya RSS format degisikligi tum sistemi durdurmamalidir.
+- Haberler karar girdisi olabilir, fakat tek basina otomatik trade aksiyonu uretmez.
+
+Ilk RSS kaynaklari:
+- `https://www.cnnturk.com/feed/rss/ekonomi/news`
+- `https://www.ntv.com.tr/ekonomi.rss`
+- `https://www.milliyet.com.tr/rss/rssnew/sondakikarss.xml`
+- `https://www.yeniakit.com.tr/rss/haber/ekonomi`
+- `https://www.yenisafak.com/rss?category=ekonomi`
+- `https://www.ft.com/global-economy?format=rss`
+- `https://www.investing.com/rss/news.rss`
+- `https://finance.yahoo.com/news/rssindex`
+
+### P24 - RSS Source Config And Fetcher
+
+Status: `Not Started`
+
+Goal: RSS kaynaklarini konfigurasyona alip, haberleri timestamp'li raw cache olarak cekmek.
+
+Deliverables:
+- `config/rss_sources.yaml`
+- `src/rss_news.py`
+- `scripts/fetch_rss_news.py`
+- `data/rss/news_raw.jsonl` cikti formati
+- RSS fetch unit testleri
+
+Acceptance:
+- Her RSS kaydinda `source_id`, `title`, `url`, `published_timestamp`, `fetched_timestamp`, `language`, `source_access` ve `content_hash` bulunur.
+- Bir kaynak hata verdiginde diger kaynaklar cekilmeye devam eder.
+- Fetch komutu exit code ve raporda kaynak bazli basari/uyari bilgisini verir.
+
+Completed:
+- Yok.
+
+Notes:
+- Canli RSS ciktilari commitlenmez; replay icin gerekirse kucuk fixture kullanilir.
+- `published_timestamp` yoksa kayit `warning` alir ve decision-time filtrelerinde guvenli sekilde ele alinir.
+
+### P25 - RSS Normalization Dedup And Source Health
+
+Status: `Not Started`
+
+Goal: Raw RSS kayitlarini tekillestirip kaynak sagligi raporunu uretmek.
+
+Deliverables:
+- Normalize edilmis `data/rss/news.jsonl`
+- URL/title/content hash tabanli dedup
+- `reports/rss_source_health.md`
+- Kaynak stale/error/empty durumlari
+
+Acceptance:
+- Ayni URL veya ayni normalize title tekrar yazilmaz.
+- Her source icin item count, latest published time ve error/warning durumu raporlanir.
+- Bos feed tum pipeline'i durdurmaz, warning olarak islenir.
+
+Completed:
+- Yok.
+
+Notes:
+- Dedup deterministik olacak; LLM kullanilmayacak.
+
+### P26 - News Alias Matching
+
+Status: `Not Started`
+
+Goal: Haberleri hisse, sektor ve makro konu basliklariyla eslestirmek.
+
+Deliverables:
+- `config/news_aliases.csv`
+- Ticker/sektor/makro alias matcher
+- `linked_entities` ve `matched_terms` alanlari
+- Alias matching testleri
+
+Acceptance:
+- Haber basligi ve ozetinden deterministic alias match uretilir.
+- Eslesme yoksa haber genel ekonomi context'i olarak saklanabilir.
+- Alias eslesmesi trade sinyali sayilmaz; sadece context evidence olur.
+
+Completed:
+- Yok.
+
+Notes:
+- Ilk fazda sentiment modeli yok; yanlis pozitifleri azaltmak icin basit, acik alias sozlugu kullanilacak.
+
+### P27 - News Context Builder And Report Integration
+
+Status: `Not Started`
+
+Goal: RSS haberlerini karar zamanina gore filtreleyip ticker/sektor/makro context ozeti uretmek.
+
+Deliverables:
+- `scripts/build_news_context.py`
+- `data/rss/news_context.csv`
+- `reports/context_sources.md` RSS bolumu guncellemesi
+- Decision-time filtre testleri
+
+Acceptance:
+- Context builder yalnizca `published_timestamp <= decision_timestamp` haberleri kullanir.
+- Lookback penceresi ayarlanabilir olur; varsayilan 7 gun.
+- Her ticker icin news_count, source_count, latest_news_timestamp ve evidence_urls raporlanir.
+
+Completed:
+- Yok.
+
+Notes:
+- Bu faz P12 context semasina baglanir; video zorunlu degildir.
+
+### P28 - Demo Update With RSS Context Status
+
+Status: `Not Started`
+
+Goal: Offline demo komutuna RSS cache ve context durumunu eklemek.
+
+Deliverables:
+- `python -m scripts.demo --offline` RSS cache kontrolu
+- `reports/demo_summary.md` RSS source/context satirlari
+- Demo smoke testleri
+
+Acceptance:
+- Demo internet olmadan RSS cache durumunu raporlar.
+- RSS cache yoksa warning verir; proje demo akisi durmaz.
+- RSS context varsa kac haber/kaynak/ticker eslestigi ozetlenir.
+
+Completed:
+- Yok.
+
+Notes:
+- Demo anlik haber cekmez; once fetch komutu calistirilir, demo cache'i okur.
+
+### P29 - Strategy Variant E RSS Context Integration
+
+Status: `Not Started`
+
+Goal: RSS haber context'ini Strategy Variant E icin verified context girdisi yapmak.
+
+Deliverables:
+- Strategy Variant E news/context availability kontrolu
+- Evidence bundle'a RSS evidence linkleri
+- Quality gate'e RSS timestamp/source warnings
+- Variant raporu guncellemesi
+
+Acceptance:
+- Variant E sadece timestamp'i guvenli ve source metadata'si olan haberleri kullanir.
+- Eksik RSS context `unavailable` veya `warning` olarak raporlanir, uydurma sinyal uretilmez.
+- Haber yogunlugu tek basina performans iddiasi olarak yazilmaz.
+
+Completed:
+- Yok.
+
+Notes:
+- Haber context'i finansal tavsiye degildir; strategy comparison icin destekleyici evidence olarak kullanilir.
+
 ## Gelistirme Gunlugu
 
 | Tarih | Faz | Degisiklik | Test/Dogrulama | Not |
@@ -955,6 +1125,7 @@ Notes:
 | 2026-09-24 | P21 | Harness variant comparison A-E motoru, fixed question-set semasi, capability metrikleri ve markdown rapor iskeleti eklendi. | `python -m unittest discover -s tests` passed: 129 tests. | Aktif faz P22'ye tasindi; live LLM run uydurulmadi. |
 | 2026-09-24 | P22 | Rapor manifest'i, report index, final technical report ve reporting testleri eklendi. | `python -m unittest discover -s tests` passed: 132 tests. | Aktif faz P23'e tasindi; measured result iddiasi eklenmedi. |
 | 2026-09-24 | P23 | Offline demo komutu, demo summary raporu, README kurulum/cache notlari ve demo smoke testleri eklendi. | `python -m unittest discover -s tests` passed: 135 tests. | Planlanan fazlar tamamlandi; cache yoklugu warning olarak raporlanir. |
+| 2026-09-24 | RSS Planning | RSS haber kaynaklari icin polling, cache, dedup, alias matching, context builder ve Strategy Variant E entegrasyon fazlari plana eklendi. | Dokuman guncellemesi. | Aktif faz P24'e tasindi; RSS anlik dinlenmeyecek, periyodik polling yapilacak. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -962,6 +1133,7 @@ Notes:
 | --- | --- | --- |
 | Finansal veri erisimi | Open | Fintables erisim ve lisans kosullari uygulanirken dogrulanacak. |
 | Haber/video kaynaklari | Open | P12 sema ve import akisi hazir; yalnizca yasal erisilebilir, instructor-approved ve timestamp dogrulanabilir kaynaklar doldurulacak. |
+| RSS cekim sikligi | Decided | RSS kaynaklari anlik dinlenmez; piyasa saatinde 15 dakikada bir, piyasa disinda 60 dakikada bir polling yapilir. Backtest/replay yalnizca cache snapshot kullanir. |
 | BIST/XU100 sembol uyumu | Open | P03 adapter ve missing-symbol rapor yazicisi eklendi; canli `python -m scripts.fetch_market_data` calistirildiginda rapor uretilecek. |
 | Unseen period tarihleri | Open | P15 altyapisi ve settings alani hazir; `experiment.unseen_start_date` veri kapsami dogrulandiktan sonra sabitlenecek. |
 | Maliyet/slippage varsayimlari | Decided | `settings.yaml` icindeki `trading_cost_bps: 10` ve `slippage_bps: 5` backtest motoruna baglandi; sifir toplam maliyet reddedilir. |
@@ -972,6 +1144,7 @@ Notes:
 - [ ] Market price and XU100 cache
 - [ ] Point-in-time fundamentals data
 - [ ] Macro/news/video context records
+- [ ] RSS news cache and ticker/sector/macro context
 - [ ] Four required scenario reports
 - [ ] Backtests with costs, benchmarks and risk metrics
 - [ ] Unseen test period and regime comparison

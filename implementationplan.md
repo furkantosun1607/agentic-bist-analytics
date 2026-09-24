@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Strategy variant comparison engine ready |
+| Proje durumu | Harness variant comparison engine ready |
 | Son guncelleme | 2026-09-24 |
-| Aktif faz | P21 - Harness Variant Comparison A-E |
-| Kritik sonraki hedef | Agent harness varyantlarini ayni sabit sorularla karsilastirmak |
+| Aktif faz | P22 - Reports And Final Technical Narrative |
+| Kritik sonraki hedef | Senaryo raporlari, context raporu, backtest raporlari ve final teknik anlatimi toparlamak |
 
 ## Degismez Proje Kurallari
 
@@ -821,7 +821,7 @@ Notes:
 
 ### P21 - Harness Variant Comparison A-E
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Agent harness varyantlarini ayni sabit sorularla karsilastirmak.
 
@@ -839,10 +839,20 @@ Acceptance:
 - Finansal strateji A-E ile harness A-E birbirine karistirilmaz.
 
 Completed:
-- Yok.
+- `src/harness_variants.py` harness variant comparison modulu olarak eklendi.
+- Harness A-E varyant tanimlari sabitlendi: A raw LLM, B LLM+tools, C tools+enforced states, D C+evidence/quality gate, E D+memory/human review.
+- Fixed question-set semasi `requires_numbers`, `requires_tools`, `requires_state_enforcement`, `requires_evidence`, `requires_quality_gate`, `requires_replay`, `requires_human_review` alanlariyla tanimlandi.
+- `compare_harness_variants` ayni sabit sorular uzerinden unsupported number, invalid tool call, evidence completeness, quality gate, replayability ve human review coverage metriklerini hesaplar.
+- Varyant summary `score` ve `status` alanlariyla yan yana raporlanir.
+- `write_harness_variants_report` markdown rapor yazicisi ve `reports/harness_variants.md` baslangic raporu eklendi.
+- Harness variant unit testleri eklendi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 129 tests.
 
 Notes:
 - Bu faz teslimat icin ayri bir karsilastirma basligidir.
+- P20 strategy A-E ile P21 harness A-E ayri tutuldu; bu fazda live LLM run uydurulmadi.
 
 ### P22 - Reports And Final Technical Narrative
 
@@ -919,6 +929,7 @@ Notes:
 | 2026-09-24 | P18 | Evidence bundle, committed evidence hash, quality gate, MCP evidence tool entegrasyonu ve harness risk-gate baglantisi eklendi. | `python -m unittest discover -s tests` passed: 115 tests. | Aktif faz P19'a tasindi; karar logu sonraki fazda. |
 | 2026-09-24 | P19 | Replayable decision log semasi, JSONL append/load, human review guard, record hash ve replay integrity check eklendi. | `python -m unittest discover -s tests` passed: 120 tests. | Aktif faz P20'ye tasindi; live decision kaydi uydurulmadi. |
 | 2026-09-24 | P20 | Strategy variant comparison A-E motoru, missing-component unavailable status, shared cost/data period ve markdown rapor iskeleti eklendi. | `python -m unittest discover -s tests` passed: 125 tests. | Aktif faz P21'e tasindi; live strategy sonucu uydurulmadi. |
+| 2026-09-24 | P21 | Harness variant comparison A-E motoru, fixed question-set semasi, capability metrikleri ve markdown rapor iskeleti eklendi. | `python -m unittest discover -s tests` passed: 129 tests. | Aktif faz P22'ye tasindi; live LLM run uydurulmadi. |
 
 ## Acik Riskler Ve Kararlar
 

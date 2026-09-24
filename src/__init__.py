@@ -9,6 +9,7 @@ __all__ = [
     "events",
     "fundamentals",
     "harness",
+    "harness_variants",
     "indicators",
     "mcp_server",
     "research",

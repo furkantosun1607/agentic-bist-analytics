@@ -64,6 +64,7 @@ def label_market_regime(
         regime_frame = build_market_regime_frame(
             benchmark_prices=benchmark_prices,
             lookback_days=lookback_days,
+            date_column=date_column,
         )
         output = output.merge(regime_frame, on=date_column, how="left")
     else:

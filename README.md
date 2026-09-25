@@ -131,6 +131,14 @@ python -m scripts.run_backtests
 
 This refreshes `reports/backtest.md` with signal counts, trade counts, configured costs, benchmark-relative return, cumulative trade-level return, Sharpe, maximum drawdown and win rate. It is an educational trade-level backtest, not a capital-constrained portfolio simulation.
 
+Run the measured unseen-period and regime split report:
+
+```powershell
+python -m scripts.run_split_regime
+```
+
+This uses the configured `experiment.unseen_start_date` and XU100 benchmark regime labels to refresh `reports/split_regime.md`.
+
 Then run the offline demo:
 
 ```powershell

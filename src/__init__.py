@@ -25,6 +25,7 @@ __all__ = [
     "reporting",
     "rss_news",
     "settings",
+    "split_regime_reports",
     "splits",
     "strategy_variants",
     "validation",

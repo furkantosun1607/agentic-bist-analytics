@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Four research reports and P35 backtest/risk report measured from local cache |
+| Proje durumu | Four research reports, P35 backtest/risk and P36 unseen/regime measured from local cache |
 | Son guncelleme | 2026-09-25 |
-| Aktif faz | P36 - Unseen Period And Regime Finalization |
-| Kritik sonraki hedef | Veri kapsamina uygun unseen start date sabitleyip split/regime raporunu olcmek |
+| Aktif faz | P37 - Strategy Variants A-E Measured Comparison |
+| Kritik sonraki hedef | A-E strategy variants icin executable component signal setleriyle measured comparison uretmek |
 
 ## Degismez Proje Kurallari
 
@@ -1410,7 +1410,7 @@ Notes:
 
 ### P36 - Unseen Period And Regime Finalization
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Veri kapsamina gore `experiment.unseen_start_date` degerini sabitlemek ve rising/falling market regime raporunu uretmek.
 
@@ -1425,10 +1425,21 @@ Acceptance:
 - Regime comparison sample size cok kucukse warning verir.
 
 Completed:
-- Yok.
+- `config/settings.yaml` icinde `experiment.unseen_start_date` `2025-10-01` olarak sabitlendi.
+- `src/split_regime_reports.py` measured split/regime orchestration modulu olarak eklendi.
+- `scripts/run_split_regime.py` CLI'i eklendi.
+- P35 backtest trade'leri `known_at` karar tarihine gore selection/unseen olarak etiketlendi.
+- XU100 local benchmark cache'i ile 20 gunluk rising/falling/unknown regime label'lari uretildi.
+- `reports/split_regime.md` measured local-cache ciktisiyle guncellendi: 25,813 tradable row, 20,909 selection row, 4,904 unseen row.
+- Split/regime unit testleri ve import testleri eklendi.
+
+Tests:
+- `python -m unittest tests.test_split_regime_reports tests.test_splits tests.test_imports` passed: 13 tests.
+- `python -m scripts.run_split_regime` passed: `status=measured`, `trades=25813`, `stability_rows=4`, `regime_rows=6`, `warnings=0`.
 
 Notes:
-- Bu faz market cache audit tamamlanmadan yapilmayacak.
+- Unseen tarihi, mevcut cache doneminin son yaklasik 12 ayini ayri tutacak sekilde secildi.
+- Bu rapor trade-level stability olcer; A-E strategy variant secimi ve comparison P37'de yapilacak.
 
 ### P37 - Strategy Variants A-E Measured Comparison
 
@@ -1563,6 +1574,7 @@ Notes:
 | 2026-09-24 | P33 | Macro context generator, yfinance FX adapter, 2026 statik curated TCMB/TUIK/FED records, required indicator coverage audit, status CLI, README/report manifest guncellemesi ve testler eklendi. | `python -m unittest discover -s tests` passed: 176 tests; `python -m scripts.fetch_macro_context` 1421 rows/0 errors; `python -m scripts.audit_macro_context` ready. | Aktif faz P34'e tasindi; raw macro CSV commitlenmez, status raporlari commitlenir. |
 | 2026-09-24 | P34 | Research report runner, measured four-scenario report refresh, research run status raporu, peer median alignment fix ve README/report manifest guncellemeleri eklendi. | `python -m unittest discover -s tests` passed: 181 tests; `python -m scripts.run_research_reports` generated 4 measured reports with 0 errors. | Aktif faz P35'e tasindi; backtest/risk execution sirada. |
 | 2026-09-25 | P35 | Fixed-rule research signals assembled from P34 outputs, measured backtest/risk CLI and report, signal counts, benchmark/cost/risk summary, README/report manifest/gap updates and tests eklendi. | `python -m unittest tests.test_backtest_reports tests.test_backtest tests.test_imports` passed: 15 tests; `python -m scripts.run_backtests` measured 25,819 signals and 25,813 tradable rows. | Aktif faz P36'ya tasindi; unseen/regime finalization sirada. |
+| 2026-09-25 | P36 | `unseen_start_date=2025-10-01` sabitlendi, measured split/regime runner ve CLI eklendi, P35 trade'leri known_at split ve XU100 regime label'lariyla raporlandi. | `python -m unittest tests.test_split_regime_reports tests.test_splits tests.test_imports` passed: 13 tests; `python -m scripts.run_split_regime` measured 25,813 trades, 4 stability rows and 6 regime rows. | Aktif faz P37'ye tasindi; strategy variants measured comparison sirada. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -1573,9 +1585,9 @@ Notes:
 | Haber/video kaynaklari | Open | P12 sema ve import akisi hazir; yalnizca yasal erisilebilir, instructor-approved ve timestamp dogrulanabilir kaynaklar doldurulacak. |
 | RSS cekim sikligi | Decided | RSS kaynaklari anlik dinlenmez; piyasa saatinde 15 dakikada bir, piyasa disinda 60 dakikada bir polling yapilir. Backtest/replay yalnizca cache snapshot kullanir. |
 | BIST/XU100 sembol uyumu | Open | P03 adapter ve missing-symbol rapor yazicisi eklendi; canli `python -m scripts.fetch_market_data` calistirildiginda rapor uretilecek. |
-| Unseen period tarihleri | Open | P15 altyapisi ve settings alani hazir; `experiment.unseen_start_date` veri kapsami dogrulandiktan sonra sabitlenecek. |
+| Unseen period tarihleri | Decided | `experiment.unseen_start_date` `2025-10-01` olarak sabitlendi; selection 20,909 trade, unseen 4,904 trade ile measured raporlandi. |
 | Maliyet/slippage varsayimlari | Decided | `settings.yaml` icindeki `trading_cost_bps: 10` ve `slippage_bps: 5` backtest motoruna baglandi; sifir toplam maliyet reddedilir. |
-| Measured final results | In Progress | Four scenario reports ve P35 backtest/risk measured oldu; P36-P40 unseen/regime, strategy variants, harness run ve final refresh ile devam edecek. |
+| Measured final results | In Progress | Four scenario reports, P35 backtest/risk ve P36 unseen/regime measured oldu; P37-P40 strategy variants, harness run ve final refresh ile devam edecek. |
 
 ## Teslimat Checklist
 
@@ -1586,7 +1598,7 @@ Notes:
 - [x] RSS news cache and ticker/sector/macro context
 - [x] Four required scenario reports
 - [x] Backtests with costs, benchmarks and risk metrics
-- [ ] Unseen test period and regime comparison
+- [x] Unseen test period and regime comparison
 - [x] Deterministic MCP tools
 - [x] Stateful harness with evidence and quality gate
 - [x] Human-reviewed replayable decision log

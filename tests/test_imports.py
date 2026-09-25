@@ -19,6 +19,7 @@ class ImportTest(unittest.TestCase):
             research,
             research_reports,
             rss_news,
+            split_regime_reports,
             yfinance_fundamentals,
         )
 
@@ -37,6 +38,7 @@ class ImportTest(unittest.TestCase):
         self.assertIsNotNone(research)
         self.assertIsNotNone(research_reports)
         self.assertIsNotNone(rss_news)
+        self.assertIsNotNone(split_regime_reports)
         self.assertIsNotNone(yfinance_fundamentals)
 
 

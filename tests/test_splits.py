@@ -96,7 +96,7 @@ class SplitTests(unittest.TestCase):
     def test_settings_include_experiment_split_defaults(self):
         settings = load_settings()
 
-        self.assertIsNone(settings.experiment.unseen_start_date)
+        self.assertEqual("2025-10-01", settings.experiment.unseen_start_date)
         self.assertEqual(20, settings.experiment.regime_lookback_days)
 
     def test_write_split_regime_report(self):

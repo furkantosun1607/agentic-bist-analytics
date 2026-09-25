@@ -5,6 +5,7 @@ class ImportTest(unittest.TestCase):
     def test_core_modules_import(self):
         from src import (
             backtest,
+            backtest_reports,
             data,
             fundamentals_status,
             harness,
@@ -22,6 +23,7 @@ class ImportTest(unittest.TestCase):
         )
 
         self.assertIsNotNone(backtest)
+        self.assertIsNotNone(backtest_reports)
         self.assertIsNotNone(data)
         self.assertIsNotNone(fundamentals_status)
         self.assertIsNotNone(harness)

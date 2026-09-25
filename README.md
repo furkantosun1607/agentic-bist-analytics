@@ -123,6 +123,14 @@ python -m scripts.run_research_reports
 
 This writes `reports/research_run_status.md` plus refreshed sector catch-up, weekday pattern, technical reversal, and quarterly fundamentals reports.
 
+Run the measured backtest/risk report from the fixed research signal policy:
+
+```powershell
+python -m scripts.run_backtests
+```
+
+This refreshes `reports/backtest.md` with signal counts, trade counts, configured costs, benchmark-relative return, cumulative trade-level return, Sharpe, maximum drawdown and win rate. It is an educational trade-level backtest, not a capital-constrained portfolio simulation.
+
 Then run the offline demo:
 
 ```powershell

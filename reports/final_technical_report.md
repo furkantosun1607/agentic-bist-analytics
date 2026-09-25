@@ -1,6 +1,6 @@
 # Final Technical Report
 
-Status: implementation infrastructure is complete through report orchestration. Local market, fundamentals, macro and RSS artifacts are available, and the four required research reports have been generated from local cache.
+Status: implementation infrastructure is complete through measured report orchestration. Local market, fundamentals, macro and RSS artifacts are available; the four required research reports and the backtest/risk report have been generated from local cache.
 
 ## Scope
 
@@ -8,11 +8,11 @@ This project implements an educational BIST 100 research harness for a fixed 30-
 
 ## Report Status
 
-The four scenario reports have measured local-cache outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but approved video context, backtest/risk execution, strategy variants and final measured strategy outputs are still missing.
+The four scenario reports and backtest/risk report have measured local-cache outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but unseen/regime finalization, strategy variants and final measured strategy outputs are still missing.
 
 ## Inconclusive Findings
 
-The four scenario reports contain local-cache measurements, but strategy-level conclusions remain inconclusive until P35-P37 run backtests, unseen/regime checks and strategy variants on verified signals.
+The four scenario reports and P35 backtest contain local-cache measurements, but strategy-level conclusions remain inconclusive until P36-P37 run unseen/regime checks and strategy variants on verified signals.
 
 ## Key Controls
 
@@ -31,8 +31,9 @@ The four scenario reports contain local-cache measurements, but strategy-level c
 - Raw local macro, fundamentals, market and RSS cache files are not committed.
 - Approved video context and final measured strategy outputs are not committed.
 - Strategy and harness variant reports are engines, not live experiment results.
+- The measured backtest is trade-level research output and not a portfolio allocation simulation.
 - No broker connection or investment advice is included.
 
 ## Next Step
 
-P35 should run backtest and risk reporting from the generated signal/report outputs, then P36-P37 should finalize unseen/regime and strategy variant comparisons.
+P36 should finalize unseen-period and regime comparison, then P37 should run measured strategy variant comparisons.

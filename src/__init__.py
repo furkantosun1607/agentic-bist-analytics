@@ -2,6 +2,7 @@
 
 __all__ = [
     "backtest",
+    "backtest_reports",
     "context",
     "data",
     "demo",

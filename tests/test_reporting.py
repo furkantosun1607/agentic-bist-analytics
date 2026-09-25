@@ -34,7 +34,7 @@ class ReportingTests(unittest.TestCase):
 
             text = output.read_text(encoding="utf-8")
             self.assertIn("# Final Technical Report", text)
-            self.assertIn("The four scenario reports contain local-cache measurements", text)
+            self.assertIn("The four scenario reports and P35 backtest contain local-cache measurements", text)
             self.assertIn("strategy-level conclusions remain inconclusive", text)
             self.assertIn("No broker connection or investment advice", text)
 

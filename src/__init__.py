@@ -7,6 +7,7 @@ __all__ = [
     "data",
     "demo",
     "decision_log",
+    "decision_log_reports",
     "evidence",
     "events",
     "fundamentals",

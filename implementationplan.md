@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Four reports, P35-P38 measured/deterministic outputs generated |
+| Proje durumu | P00-P40 local submission workflow complete |
 | Son guncelleme | 2026-09-25 |
-| Aktif faz | P39 - Human Reviewed Replay And Decision Log |
-| Kritik sonraki hedef | En az bir human-reviewed decision log kaydi uretip replay integrity raporlamak |
+| Aktif faz | Complete |
+| Kritik sonraki hedef | Commit/push sonrasi teslim oncesi gerekirse documented commands tekrar calistirilir |
 
 ## Degismez Proje Kurallari
 
@@ -1509,7 +1509,7 @@ Notes:
 
 ### P39 - Human Reviewed Replay And Decision Log
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: En az bir tam analiz akisini human review ile karar loguna kaydetmek ve replay integrity kontrolunu raporlamak.
 
@@ -1524,14 +1524,25 @@ Acceptance:
 - Gercek karar finansal tavsiye gibi yazilmaz.
 
 Completed:
-- Yok.
+- `src/decision_log.py` complete JSONL writer ve replay check rapor bolumuyle genisletildi.
+- `src/decision_log_reports.py` P39 reviewed decision log orchestration modulu olarak eklendi.
+- `scripts/run_decision_log.py` CLI'i eklendi.
+- `reports/decision_logs/decisions.jsonl` tek reviewed educational decision record ile uretildi.
+- `reports/decision_log.md` replay integrity sonucu ile guncellendi.
+- Kayit `review_status=accept`, `output_label=INVESTIGATE`, `gate=ANALYSIS_SAFE`, `replay_status=ok` icerir.
+- README, report manifest, final technical report ve submission gap status P39 durumuna cekildi.
+- Decision log runner unit testleri ve import testleri eklendi.
+
+Tests:
+- `python -m unittest tests.test_decision_log_reports tests.test_decision_log tests.test_imports` passed: 9 tests.
+- `python -m scripts.run_decision_log` passed: `status=reviewed_replay_ok`, `decision_id=p39-reviewed-educational-analysis`, `replay_status=ok`.
 
 Notes:
-- Bu faz P34-P35 ciktisindan en az bir aday analiz secildikten sonra yapilmali.
+- Kayit educational project evidence icindir; yatirim onerisi veya canli finansal karar degildir.
 
 ### P40 - Final Submission Refresh
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Tum rapor manifest'ini, final technical report'u, demo summary'yi ve submission gap status'u son duruma gore yenilemek.
 
@@ -1548,10 +1559,19 @@ Acceptance:
 - Eksik kalan alanlar explicit inconclusive/blocked olarak yazilir.
 
 Completed:
-- Yok.
+- README final run command akisi ve proje durumu son state'e gore guncellendi.
+- `src/reporting.py` final technical report metni submission-ready duruma cekildi.
+- `reports/report_index.md`, `reports/final_technical_report.md`, `reports/demo_summary.md` ve `reports/submission_gap_status.md` son manifest/demo kosusuyla yenilendi.
+- Submission gap status kalan is listesinden final limitation listesine donusturuldu.
+- P00-P40 workflow tamamlandi.
+
+Tests:
+- `python -m unittest discover -s tests` passed: 197 tests.
+- `python -m scripts.demo --offline` passed and regenerated report index/final report/demo summary.
 
 Notes:
-- Bu faz teslim oncesi son toparlama fazidir.
+- D/E strategy variants unavailable kalmaya devam eder; bu eksik veri uydurulmadigi icin bilincli limitation'dir.
+- Raw local cache artifact'leri commitlenmez.
 
 ## Gelistirme Gunlugu
 
@@ -1599,6 +1619,8 @@ Notes:
 | 2026-09-25 | P36 | `unseen_start_date=2025-10-01` sabitlendi, measured split/regime runner ve CLI eklendi, P35 trade'leri known_at split ve XU100 regime label'lariyla raporlandi. | `python -m unittest tests.test_split_regime_reports tests.test_splits tests.test_imports` passed: 13 tests; `python -m scripts.run_split_regime` measured 25,813 trades, 4 stability rows and 6 regime rows. | Aktif faz P37'ye tasindi; strategy variants measured comparison sirada. |
 | 2026-09-25 | P37 | Strategy variant orchestration, A-C measured comparison, D/E unavailable handling, RSS metadata-only policy, CLI, README/report manifest/gap updates ve testler eklendi. | `python -m unittest tests.test_strategy_variant_reports tests.test_strategy_variants tests.test_imports` passed: 12 tests; `python -m scripts.run_strategy_variants` returned `measured_partial` with A-C ok and D/E unavailable. | Aktif faz P38'e tasindi; harness variants experiment sirada. |
 | 2026-09-25 | P38 | Fixed harness question fixture, deterministic harness variant runner/CLI, measured harness report, README/report manifest/gap updates ve testler eklendi. | `python -m unittest tests.test_harness_variant_reports tests.test_harness_variants tests.test_imports` passed: 8 tests; `python -m scripts.run_harness_variants` returned `measured_deterministic`, 5 questions, 5 variants, best E. | Aktif faz P39'a tasindi; human-reviewed decision log sirada. |
+| 2026-09-25 | P39 | Reviewed educational decision log runner, idempotent JSONL writer, replay integrity report, README/report manifest/gap updates ve testler eklendi. | `python -m unittest tests.test_decision_log_reports tests.test_decision_log tests.test_imports` passed: 9 tests; `python -m scripts.run_decision_log` returned `reviewed_replay_ok`. | Aktif faz P40'a tasindi; final submission refresh sirada. |
+| 2026-09-25 | P40 | README, report manifest, final technical report, demo summary, submission gap status ve implementation plan final submission durumuna gore yenilendi. | `python -m unittest discover -s tests` passed: 197 tests; `python -m scripts.demo --offline` passed. | P00-P40 local submission workflow tamamlandi. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -1611,8 +1633,9 @@ Notes:
 | BIST/XU100 sembol uyumu | Open | P03 adapter ve missing-symbol rapor yazicisi eklendi; canli `python -m scripts.fetch_market_data` calistirildiginda rapor uretilecek. |
 | Unseen period tarihleri | Decided | `experiment.unseen_start_date` `2025-10-01` olarak sabitlendi; selection 20,909 trade, unseen 4,904 trade ile measured raporlandi. |
 | Harness A-E run tipi | Decided | Live LLM run yerine deterministic fixed-question fixture kullanildi; rapor live prose kalitesini degil harness control capability'lerini olcer. |
+| Human review kaydi | Decided | `p39-reviewed-educational-analysis` record'u educational project evidence olarak `accept` edildi; replay integrity `ok`, investment advice degil. |
 | Maliyet/slippage varsayimlari | Decided | `settings.yaml` icindeki `trading_cost_bps: 10` ve `slippage_bps: 5` backtest motoruna baglandi; sifir toplam maliyet reddedilir. |
-| Measured final results | In Progress | Four scenario reports, P35 backtest/risk, P36 unseen/regime, P37 A-C strategy variants ve P38 harness deterministic run measured oldu; P39-P40 decision review ve final refresh ile devam edecek. |
+| Measured final results | Final local package ready | Four scenario reports, P35 backtest/risk, P36 unseen/regime, P37 A-C strategy variants, P38 harness deterministic run ve P39 decision replay hazir; P40 final refresh tamamlandi. |
 
 ## Teslimat Checklist
 

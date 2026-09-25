@@ -1,6 +1,6 @@
 # Final Technical Report
 
-Status: implementation infrastructure is complete through measured report orchestration. Local market, fundamentals, macro and RSS artifacts are available; the four required research reports, backtest/risk report, unseen/regime report, partial A-E strategy comparison and deterministic harness comparison have been generated.
+Status: implementation infrastructure is complete through measured report orchestration. Local market, fundamentals, macro and RSS artifacts are available; the four required research reports, backtest/risk report, unseen/regime report, partial A-E strategy comparison, deterministic harness comparison and reviewed decision replay have been generated.
 
 ## Scope
 
@@ -8,7 +8,7 @@ This project implements an educational BIST 100 research harness for a fixed 30-
 
 ## Report Status
 
-The four scenario reports, backtest/risk report, unseen/regime report, A-C strategy variants and deterministic harness A-E comparison have measured outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but D-E strategy variants remain unavailable until executable macro and news/video signals are defined.
+The four scenario reports, backtest/risk report, unseen/regime report, A-C strategy variants, deterministic harness A-E comparison and one reviewed decision replay have measured outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but D-E strategy variants remain unavailable until executable macro and news/video signals are defined.
 
 ## Inconclusive Findings
 
@@ -24,7 +24,7 @@ The four scenario reports, P35 backtest, P36 unseen/regime report and P37 A-C st
 - Unseen-period and regime split helpers.
 - Deterministic MCP-like tool surface.
 - Stateful harness with permitted tool rules.
-- Evidence bundle, quality gate and replayable decision log.
+- Evidence bundle, quality gate and replayable decision log with one reviewed record.
 
 ## Limitations
 
@@ -34,6 +34,6 @@ The four scenario reports, P35 backtest, P36 unseen/regime report and P37 A-C st
 - The measured backtest is trade-level research output and not a portfolio allocation simulation.
 - No broker connection or investment advice is included.
 
-## Next Step
+## Submission Status
 
-P39 should complete one human-reviewed decision log replay, then P40 should refresh final packaging.
+Final packaging artifacts have been refreshed. Before submission, rerun the documented commands if local cache artifacts are intentionally updated.

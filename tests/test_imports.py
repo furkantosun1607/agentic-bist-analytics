@@ -7,6 +7,7 @@ class ImportTest(unittest.TestCase):
             backtest,
             backtest_reports,
             data,
+            decision_log_reports,
             fundamentals_status,
             harness,
             harness_variant_reports,
@@ -28,6 +29,7 @@ class ImportTest(unittest.TestCase):
         self.assertIsNotNone(backtest)
         self.assertIsNotNone(backtest_reports)
         self.assertIsNotNone(data)
+        self.assertIsNotNone(decision_log_reports)
         self.assertIsNotNone(fundamentals_status)
         self.assertIsNotNone(harness)
         self.assertIsNotNone(harness_variant_reports)

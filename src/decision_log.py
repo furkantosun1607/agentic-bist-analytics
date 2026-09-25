@@ -96,6 +96,19 @@ def append_decision_record(record: DecisionRecord, log_dir: str | Path) -> Path:
     return output_path
 
 
+def write_decision_records(records: Iterable[DecisionRecord], log_dir: str | Path) -> Path:
+    """Write a complete JSONL decision log, replacing prior generated records."""
+
+    output_dir = Path(log_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / "decisions.jsonl"
+    with output_path.open("w", encoding="utf-8") as handle:
+        for record in records:
+            handle.write(json.dumps(asdict(record), sort_keys=True, default=str))
+            handle.write("\n")
+    return output_path
+
+
 def load_decision_records(path: str | Path) -> list[DecisionRecord]:
     """Load JSONL decision records."""
 
@@ -169,6 +182,12 @@ def write_decision_log_report(
                 f"- `{record.decision_id}`: label `{record.output_label}`, "
                 f"review `{record.review_status}`, gate `{record.quality_gate.get('gate_status')}`"
             )
+        lines.append("")
+        lines.extend(["## Replay Checks", ""])
+        for record in records:
+            replay = replay_decision_record(record)
+            message = "; ".join(replay.messages) if replay.messages else "integrity ok"
+            lines.append(f"- `{record.decision_id}`: `{replay.status}` - {message}")
         lines.append("")
     else:
         lines.extend(["No reviewed decisions have been logged yet.", ""])

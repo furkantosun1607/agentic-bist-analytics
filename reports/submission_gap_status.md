@@ -1,6 +1,6 @@
 # Submission Gap Status
 
-Status: remaining submission work is planned; infrastructure is ready, but measured reports still need verified data and experiment runs.
+Status: final local submission package is ready; remaining items are documented limitations, not blocking local workflow gaps.
 
 ## Ready Now
 
@@ -15,22 +15,22 @@ Status: remaining submission work is planned; infrastructure is ready, but measu
 | Unseen/regime comparison | measured local workflow | `python -m scripts.run_split_regime` used `2025-10-01` unseen start and generated 4 stability rows plus 6 regime rows. |
 | Strategy variants A-E | measured partial local workflow | `python -m scripts.run_strategy_variants` measured A-C and marks D-E unavailable until executable macro/news-video signals exist. |
 | Harness variants A-E | measured deterministic workflow | `python -m scripts.run_harness_variants` scored 5 fixed questions across 5 harness variants without live LLM calls. |
+| Human-reviewed decision log | reviewed replay workflow | `python -m scripts.run_decision_log` wrote one reviewed educational record with replay status `ok`. |
 | RSS context pipeline | ready local workflow | Fetch, normalize, alias match and context builder commands are available. |
 | Offline demo | ready | `python -m scripts.demo --offline` reads local artifacts without live network calls. |
 | Harness/evidence/decision-log infrastructure | ready | Schemas and deterministic tests exist. |
 
-## Remaining Work
+## Remaining Limitations
 
-| Gap | Type | Owner action needed | Planned phase |
-| --- | --- | --- | --- |
-| README and gap status sync | documentation | none | P30 |
-| Market cache audit report | report generation | run market fetch locally when cache is stale/missing | P31 |
-| Human-reviewed decision log | human review | user must accept/modify/reject at least one generated analysis | P39 |
-| Final submission refresh | final packaging | none after prior phases complete | P40 |
+| Limitation | Type | Status |
+| --- | --- | --- |
+| Strategy variants D-E | unavailable component signals | Macro and news/video context are metadata/evidence only; no executable trade signals are invented. |
+| Live LLM harness run | intentionally not used | Harness A-E is deterministic fixture-only and does not judge answer prose quality. |
+| Raw cache artifacts | local only | `data/cache`, `data/rss`, `data/fundamentals`, and `data/macro` stay ignored by git. |
 
 ## Current External Inputs Needed From User
 
-- Human review action for one final analysis record when P39 is reached.
+- None for the current local deterministic workflow.
 
 ## Non-Negotiable Reporting Rules
 

@@ -176,12 +176,12 @@ REPORT_MANIFEST: tuple[ReportManifestEntry, ...] = (
     ReportManifestEntry(
         report_name="Decision log",
         path="reports/decision_log.md",
-        status="schema_ready_no_live_decision",
-        data_period="not applicable",
+        status="reviewed_replay_ok",
+        data_period="reviewed record created at 2026-09-25T12:00:00+00:00",
         source="harness snapshot, tool outputs and quality gate payloads",
-        sample_size="0 live reviewed decisions committed",
-        assumptions="JSONL records require output label, review and evidence hash",
-        limitations="unit tests use synthetic records only",
+        sample_size="1 reviewed educational decision record; replay status ok",
+        assumptions="JSONL record requires output label, review, evidence hash and record hash",
+        limitations="educational project evidence only; not an investment recommendation",
     ),
 )
 
@@ -243,7 +243,7 @@ def write_final_technical_report(
     lines = [
         "# Final Technical Report",
         "",
-        "Status: implementation infrastructure is complete through measured report orchestration. Local market, fundamentals, macro and RSS artifacts are available; the four required research reports, backtest/risk report, unseen/regime report, partial A-E strategy comparison and deterministic harness comparison have been generated.",
+        "Status: implementation infrastructure is complete through measured report orchestration. Local market, fundamentals, macro and RSS artifacts are available; the four required research reports, backtest/risk report, unseen/regime report, partial A-E strategy comparison, deterministic harness comparison and reviewed decision replay have been generated.",
         "",
         "## Scope",
         "",
@@ -251,7 +251,7 @@ def write_final_technical_report(
         "",
         "## Report Status",
         "",
-        "The four scenario reports, backtest/risk report, unseen/regime report, A-C strategy variants and deterministic harness A-E comparison have measured outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but D-E strategy variants remain unavailable until executable macro and news/video signals are defined.",
+        "The four scenario reports, backtest/risk report, unseen/regime report, A-C strategy variants, deterministic harness A-E comparison and one reviewed decision replay have measured outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but D-E strategy variants remain unavailable until executable macro and news/video signals are defined.",
         "",
         "## Inconclusive Findings",
         "",
@@ -267,7 +267,7 @@ def write_final_technical_report(
         "- Unseen-period and regime split helpers.",
         "- Deterministic MCP-like tool surface.",
         "- Stateful harness with permitted tool rules.",
-        "- Evidence bundle, quality gate and replayable decision log.",
+        "- Evidence bundle, quality gate and replayable decision log with one reviewed record.",
         "",
         "## Limitations",
         "",
@@ -277,9 +277,9 @@ def write_final_technical_report(
         "- The measured backtest is trade-level research output and not a portfolio allocation simulation.",
         "- No broker connection or investment advice is included.",
         "",
-        "## Next Step",
+        "## Submission Status",
         "",
-        "P39 should complete one human-reviewed decision log replay, then P40 should refresh final packaging.",
+        "Final packaging artifacts have been refreshed. Before submission, rerun the documented commands if local cache artifacts are intentionally updated.",
         "",
     ]
     path.write_text("\n".join(lines), encoding="utf-8")

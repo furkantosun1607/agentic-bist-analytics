@@ -1,21 +1,23 @@
 # Human Review And Replayable Decision Log
 
-Status: decision log schema and replay checks implemented.
+Decision records: 1.
 
-Implemented scope:
-- JSONL decision log schema.
-- Required output label, human review and evidence hash.
-- Harness snapshot capture.
-- Inputs and deterministic tool outputs capture.
-- Stable record hash for tamper detection.
-- Replay check for record integrity and evidence-hash consistency.
-- Markdown decision-log report writer.
+## Records
 
-Current output note:
-- No live reviewed investment or strategy decision is reported here yet.
-- Unit tests use synthetic records only.
+- `p39-reviewed-educational-analysis`: label `INVESTIGATE`, review `accept`, gate `ANALYSIS_SAFE`
 
-Limitations:
-- Replay currently validates persisted inputs, tool outputs, harness state and hashes.
-- Full tool re-execution replay can be layered on top after verified live/cache datasets are available.
-- This report is historical research infrastructure, not investment advice.
+## Replay Checks
+
+- `p39-reviewed-educational-analysis`: `ok` - integrity ok
+
+Rules:
+- Decisions require an output label, human review and evidence hash.
+- JSONL records include inputs, tool outputs, harness snapshot and quality gate result.
+- Replay checks record integrity and evidence-hash consistency.
+
+## P39 Reviewed Run
+
+Status: reviewed decision record generated from measured local project artifacts.
+Decision log path: `reports\decision_logs\decisions.jsonl`.
+Replay status: `ok`.
+Review policy: the record is accepted as educational project evidence, not as an investment recommendation.

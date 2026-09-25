@@ -2,7 +2,7 @@
 
 A small, reproducible **educational research project** for 30 selected BIST 100 stocks. It studies sector catch-up, calendar patterns, technical reversals, and reactions to quarterly financial disclosures. Python performs calculations; a controlled AI assistant summarizes evidence. Results are historical observations, not investment advice. The project has no broker connection or real trading.
 
-This README is a practical implementation guide based on the course project PDF. The proposed file names and thresholds are implementation choices, not extra course requirements. **Project status: implementation infrastructure is ready; measured financial findings still require verified live/cache datasets.**
+This README is a practical implementation guide based on the course project PDF. The proposed file names and thresholds are implementation choices, not extra course requirements. **Project status: local measured reports, deterministic harness comparison, and replayable decision log are ready; strategy variants D-E remain unavailable until executable macro and news/video trade signals are defined.**
 
 ## What must be delivered
 
@@ -154,6 +154,14 @@ python -m scripts.run_harness_variants
 ```
 
 This refreshes `reports/harness_variants.md` from the fixed question set in `config/harness_questions.csv`. It does not call a live LLM; it scores harness capabilities against required controls.
+
+Run the reviewed replayable decision log workflow:
+
+```powershell
+python -m scripts.run_decision_log
+```
+
+This refreshes `reports/decision_logs/decisions.jsonl` and `reports/decision_log.md` with one educational human-reviewed record, evidence hash, quality gate payload and replay integrity check.
 
 Then run the offline demo:
 

@@ -159,9 +159,11 @@ def write_macro_context_status_report(
         f"Missing indicators: {', '.join(result.missing_indicators) or 'none'}",
         f"Point-in-time gate: `{result.point_in_time_status or 'not_run'}`",
         "",
-        "## User Action",
+        "## User Action"
+        if result.status in {"blocked_missing_macro_context_csv", "blocked_no_valid_macro_context"}
+        else "## Current Source Decision",
         "",
-        "- Provide `data/macro/macro_context.csv` in the shared context schema, or approve automated fetching where source access allows it.",
+        "- Local source is `data/macro/macro_context.csv`, generated from yfinance FX plus static curated TCMB/TUIK/FED records.",
         "- Include publication timestamps; observed period dates alone are not enough for point-in-time analysis.",
         "- If an indicator cannot be sourced, keep it visible as a source gap instead of inventing values.",
         "",
@@ -194,6 +196,7 @@ def write_macro_context_status_report(
             "",
             "Limitations:",
             "- Macro source exports are local artifacts and are not committed.",
+            "- TCMB/TUIK/FED records are static curated project inputs, not live API pulls.",
             "- RSS macro alias context does not replace numeric macro records.",
             "- This report does not create measured macro findings by itself.",
             "",

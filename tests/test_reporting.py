@@ -28,13 +28,14 @@ class ReportingTests(unittest.TestCase):
             self.assertIn("Sample size", text)
             self.assertIn("Limitations", text)
 
-    def test_write_final_technical_report_marks_findings_inconclusive(self):
+    def test_write_final_technical_report_marks_strategy_level_findings_inconclusive(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             output = write_final_technical_report(Path(tmpdir) / "final.md")
 
             text = output.read_text(encoding="utf-8")
             self.assertIn("# Final Technical Report", text)
-            self.assertIn("All empirical findings are currently inconclusive", text)
+            self.assertIn("The four scenario reports contain local-cache measurements", text)
+            self.assertIn("strategy-level conclusions remain inconclusive", text)
             self.assertIn("No broker connection or investment advice", text)
 
 

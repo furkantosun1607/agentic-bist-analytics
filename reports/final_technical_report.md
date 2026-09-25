@@ -1,6 +1,6 @@
 # Final Technical Report
 
-Status: implementation infrastructure is complete through report orchestration; live/cache datasets and verified source records are still required before measured financial conclusions can be reported.
+Status: implementation infrastructure is complete through report orchestration. Local market, fundamentals, macro and RSS artifacts are available, and the four required research reports have been generated from local cache.
 
 ## Scope
 
@@ -8,11 +8,11 @@ This project implements an educational BIST 100 research harness for a fixed 30-
 
 ## Report Status
 
-The scenario reports, context report, backtest/risk report and variant reports are present as reproducible infrastructure reports. RSS news context can be generated from local cache. Local yfinance fundamentals import is ready with synthetic disclosure timestamps, but numeric macro records, approved video context and final measured strategy outputs are still missing.
+The four scenario reports have measured local-cache outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but approved video context, backtest/risk execution, strategy variants and final measured strategy outputs are still missing.
 
 ## Inconclusive Findings
 
-All empirical findings are currently inconclusive. The repository contains calculation engines and test coverage, not committed live/cache data outputs. Any final claim about returns, alpha, risk or strategy superiority must wait until verified datasets are loaded and the report writers are rerun.
+The four scenario reports contain local-cache measurements, but strategy-level conclusions remain inconclusive until P35-P37 run backtests, unseen/regime checks and strategy variants on verified signals.
 
 ## Key Controls
 
@@ -28,12 +28,11 @@ All empirical findings are currently inconclusive. The repository contains calcu
 
 ## Limitations
 
-- Market price, XU100 and RSS cache files are not committed.
-- Raw local fundamentals, market and RSS cache files are not committed.
-- Macro records, approved video context and final measured strategy outputs are not committed.
+- Raw local macro, fundamentals, market and RSS cache files are not committed.
+- Approved video context and final measured strategy outputs are not committed.
 - Strategy and harness variant reports are engines, not live experiment results.
 - No broker connection or investment advice is included.
 
 ## Next Step
 
-P23 should add install/run documentation and one demo command. A measured classroom demo should first generate or load verified cache data, then rerun the relevant report writers.
+P35 should run backtest and risk reporting from the generated signal/report outputs, then P36-P37 should finalize unseen/regime and strategy variant comparisons.

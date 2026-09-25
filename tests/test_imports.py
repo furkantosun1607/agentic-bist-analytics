@@ -9,12 +9,14 @@ class ImportTest(unittest.TestCase):
             fundamentals_status,
             harness,
             indicators,
+            macro_context_fetch,
             macro_context_status,
             market_audit,
             mcp_server,
             news_aliases,
             news_context,
             research,
+            research_reports,
             rss_news,
             yfinance_fundamentals,
         )
@@ -24,12 +26,14 @@ class ImportTest(unittest.TestCase):
         self.assertIsNotNone(fundamentals_status)
         self.assertIsNotNone(harness)
         self.assertIsNotNone(indicators)
+        self.assertIsNotNone(macro_context_fetch)
         self.assertIsNotNone(macro_context_status)
         self.assertIsNotNone(market_audit)
         self.assertIsNotNone(mcp_server)
         self.assertIsNotNone(news_aliases)
         self.assertIsNotNone(news_context)
         self.assertIsNotNone(research)
+        self.assertIsNotNone(research_reports)
         self.assertIsNotNone(rss_news)
         self.assertIsNotNone(yfinance_fundamentals)
 

@@ -67,6 +67,22 @@ class SectorCatchUpTest(unittest.TestCase):
         statuses = set(result.observations["status"])
         self.assertIn("insufficient_peers", statuses)
 
+    def test_peer_median_alignment_survives_sorted_non_range_index(self):
+        result = run_sector_catch_up(
+            prices_by_symbol={
+                "BBB.IS": prices("BBB.IS", [100, 110, 111, 112, 113, 114]),
+                "AAA.IS": prices("AAA.IS", [100, 90, 95, 98, 102, 105]),
+            },
+            universe=universe()[:2],
+            lookback_days=1,
+            horizons=(2,),
+        )
+
+        eligible = result.observations[result.observations["status"] == "ok"]
+
+        self.assertFalse(eligible.empty)
+        self.assertFalse(eligible["peer_median_future_return"].isna().any())
+
     def test_missing_symbol_column_error_is_structured(self):
         result = run_sector_catch_up(
             prices_by_symbol={

@@ -106,13 +106,22 @@ python -m scripts.audit_fundamentals_import
 
 The CSV is written to `data/fundamentals/fundamentals.csv` and ignored by git. If the CSV is missing, has no mapped rows, or fails point-in-time validation, `reports/fundamentals_import_status.md` blocks measured fundamentals and the quarterly report remains inconclusive. Detailed field rules are in `config/fundamentals_import_instructions.md`.
 
-Prepare numeric macro context through the local CSV workflow in `config/macro_context_import_instructions.md`. The required indicators are USD/TRY, EUR/TRY, TCMB policy rate, TUIK inflation, and Fed policy rate. Audit macro readiness with:
+Prepare numeric macro context through the local CSV workflow in `config/macro_context_import_instructions.md`. USD/TRY and EUR/TRY are fetched with yfinance; TCMB policy rate, TUIK inflation, and Fed policy rate are embedded as static curated point-in-time records so the demo does not require API keys. Generate and audit macro readiness with:
 
 ```powershell
+python -m scripts.fetch_macro_context
 python -m scripts.audit_macro_context
 ```
 
 If `data/macro/macro_context.csv` is missing or incomplete, `reports/macro_context_status.md` records the source gap. RSS macro news aliases do not replace numeric macro records.
+
+Run the four required research reports from local cache artifacts:
+
+```powershell
+python -m scripts.run_research_reports
+```
+
+This writes `reports/research_run_status.md` plus refreshed sector catch-up, weekday pattern, technical reversal, and quarterly fundamentals reports.
 
 Then run the offline demo:
 

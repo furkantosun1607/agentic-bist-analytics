@@ -1322,6 +1322,7 @@ def _peer_median(frame: pd.DataFrame, value_column: str) -> pd.Series:
         .reset_index()
     )
     aligned = frame[["symbol", "date"]].merge(medians, on=["symbol", "date"], how="left")
+    aligned.index = frame.index
     return aligned[f"peer_median_{value_column}"]
 
 

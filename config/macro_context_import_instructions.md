@@ -1,6 +1,6 @@
 # Macro Context Import Instructions
 
-Status: external macro data is not committed. Prepare a local CSV export and run the status command before macro context is used in measured reports.
+Status: external macro data is not committed. Generate a local CSV and run the status command before macro context is used in measured reports.
 
 ## Required Indicators
 
@@ -14,13 +14,19 @@ P33 tracks these macro indicators:
 
 ## Local File Path
 
-Place the prepared CSV here:
+Place the generated or manually prepared CSV here:
 
 ```text
 data/macro/macro_context.csv
 ```
 
 This directory is ignored by git because macro source exports are local artifacts.
+
+Generate it with:
+
+```powershell
+python -m scripts.fetch_macro_context
+```
 
 ## Required Schema
 
@@ -48,11 +54,12 @@ Required macro fields:
 
 ## Source Notes
 
-- `usd_try`, `eur_try`, `tcmb_policy_rate`: TCMB/EVDS or another public TCMB source.
-- `tuik_inflation`: TUIK publication.
-- `fed_policy_rate`: Federal Reserve/FRED or another public Fed source.
+- `usd_try`, `eur_try`: fetched from Yahoo Finance/yfinance without API keys.
+- `tcmb_policy_rate`: static curated TCMB press-release record.
+- `tuik_inflation`: static curated CPI/inflation record with publication timestamp.
+- `fed_policy_rate`: static curated Federal Reserve FOMC record.
 
-If automated access fails or requires credentials, keep the CSV workflow and document the source gap in `reports/macro_context_status.md`.
+This avoids requiring TCMB EVDS API keys or relying on TUIK pages with bot protection during the demo. If yfinance FX access fails, keep the source gap visible in `reports/macro_context_status.md`.
 
 ## Timestamp Rules
 
@@ -64,6 +71,7 @@ If automated access fails or requires credentials, keep the CSV workflow and doc
 ## Validation Command
 
 ```powershell
+python -m scripts.fetch_macro_context
 python -m scripts.audit_macro_context
 ```
 

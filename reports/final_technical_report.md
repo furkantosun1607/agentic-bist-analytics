@@ -1,6 +1,6 @@
 # Final Technical Report
 
-Status: implementation infrastructure is complete through measured report orchestration. Local market, fundamentals, macro and RSS artifacts are available; the four required research reports, backtest/risk report, unseen/regime report and partial A-E strategy comparison have been generated from local cache.
+Status: implementation infrastructure is complete through measured report orchestration. Local market, fundamentals, macro and RSS artifacts are available; the four required research reports, backtest/risk report, unseen/regime report, partial A-E strategy comparison and deterministic harness comparison have been generated.
 
 ## Scope
 
@@ -8,7 +8,7 @@ This project implements an educational BIST 100 research harness for a fixed 30-
 
 ## Report Status
 
-The four scenario reports, backtest/risk report, unseen/regime report and A-C strategy variants have measured local-cache outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but D-E strategy variants remain unavailable until executable macro and news/video signals are defined.
+The four scenario reports, backtest/risk report, unseen/regime report, A-C strategy variants and deterministic harness A-E comparison have measured outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but D-E strategy variants remain unavailable until executable macro and news/video signals are defined.
 
 ## Inconclusive Findings
 
@@ -30,10 +30,10 @@ The four scenario reports, P35 backtest, P36 unseen/regime report and P37 A-C st
 
 - Raw local macro, fundamentals, market and RSS cache files are not committed.
 - Approved video context and final measured strategy outputs are not committed.
-- Strategy and harness variant reports are engines, not live experiment results.
+- Harness variants are measured with deterministic fixtures, not live LLM calls.
 - The measured backtest is trade-level research output and not a portfolio allocation simulation.
 - No broker connection or investment advice is included.
 
 ## Next Step
 
-P38 should refresh harness experiments, then P39-P40 should complete decision review and final packaging.
+P39 should complete one human-reviewed decision log replay, then P40 should refresh final packaging.

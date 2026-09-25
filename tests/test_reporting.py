@@ -38,6 +38,7 @@ class ReportingTests(unittest.TestCase):
                 "The four scenario reports, P35 backtest, P36 unseen/regime report and P37 A-C strategy variants contain local-cache measurements",
                 text,
             )
+            self.assertIn("deterministic harness A-E comparison have measured outputs", text)
             self.assertIn("final strategy-level conclusions remain partial", text)
             self.assertIn("No broker connection or investment advice", text)
 

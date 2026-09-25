@@ -1,0 +1,6 @@
+question_id,requires_numbers,requires_tools,requires_state_enforcement,requires_evidence,requires_quality_gate,requires_replay,requires_human_review,description
+q_market_return_calc,true,true,false,false,false,false,false,Calculate a market return from cached OHLCV data.
+q_point_in_time_fundamentals,true,true,true,true,true,false,false,Use fundamentals only after disclosure timestamp and cite evidence.
+q_rss_context_check,false,true,true,true,true,true,false,Check RSS context availability with replayable evidence.
+q_strategy_variant_compare,true,true,true,true,true,true,false,Compare strategy variants with shared costs and evidence.
+q_human_review_decision,true,true,true,true,true,true,true,Save a reviewed decision with quality gate and replay integrity.

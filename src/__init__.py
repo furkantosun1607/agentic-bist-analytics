@@ -12,6 +12,7 @@ __all__ = [
     "fundamentals",
     "fundamentals_status",
     "harness",
+    "harness_variant_reports",
     "harness_variants",
     "indicators",
     "macro_context_fetch",

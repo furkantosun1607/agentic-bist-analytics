@@ -147,6 +147,14 @@ python -m scripts.run_strategy_variants
 
 This refreshes `reports/strategy_variants.md`. Variants A-C are measured from executable technical, sector and fundamentals signals; D-E remain unavailable until executable macro and news/video signals are defined. RSS context is included only as Variant E evidence metadata.
 
+Run the deterministic harness variant experiment:
+
+```powershell
+python -m scripts.run_harness_variants
+```
+
+This refreshes `reports/harness_variants.md` from the fixed question set in `config/harness_questions.csv`. It does not call a live LLM; it scores harness capabilities against required controls.
+
 Then run the offline demo:
 
 ```powershell

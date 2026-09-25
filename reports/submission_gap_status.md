@@ -14,6 +14,7 @@ Status: remaining submission work is planned; infrastructure is ready, but measu
 | Backtest/risk report | measured local workflow | `python -m scripts.run_backtests` generated 25,819 signal rows and 25,813 tradable rows with configured costs and benchmark comparison. |
 | Unseen/regime comparison | measured local workflow | `python -m scripts.run_split_regime` used `2025-10-01` unseen start and generated 4 stability rows plus 6 regime rows. |
 | Strategy variants A-E | measured partial local workflow | `python -m scripts.run_strategy_variants` measured A-C and marks D-E unavailable until executable macro/news-video signals exist. |
+| Harness variants A-E | measured deterministic workflow | `python -m scripts.run_harness_variants` scored 5 fixed questions across 5 harness variants without live LLM calls. |
 | RSS context pipeline | ready local workflow | Fetch, normalize, alias match and context builder commands are available. |
 | Offline demo | ready | `python -m scripts.demo --offline` reads local artifacts without live network calls. |
 | Harness/evidence/decision-log infrastructure | ready | Schemas and deterministic tests exist. |
@@ -24,13 +25,11 @@ Status: remaining submission work is planned; infrastructure is ready, but measu
 | --- | --- | --- | --- |
 | README and gap status sync | documentation | none | P30 |
 | Market cache audit report | report generation | run market fetch locally when cache is stale/missing | P31 |
-| Harness variants A-E run | experiment output | decide whether live LLM run is allowed or keep deterministic/synthetic limitation | P38 |
 | Human-reviewed decision log | human review | user must accept/modify/reject at least one generated analysis | P39 |
 | Final submission refresh | final packaging | none after prior phases complete | P40 |
 
 ## Current External Inputs Needed From User
 
-- Decision on whether harness A-E comparison should use a live LLM run or deterministic fixture-only evaluation.
 - Human review action for one final analysis record when P39 is reached.
 
 ## Non-Negotiable Reporting Rules

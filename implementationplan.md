@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Four reports, P35/P36 and P37 A-C variants measured from local cache |
+| Proje durumu | Four reports, P35-P38 measured/deterministic outputs generated |
 | Son guncelleme | 2026-09-25 |
-| Aktif faz | P38 - Harness Variants A-E Experiment Run |
-| Kritik sonraki hedef | Harness A-E comparison icin fixed question set ve replayable experiment raporu uretmek |
+| Aktif faz | P39 - Human Reviewed Replay And Decision Log |
+| Kritik sonraki hedef | En az bir human-reviewed decision log kaydi uretip replay integrity raporlamak |
 
 ## Degismez Proje Kurallari
 
@@ -1477,7 +1477,7 @@ Notes:
 
 ### P38 - Harness Variants A-E Experiment Run
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Harness comparison A-E icin fixed question set ile replayable experiment ciktisi uretmek.
 
@@ -1492,10 +1492,20 @@ Acceptance:
 - Live LLM kullanilmazsa synthetic/deterministic limitation acik yazilir.
 
 Completed:
-- Yok.
+- `config/harness_questions.csv` fixed question fixture olarak eklendi.
+- `src/harness_variant_reports.py` deterministic harness experiment runner olarak eklendi.
+- `scripts/run_harness_variants.py` CLI'i eklendi.
+- `reports/harness_variants.md` measured deterministic ciktisiyla guncellendi: 5 fixed question, 5 harness variant, best variant E.
+- Unsupported number, invalid tool call, evidence completeness, quality gate, replayability ve human review metrikleri raporlandi.
+- README, report manifest, final technical report ve submission gap status P38 measured deterministic durumuna cekildi.
+- Harness variant runner unit testleri ve import testleri eklendi.
+
+Tests:
+- `python -m unittest tests.test_harness_variant_reports tests.test_harness_variants tests.test_imports` passed: 8 tests.
+- `python -m scripts.run_harness_variants` passed: `status=measured_deterministic`, `questions=5`, `variants=5`, `best_variants=E`.
 
 Notes:
-- External LLM run gerektiren kisimlar izin/ortam yoksa inconclusive kalabilir.
+- Live LLM cagrisi yapilmadi; deterministic fixture-only evaluation bilincli olarak secildi ve raporda limitation olarak yazildi.
 
 ### P39 - Human Reviewed Replay And Decision Log
 
@@ -1588,6 +1598,7 @@ Notes:
 | 2026-09-25 | P35 | Fixed-rule research signals assembled from P34 outputs, measured backtest/risk CLI and report, signal counts, benchmark/cost/risk summary, README/report manifest/gap updates and tests eklendi. | `python -m unittest tests.test_backtest_reports tests.test_backtest tests.test_imports` passed: 15 tests; `python -m scripts.run_backtests` measured 25,819 signals and 25,813 tradable rows. | Aktif faz P36'ya tasindi; unseen/regime finalization sirada. |
 | 2026-09-25 | P36 | `unseen_start_date=2025-10-01` sabitlendi, measured split/regime runner ve CLI eklendi, P35 trade'leri known_at split ve XU100 regime label'lariyla raporlandi. | `python -m unittest tests.test_split_regime_reports tests.test_splits tests.test_imports` passed: 13 tests; `python -m scripts.run_split_regime` measured 25,813 trades, 4 stability rows and 6 regime rows. | Aktif faz P37'ye tasindi; strategy variants measured comparison sirada. |
 | 2026-09-25 | P37 | Strategy variant orchestration, A-C measured comparison, D/E unavailable handling, RSS metadata-only policy, CLI, README/report manifest/gap updates ve testler eklendi. | `python -m unittest tests.test_strategy_variant_reports tests.test_strategy_variants tests.test_imports` passed: 12 tests; `python -m scripts.run_strategy_variants` returned `measured_partial` with A-C ok and D/E unavailable. | Aktif faz P38'e tasindi; harness variants experiment sirada. |
+| 2026-09-25 | P38 | Fixed harness question fixture, deterministic harness variant runner/CLI, measured harness report, README/report manifest/gap updates ve testler eklendi. | `python -m unittest tests.test_harness_variant_reports tests.test_harness_variants tests.test_imports` passed: 8 tests; `python -m scripts.run_harness_variants` returned `measured_deterministic`, 5 questions, 5 variants, best E. | Aktif faz P39'a tasindi; human-reviewed decision log sirada. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -1599,8 +1610,9 @@ Notes:
 | RSS cekim sikligi | Decided | RSS kaynaklari anlik dinlenmez; piyasa saatinde 15 dakikada bir, piyasa disinda 60 dakikada bir polling yapilir. Backtest/replay yalnizca cache snapshot kullanir. |
 | BIST/XU100 sembol uyumu | Open | P03 adapter ve missing-symbol rapor yazicisi eklendi; canli `python -m scripts.fetch_market_data` calistirildiginda rapor uretilecek. |
 | Unseen period tarihleri | Decided | `experiment.unseen_start_date` `2025-10-01` olarak sabitlendi; selection 20,909 trade, unseen 4,904 trade ile measured raporlandi. |
+| Harness A-E run tipi | Decided | Live LLM run yerine deterministic fixed-question fixture kullanildi; rapor live prose kalitesini degil harness control capability'lerini olcer. |
 | Maliyet/slippage varsayimlari | Decided | `settings.yaml` icindeki `trading_cost_bps: 10` ve `slippage_bps: 5` backtest motoruna baglandi; sifir toplam maliyet reddedilir. |
-| Measured final results | In Progress | Four scenario reports, P35 backtest/risk, P36 unseen/regime ve P37 A-C strategy variants measured oldu; P38-P40 harness run, decision review ve final refresh ile devam edecek. |
+| Measured final results | In Progress | Four scenario reports, P35 backtest/risk, P36 unseen/regime, P37 A-C strategy variants ve P38 harness deterministic run measured oldu; P39-P40 decision review ve final refresh ile devam edecek. |
 
 ## Teslimat Checklist
 
@@ -1616,5 +1628,5 @@ Notes:
 - [x] Stateful harness with evidence and quality gate
 - [x] Human-reviewed replayable decision log
 - [x] Strategy variants A-E comparison
-- [ ] Harness variants A-E comparison
+- [x] Harness variants A-E comparison
 - [x] Final report and classroom demo command

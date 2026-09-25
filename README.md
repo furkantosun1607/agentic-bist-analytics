@@ -139,6 +139,14 @@ python -m scripts.run_split_regime
 
 This uses the configured `experiment.unseen_start_date` and XU100 benchmark regime labels to refresh `reports/split_regime.md`.
 
+Run the measured strategy variant comparison:
+
+```powershell
+python -m scripts.run_strategy_variants
+```
+
+This refreshes `reports/strategy_variants.md`. Variants A-C are measured from executable technical, sector and fundamentals signals; D-E remain unavailable until executable macro and news/video signals are defined. RSS context is included only as Variant E evidence metadata.
+
 Then run the offline demo:
 
 ```powershell

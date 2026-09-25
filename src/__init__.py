@@ -27,6 +27,7 @@ __all__ = [
     "settings",
     "split_regime_reports",
     "splits",
+    "strategy_variant_reports",
     "strategy_variants",
     "validation",
     "yfinance_fundamentals",

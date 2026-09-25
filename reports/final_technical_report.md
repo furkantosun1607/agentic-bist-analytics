@@ -1,6 +1,6 @@
 # Final Technical Report
 
-Status: implementation infrastructure is complete through measured report orchestration. Local market, fundamentals, macro and RSS artifacts are available; the four required research reports, backtest/risk report and unseen/regime report have been generated from local cache.
+Status: implementation infrastructure is complete through measured report orchestration. Local market, fundamentals, macro and RSS artifacts are available; the four required research reports, backtest/risk report, unseen/regime report and partial A-E strategy comparison have been generated from local cache.
 
 ## Scope
 
@@ -8,11 +8,11 @@ This project implements an educational BIST 100 research harness for a fixed 30-
 
 ## Report Status
 
-The four scenario reports, backtest/risk report and unseen/regime report have measured local-cache outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but strategy variants and final measured strategy outputs are still missing.
+The four scenario reports, backtest/risk report, unseen/regime report and A-C strategy variants have measured local-cache outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but D-E strategy variants remain unavailable until executable macro and news/video signals are defined.
 
 ## Inconclusive Findings
 
-The four scenario reports, P35 backtest and P36 unseen/regime report contain local-cache measurements, but strategy-level conclusions remain inconclusive until P37 runs strategy variants on verified signals.
+The four scenario reports, P35 backtest, P36 unseen/regime report and P37 A-C strategy variants contain local-cache measurements, but final strategy-level conclusions remain partial because macro and news/video executable signals are unavailable for D-E.
 
 ## Key Controls
 
@@ -36,4 +36,4 @@ The four scenario reports, P35 backtest and P36 unseen/regime report contain loc
 
 ## Next Step
 
-P37 should run measured strategy variant comparisons, then later phases should refresh harness experiments, decision review and final packaging.
+P38 should refresh harness experiments, then P39-P40 should complete decision review and final packaging.

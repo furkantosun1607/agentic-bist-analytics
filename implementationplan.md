@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | Four research reports, P35 backtest/risk and P36 unseen/regime measured from local cache |
+| Proje durumu | Four reports, P35/P36 and P37 A-C variants measured from local cache |
 | Son guncelleme | 2026-09-25 |
-| Aktif faz | P37 - Strategy Variants A-E Measured Comparison |
-| Kritik sonraki hedef | A-E strategy variants icin executable component signal setleriyle measured comparison uretmek |
+| Aktif faz | P38 - Harness Variants A-E Experiment Run |
+| Kritik sonraki hedef | Harness A-E comparison icin fixed question set ve replayable experiment raporu uretmek |
 
 ## Degismez Proje Kurallari
 
@@ -1443,7 +1443,7 @@ Notes:
 
 ### P37 - Strategy Variants A-E Measured Comparison
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: A-E strategy variants icin gercek sinyal setleriyle comparison raporunu uretmek.
 
@@ -1458,10 +1458,22 @@ Acceptance:
 - RSS context metadata trade sinyali olarak sayilmaz.
 
 Completed:
-- Yok.
+- `src/strategy_variant_reports.py` P35 fixed signals'i executable strategy component'lerine mapleyen orchestration modulu olarak eklendi.
+- `scripts/run_strategy_variants.py` strategy A-E comparison CLI'i olarak eklendi.
+- Technical, sector ve fundamentals component signal setleri gercek local-cache sinyallerinden uretildi.
+- Weekday research signals A-E strategy component'i sayilmadi; RSS context yalnizca Variant E evidence metadata'si olarak kullanildi.
+- `reports/strategy_variants.md` measured partial ciktisiyla guncellendi: A/B/C measured, D/E unavailable.
+- Variant E RSS context availability rapora yazildi, ancak `news_video` trade signal'i olarak kullanilmadi.
+- README, report manifest, final technical report ve submission gap status P37 durumuna cekildi.
+- Strategy variant orchestration unit testleri ve import testleri eklendi.
+
+Tests:
+- `python -m unittest tests.test_strategy_variant_reports tests.test_strategy_variants tests.test_imports` passed: 12 tests.
+- `python -m scripts.run_strategy_variants` passed: `status=measured_partial`, 5 variants, 42,864 variant trade rows, status counts `{'ok': 3, 'unavailable': 2}`.
 
 Notes:
-- P29 metadata entegrasyonu hazir; executable `news_video`/context signal ayri uretilmelidir.
+- `macro` ve `news_video` executable signal olarak henuz tanimli degil; D/E unavailable kalmasi bilincli raporlama sonucudur.
+- RSS context metadata finansal sinyal degildir ve performance claim olarak yorumlanmaz.
 
 ### P38 - Harness Variants A-E Experiment Run
 
@@ -1575,6 +1587,7 @@ Notes:
 | 2026-09-24 | P34 | Research report runner, measured four-scenario report refresh, research run status raporu, peer median alignment fix ve README/report manifest guncellemeleri eklendi. | `python -m unittest discover -s tests` passed: 181 tests; `python -m scripts.run_research_reports` generated 4 measured reports with 0 errors. | Aktif faz P35'e tasindi; backtest/risk execution sirada. |
 | 2026-09-25 | P35 | Fixed-rule research signals assembled from P34 outputs, measured backtest/risk CLI and report, signal counts, benchmark/cost/risk summary, README/report manifest/gap updates and tests eklendi. | `python -m unittest tests.test_backtest_reports tests.test_backtest tests.test_imports` passed: 15 tests; `python -m scripts.run_backtests` measured 25,819 signals and 25,813 tradable rows. | Aktif faz P36'ya tasindi; unseen/regime finalization sirada. |
 | 2026-09-25 | P36 | `unseen_start_date=2025-10-01` sabitlendi, measured split/regime runner ve CLI eklendi, P35 trade'leri known_at split ve XU100 regime label'lariyla raporlandi. | `python -m unittest tests.test_split_regime_reports tests.test_splits tests.test_imports` passed: 13 tests; `python -m scripts.run_split_regime` measured 25,813 trades, 4 stability rows and 6 regime rows. | Aktif faz P37'ye tasindi; strategy variants measured comparison sirada. |
+| 2026-09-25 | P37 | Strategy variant orchestration, A-C measured comparison, D/E unavailable handling, RSS metadata-only policy, CLI, README/report manifest/gap updates ve testler eklendi. | `python -m unittest tests.test_strategy_variant_reports tests.test_strategy_variants tests.test_imports` passed: 12 tests; `python -m scripts.run_strategy_variants` returned `measured_partial` with A-C ok and D/E unavailable. | Aktif faz P38'e tasindi; harness variants experiment sirada. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -1587,7 +1600,7 @@ Notes:
 | BIST/XU100 sembol uyumu | Open | P03 adapter ve missing-symbol rapor yazicisi eklendi; canli `python -m scripts.fetch_market_data` calistirildiginda rapor uretilecek. |
 | Unseen period tarihleri | Decided | `experiment.unseen_start_date` `2025-10-01` olarak sabitlendi; selection 20,909 trade, unseen 4,904 trade ile measured raporlandi. |
 | Maliyet/slippage varsayimlari | Decided | `settings.yaml` icindeki `trading_cost_bps: 10` ve `slippage_bps: 5` backtest motoruna baglandi; sifir toplam maliyet reddedilir. |
-| Measured final results | In Progress | Four scenario reports, P35 backtest/risk ve P36 unseen/regime measured oldu; P37-P40 strategy variants, harness run ve final refresh ile devam edecek. |
+| Measured final results | In Progress | Four scenario reports, P35 backtest/risk, P36 unseen/regime ve P37 A-C strategy variants measured oldu; P38-P40 harness run, decision review ve final refresh ile devam edecek. |
 
 ## Teslimat Checklist
 
@@ -1602,6 +1615,6 @@ Notes:
 - [x] Deterministic MCP tools
 - [x] Stateful harness with evidence and quality gate
 - [x] Human-reviewed replayable decision log
-- [ ] Strategy variants A-E comparison
+- [x] Strategy variants A-E comparison
 - [ ] Harness variants A-E comparison
 - [x] Final report and classroom demo command

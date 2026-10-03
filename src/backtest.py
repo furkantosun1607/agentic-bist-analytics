@@ -280,8 +280,8 @@ def calculate_risk_metrics(trades: pd.DataFrame) -> dict[str, object]:
     ordered = trades.copy()
     ordered["exit_sort"] = pd.to_datetime(ordered["exit_date"], errors="coerce")
     ordered = ordered.sort_values(["exit_sort", "signal_id"]).reset_index(drop=True)
-    returns = pd.to_numeric(ordered["cost_adjusted_return"], errors="coerce").dropna()
-    benchmark_returns = pd.to_numeric(ordered["benchmark_return"], errors="coerce").dropna()
+    returns = _portfolio_return_series(ordered, "cost_adjusted_return")
+    benchmark_returns = _portfolio_return_series(ordered, "benchmark_return")
 
     cumulative_return = _compound_return(returns)
     cumulative_benchmark_return = _compound_return(benchmark_returns)
@@ -346,7 +346,7 @@ def write_backtest_report(result: BacktestResult, output_path: str | Path) -> Pa
         [
             "Limitations:",
             "- This report is historical research output, not investment advice.",
-            "- Sharpe ratio is calculated on trade-level cost-adjusted returns, not daily portfolio returns.",
+            "- Risk metrics group overlapping trades by exit date with equal weighting before compounding.",
             "- Benchmark and sector benchmark returns are reported only when matching benchmark histories are provided.",
             "",
         ]
@@ -536,6 +536,30 @@ def _compound_return(returns: pd.Series) -> float | object:
     if returns.empty:
         return pd.NA
     return float((1 + returns).prod() - 1)
+
+
+def _portfolio_return_series(trades: pd.DataFrame, return_column: str) -> pd.Series:
+    """Dailyize horizon returns, then average overlapping trades by exit date."""
+
+    if trades.empty or return_column not in trades.columns:
+        return pd.Series(dtype="float64")
+    columns = ["exit_sort", return_column]
+    if "horizon" in trades.columns:
+        columns.append("horizon")
+    frame = trades.loc[:, columns].copy()
+    frame[return_column] = pd.to_numeric(frame[return_column], errors="coerce")
+    frame = frame.dropna(subset=["exit_sort", return_column])
+    if frame.empty:
+        return pd.Series(dtype="float64")
+    if "horizon" in frame.columns:
+        horizons = pd.to_numeric(frame["horizon"], errors="coerce").fillna(1).clip(lower=1)
+        frame[return_column] = (1 + frame[return_column]).clip(lower=0) ** (1 / horizons) - 1
+    return (
+        frame.groupby("exit_sort", sort=True)[return_column]
+        .mean()
+        .reset_index(drop=True)
+        .astype("float64")
+    )
 
 
 def _sharpe_ratio(returns: pd.Series) -> float | object:

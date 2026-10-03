@@ -130,6 +130,7 @@ python -m scripts.run_backtests
 ```
 
 This refreshes `reports/backtest.md` with signal counts, trade counts, configured costs, benchmark-relative return, cumulative trade-level return, Sharpe, maximum drawdown and win rate. It is an educational trade-level backtest, not a capital-constrained portfolio simulation.
+Risk metrics first dailyize each signal's configured holding-period return, then equal-weight overlapping trades by exit date before compounding. This avoids treating thousands of overlapping event trades as independent full-capital reinvestments.
 
 Run the measured unseen-period and regime split report:
 
@@ -178,6 +179,33 @@ python -m scripts.build_dashboard
 ```
 
 This writes `ui/dashboard.html`. Open it in a browser to inspect report readiness, LLM harness status, evidence summary and demo commands. It has no server dependency.
+
+Run a one-screen classroom symbol analysis:
+
+```powershell
+python -m scripts.analyze_symbol Analyze ASELS.IS
+```
+
+This prints a terminal-friendly analysis and writes `reports/symbol_analysis/ASELS_IS.md`. It aggregates local market cache, sector peer context, technical indicators/events, fundamentals, macro context, the measured backtest summary, data-quality status, and an educational AI-style label. The command does not fetch live data and does not produce investment advice.
+If the backtest summary contains missing or implausible risk values, the symbol analysis quality gate reports `INVESTIGATE` instead of `PASS` and the AI-style label is downgraded.
+
+Run the four PDF scenario demos as separate per-symbol commands:
+
+```powershell
+python -m scripts.analyze_sector_catchup Analyze MGROS.IS
+python -m scripts.analyze_weekday_pattern Analyze THYAO.IS
+python -m scripts.analyze_technical_reversal Analyze ASELS.IS
+python -m scripts.analyze_fundamentals_reaction Analyze TUPRS.IS
+```
+
+These write markdown files under `reports/scenario_analysis/`. The scenario commands show the exact classroom evidence requested in the PDF:
+
+| Scenario | Command | Output focus |
+| --- | --- | --- |
+| Sector laggard / catch-up | `python -m scripts.analyze_sector_catchup Analyze MGROS.IS` | 20D stock return, sector median, lag score, peer count, laggard outcome win/false-positive rates |
+| Weekday / multi-day pattern | `python -m scripts.analyze_weekday_pattern Analyze THYAO.IS` | occurrence count, average/median return, win rate, market regimes, out-of-sample split, transaction cost and multiple-testing warning |
+| Technical reversal | `python -m scripts.analyze_technical_reversal Analyze ASELS.IS` | Bollinger/RSI/volume/KAMA/Supertrend setup plus historical event counts and positive-move rates |
+| Quarterly fundamentals reaction | `python -m scripts.analyze_fundamentals_reaction Analyze TUPRS.IS` | disclosure-time entry, 1/5/20-day returns, XU100-relative return, sector-relative return and unavailable yfinance metrics |
 
 Open the classroom walkthrough notebook:
 

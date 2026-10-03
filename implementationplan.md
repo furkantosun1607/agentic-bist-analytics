@@ -1836,6 +1836,9 @@ Completed:
 | 2026-10-03 | P44 | Classroom demo notebook, notebook smoke testi, README referansi ve report manifest/coverage notebook status guncellemesi eklendi. | `python -m unittest discover -s tests` passed: 207 tests; `python -m scripts.demo --offline` passed; `python -m scripts.build_dashboard` passed. | Aktif faz P45'e tasindi. |
 | 2026-10-03 | P45 | LLM explanation schema, prompt, evidence path validation, richer offline fallback ve markdown/JSON output bolumleri iyilestirildi. | `python -m unittest discover -s tests` passed: 207 tests; `python -m scripts.run_llm_agent_harness --provider offline` passed; `python -m scripts.build_dashboard` passed. | Aktif faz P46'ya tasindi. |
 | 2026-10-03 | P46 | Final technical report, submission gap status, dashboard submission shortcuts, demo artifacts ve plan final state yenilendi. | `python -m unittest discover -s tests` passed: 207 tests; `python -m scripts.demo --offline` passed; `python -m scripts.build_dashboard` passed. | P00-P46 final PDF-alignment package tamamlandi. |
+| 2026-10-03 | P47 | Hocaya tek ekranda gosterilecek `Analyze ASELS.IS` akisi icin single-symbol analysis CLI, markdown output, data-quality guarded aggregation ve testler eklendi. | `python -m unittest tests.test_symbol_analysis` passed; `python -m scripts.analyze_symbol Analyze ASELS.IS` passed. | Sunumda terminal komutu ve `reports/symbol_analysis/ASELS_IS.md` birlikte gosterilecek. |
+| 2026-10-03 | P48 | Backtest risk metriklerinde overlapping trade compound problemi giderildi; horizon-dailyized exit-date aggregation, symbol-analysis backtest sanity gate, kaynak satirlari ve paragraf AI analysis eklendi. | `python -m unittest discover -s tests` passed: 210 tests; `python -m scripts.run_backtests`, `python -m scripts.run_strategy_variants`, `python -m scripts.analyze_symbol Analyze MGROS.IS`, `python -m scripts.build_dashboard` passed. | Backtest anomalisinde gate `INVESTIGATE`, yenilenmis raporda MGROS `PASS` uretiyor. |
+| 2026-10-03 | P49 | PDF'deki dort ana deney icin per-symbol CLI komutlari eklendi: sector catch-up, weekday/multi-day, technical reversal ve fundamentals reaction. | `python -m unittest tests.test_scenario_symbol_analysis` passed; dort scenario CLI smoke run passed. | Komutlar markdown ciktisini `reports/scenario_analysis/` altina yazar. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -1854,6 +1857,9 @@ Completed:
 | Classroom notebook | Done | `notebooks/01_classroom_demo.ipynb` komut akisi, rapor linkleri, Gemini ciktisi, dashboard yolu ve limitation ozetini tek yerde gosterir. |
 | LLM explanation quality | Done | Prompt ve JSON schema evidence path, methodology, quality gate yorumu, limitation ve next-step alanlari uretecek sekilde iyilestirildi. |
 | Final PDF alignment refresh | Done | Final report, submission gap status, dashboard shortcuts, demo summary ve implementation plan teslim oncesi son duruma cekildi. |
+| Single-symbol classroom analysis | Done | `python -m scripts.analyze_symbol Analyze ASELS.IS` market, sector, technical, historical test, fundamentals, macro, backtest, data quality ve AI-style educational label bolumlerini tek terminal/markdown ciktisinda toplar. |
+| Backtest risk sanity gate | Done | Risk metrikleri horizon return'lerini gunluklestirip exit-date bazinda esit agirlikli portfolio-like seriyle compound eder; symbol analysis backtest anomalilerini `INVESTIGATE` olarak yakalar. |
+| Per-symbol PDF scenario CLIs | Done | `analyze_sector_catchup`, `analyze_weekday_pattern`, `analyze_technical_reversal` ve `analyze_fundamentals_reaction` komutlari tek hisse icin PDF deney basliklarini terminal/markdown ciktisina dokuyor. |
 | Human review kaydi | Decided | `p39-reviewed-educational-analysis` record'u educational project evidence olarak `accept` edildi; replay integrity `ok`, investment advice degil. |
 | Maliyet/slippage varsayimlari | Decided | `settings.yaml` icindeki `trading_cost_bps: 10` ve `slippage_bps: 5` backtest motoruna baglandi; sifir toplam maliyet reddedilir. |
 | Measured final results | Final local package ready | Four scenario reports, P35 backtest/risk, P36 unseen/regime, P37 A-C strategy variants, P38 harness deterministic run ve P39 decision replay hazir; P40 final refresh tamamlandi. |
@@ -1880,3 +1886,6 @@ Completed:
 - [x] Classroom demo notebook
 - [x] Richer LLM explanation with evidence citations
 - [x] Final PDF alignment refresh
+- [x] Single-symbol classroom analysis command
+- [x] Backtest sanity gate and source-cited AI analysis paragraph
+- [x] Four per-symbol PDF scenario commands

@@ -136,6 +136,22 @@ class BacktestTests(unittest.TestCase):
         self.assertLess(metrics["maximum_drawdown"], 0)
         self.assertIsInstance(metrics["sharpe_ratio"], float)
 
+    def test_risk_metrics_average_overlapping_trades_by_exit_date(self):
+        trades = pd.DataFrame(
+            {
+                "signal_id": ["a", "b", "c"],
+                "exit_date": ["2024-01-03", "2024-01-03", "2024-01-04"],
+                "cost_adjusted_return": [0.10, 0.20, -0.05],
+                "benchmark_return": [0.04, 0.06, -0.02],
+            }
+        )
+
+        metrics = calculate_risk_metrics(trades)
+
+        self.assertAlmostEqual((1.15 * 0.95) - 1, metrics["cumulative_return"])
+        self.assertAlmostEqual((1.05 * 0.98) - 1, metrics["cumulative_benchmark_return"])
+        self.assertAlmostEqual(metrics["cumulative_return"] - metrics["cumulative_benchmark_return"], metrics["benchmark_difference"])
+
     def test_zero_total_cost_is_rejected(self):
         result = run_backtest(
             signals=signals(),

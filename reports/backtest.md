@@ -18,11 +18,11 @@ Symbols: 30.
 
 | status   |   signal_count |   trade_count |   symbol_count |   average_gross_return |   median_gross_return |   average_cost_adjusted_return |   median_cost_adjusted_return |   cumulative_return |   sharpe_ratio |   maximum_drawdown |   win_rate |   cumulative_benchmark_return |   benchmark_difference |   average_benchmark_relative_return |   average_sector_relative_return |
 |:---------|---------------:|--------------:|---------------:|-----------------------:|----------------------:|-------------------------------:|------------------------------:|--------------------:|---------------:|-------------------:|-----------:|------------------------------:|-----------------------:|------------------------------------:|---------------------------------:|
-| ok       |          25819 |         25813 |             30 |             0.00695121 |            0.00402145 |                     0.00545121 |                    0.00252145 |         3.74944e+34 |        12.7844 |                 -1 |   0.517375 |                   1.97493e+80 |           -1.97493e+80 |                         -0.00101193 |                              nan |
+| ok       |          25819 |         25813 |             30 |             0.00695121 |            0.00402145 |                     0.00545121 |                    0.00252145 |              2.5995 |        3.94613 |          -0.335521 |   0.562633 |                       7.84311 |               -5.24361 |                         -0.00101193 |                              nan |
 
 Limitations:
 - This report is historical research output, not investment advice.
-- Sharpe ratio is calculated on trade-level cost-adjusted returns, not daily portfolio returns.
+- Risk metrics group overlapping trades by exit date with equal weighting before compounding.
 - Benchmark and sector benchmark returns are reported only when matching benchmark histories are provided.
 
 ## Measured Backtest Run

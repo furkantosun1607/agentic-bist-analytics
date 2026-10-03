@@ -1,32 +1,6 @@
-# Final Technical Report
+# PDF Requirement Coverage Matrix
 
-Status: implementation infrastructure is complete through measured report orchestration. Local market, fundamentals, macro and RSS artifacts are available; the four required research reports, backtest/risk report, unseen/regime report, partial A-E strategy comparison, deterministic harness comparison, optional LLM agent harness, static dashboard and reviewed decision replay have been generated.
-
-## Scope
-
-This project implements an educational BIST 100 research harness for a fixed 30-stock universe. Python modules perform deterministic calculations for data loading, validation, indicators, events, research scenarios, context records, backtesting, risk metrics, evidence bundles, stateful harness control, human-reviewed decision logs, strategy variants and harness variants.
-
-## Report Status
-
-The four scenario reports, backtest/risk report, unseen/regime report, A-C strategy variants, deterministic harness A-E comparison, optional LLM explanation run, static dashboard and reviewed decision replay have measured or generated outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but D-E strategy variants remain unavailable until executable macro and news/video signals are defined.
-
-## Inconclusive Findings
-
-The four scenario reports, P35 backtest, P36 unseen/regime report and P37 A-C strategy variants contain local-cache measurements, but final strategy-level conclusions remain partial because macro and news/video executable signals are unavailable for D-E.
-
-## Key Controls
-
-- Fixed 30-stock universe and data dictionary.
-- Point-in-time validation and future leakage blocking.
-- Disclosure timestamp handling for fundamentals.
-- Source metadata requirements for macro, news and video context.
-- Nonzero cost and slippage assumptions.
-- Unseen-period and regime split helpers.
-- Deterministic MCP-like tool surface.
-- Stateful harness with permitted tool rules.
-- Evidence bundle, quality gate and replayable decision log with one reviewed record.
-
-## PDF Requirement Coverage
+This matrix maps the course PDF requirements to the current repository artifacts. It is a delivery-readiness aid, not a financial result.
 
 | PDF requirement | Status | Project evidence | Limitation / note |
 | --- | --- | --- | --- |
@@ -51,15 +25,9 @@ The four scenario reports, P35 backtest, P36 unseen/regime report and P37 A-C st
 | Python source code / notebooks and environment instructions | Partial | src/; scripts/; requirements.txt; README.md; .env.example | Classroom demo notebook is planned for P44. |
 | Final technical report and classroom demonstration | Met | reports/final_technical_report.md; reports/demo_summary.md; ui/dashboard.html | Dashboard is static and informational; it does not run analyses itself. |
 
-## Limitations
+Status policy:
+- `Met`: implemented and documented with local artifacts.
+- `Partial`: materially supported, but one or more PDF details are not fully implemented.
+- `Unavailable/Documented Limitation`: intentionally not implemented or blocked by source access; no values are invented.
 
-- Raw local macro, fundamentals, market and RSS cache files are not committed.
-- Approved video context and final measured strategy outputs are not committed.
-- Harness variants are measured with deterministic fixtures; the optional LLM harness can run live only when an API key is configured.
-- The static dashboard is informational and does not fetch live data.
-- The measured backtest is trade-level research output and not a portfolio allocation simulation.
-- No broker connection or investment advice is included.
-
-## Submission Status
-
-Final packaging artifacts have been refreshed. Before submission, rerun the documented commands if local cache artifacts are intentionally updated.
+Non-negotiable rule: missing Fintables, live official macro API, video/STT, and D-E executable trade signals remain explicit limitations.

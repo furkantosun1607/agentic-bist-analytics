@@ -1,0 +1,30 @@
+{
+  "decision_id": "p41-llm-agent-harness",
+  "explanation": {
+    "evidence_links": [
+      "research_reports",
+      "backtest_report",
+      "strategy_variants_report",
+      "harness_variants_report"
+    ],
+    "label": "INVESTIGATE",
+    "limitations": [
+      "Findings are constrained to the 25813.0 backtest trades and 3.0 measured strategy variants documented in the local report files as of 2026-09-25T12:00:00+00:00."
+    ],
+    "not_investment_advice": true,
+    "risk_notes": [
+      "Backtest metrics reflect historical simulations across 25813.0 trades and do not guarantee future performance or execution fidelity."
+    ],
+    "summary": "Analysis of the harness reports indicates 4.0 scenario reports, 25813.0 backtest trades, 3.0 measured strategy variants, and 5.0 harness questions evaluated. The quality gate status is ANALYSIS_SAFE."
+  },
+  "model": "gemini-3.8-flash",
+  "provider": "google",
+  "quality_gate": {
+    "evidence_hash": "8988d55e80c4c17fcdb651751c7e8fdf033bdae86f29c121a04b6da3e5e01d85",
+    "gate_status": "ANALYSIS_SAFE",
+    "issues": []
+  },
+  "replay_status": "ok",
+  "status": "live_llm_replay_ok",
+  "warnings": []
+}

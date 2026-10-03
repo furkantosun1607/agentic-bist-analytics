@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | P00-P40 local submission workflow complete |
-| Son guncelleme | 2026-09-25 |
-| Aktif faz | Complete |
-| Kritik sonraki hedef | Commit/push sonrasi teslim oncesi gerekirse documented commands tekrar calistirilir |
+| Proje durumu | P43 PDF requirement coverage complete; P44-P46 final PDF-alignment polish remaining |
+| Son guncelleme | 2026-10-03 |
+| Aktif faz | P44 - Classroom Demo Notebook |
+| Kritik sonraki hedef | Classroom notebook, iyilestirilmis LLM explanation ve final refresh |
 
 ## Degismez Proje Kurallari
 
@@ -1573,6 +1573,187 @@ Notes:
 - D/E strategy variants unavailable kalmaya devam eder; bu eksik veri uydurulmadigi icin bilincli limitation'dir.
 - Raw local cache artifact'leri commitlenmez.
 
+### P41 - Optional LLM Agent Harness Integration
+
+Status: `Done`
+
+Goal: Project spec'teki LLM agent harness ihtiyacini gercek LLM cagrisi destekleyecek, fakat API key yoksa deterministik fallback ile demoyu kirmayacak sekilde tamamlamak.
+
+Deliverables:
+- `src/llm_agent.py`
+- `scripts/run_llm_agent_harness.py`
+- `.env.example`
+- `reports/llm_agent_harness.md`
+- `reports/llm_agent_harness.json`
+- `reports/decision_logs/llm_agent/decisions.jsonl`
+
+Acceptance:
+- LLM yalnizca committed evidence ve quality-gate payload'u aciklar.
+- LLM fiyat, getiri, oran veya yatirim karari hesaplamaz.
+- Cikti constrained JSON kontratiyla dogrulanir.
+- Unsupported label veya hatali LLM ciktisi guvenli fallback'e duser ve warning yazar.
+- Replayable decision log P39 logunu ezmeden ayri dizine yazilir.
+
+Completed:
+- OpenAI-compatible chat endpoint ve Google Gemini (`google-genai`) destekli LLM client eklendi.
+- API key yokken `offline` deterministic fallback calisacak sekilde `auto` provider eklendi.
+- `GEMINI_API_KEY` veya `GOOGLE_API_KEY` varsa `auto` provider Gemini'ye yonelir; model default'u `gemini-3.8-flash` olarak ayarlandi.
+- Prompt; JSON-only, no-new-numbers, no-investment-advice ve educational label kisitlariyla kilitlendi.
+- LLM aciklamasi quality gate/evidence bundle uzerinden karar loguna kaydedildi ve replay check eklendi.
+- README ve report manifest LLM harness komutlariyla guncellendi.
+
+Tests:
+- `python -m unittest tests.test_llm_agent tests.test_imports` passed after implementation.
+- `python -m scripts.run_llm_agent_harness --provider offline` passed: `offline_llm_replay_ok`.
+
+Notes:
+- Gemini live LLM icin `GEMINI_API_KEY` veya `GOOGLE_API_KEY` gerekir.
+- OpenAI-compatible live LLM icin `LLM_API_KEY` veya `OPENAI_API_KEY` gerekir.
+- `GEMINI_MODEL` veya `LLM_MODEL` `.env.example` icinde override edilebilir; secrets commitlenmez.
+
+### P42 - Informative Static Dashboard UI
+
+Status: `Done`
+
+Goal: Proje durumunu, rapor envanterini, LLM harness sonucunu ve demo komutlarini gorsel olarak izlenebilir hale getiren hafif bir UI eklemek.
+
+Deliverables:
+- `src/ui_dashboard.py`
+- `scripts/build_dashboard.py`
+- `ui/dashboard.html`
+
+Acceptance:
+- Dashboard server veya ek dependency gerektirmez.
+- Report manifest durumlarini ve LLM harness ozetini gosterir.
+- Demo/test/LLM komutlari tek yerde gorunur.
+- HTML responsive ve okunabilir olmalidir.
+
+Completed:
+- Static HTML dashboard generator eklendi.
+- Dashboard LLM JSON ciktisini, manifest report card'larini ve calistirma komutlarini render ediyor.
+- README ve report manifest dashboard komutuyla guncellendi.
+
+Tests:
+- `python -m unittest tests.test_ui_dashboard tests.test_reporting tests.test_imports` passed after implementation.
+- `python -m scripts.build_dashboard` passed and wrote `ui/dashboard.html`.
+
+Notes:
+- UI bilgilendiricidir; live veri cekmez ve analiz calistirmaz.
+- Raporlar veya LLM harness yenilenirse `python -m scripts.build_dashboard` tekrar calistirilmelidir.
+
+### P43 - PDF Requirement Coverage Matrix
+
+Status: `Done`
+
+Goal: Hocanin PDF'indeki final deliverable ve kalite kriterlerini birebir izlenebilir hale getirmek; "istenen / bizdeki dosya / durum / limitasyon" tablosunu final rapora ve ayri coverage raporuna eklemek.
+
+Deliverables:
+- `reports/pdf_requirement_coverage.md`
+- `reports/final_technical_report.md` icinde "PDF Requirement Coverage" bolumu
+- `src/reporting.py` coverage writer veya mevcut final report writer guncellemesi
+- `tests/test_reporting.py` coverage varligini dogrulayan test
+
+Acceptance:
+- PDF'teki ana basliklar kapsanir: 30-stock universe, data sources, technical analysis, four mandatory scenarios, fundamentals, macro, news/speech, backtest, MCP tools, stateful harness, memory/replay, strategy A-E, harness A-E, final deliverables.
+- Her satir `Met`, `Partial`, `Unavailable/Documented Limitation` gibi acik status icerir.
+- Her status bir repo dosyasina veya rapora baglanir.
+- Eksik kalan alanlar uydurulmaz; Fintables, video/STT, D-E executable signals ve notebook durumu net yazilir.
+
+Tests:
+- `python -m unittest tests.test_reporting` passed: 4 tests.
+- `python -m scripts.demo --offline` passed.
+- `python -m scripts.build_dashboard` passed.
+- `python -m unittest discover -s tests` passed: 206 tests.
+
+Notes:
+- Bu faz teslim savunmasi icin kritik: hoca PDF'e bakarak soru sorarsa cevap tek tabloda gorunur.
+- Coverage raporu yatirim sonucu degil, proje uygunluk matrisi olacak.
+
+Completed:
+- `RequirementCoverageEntry` modeli ve `REQUIREMENT_COVERAGE` matrisi `src/reporting.py` icine eklendi.
+- `write_requirement_coverage` ile `reports/pdf_requirement_coverage.md` uretiliyor.
+- Final technical report icine "PDF Requirement Coverage" bolumu gomuldu.
+- Report manifest ve dashboard coverage raporunu takip edecek sekilde guncellendi.
+- Offline demo report generation coverage raporunu da yeniliyor.
+
+### P44 - Classroom Demo Notebook
+
+Status: `Not Started`
+
+Goal: PDF'in "Python source code / notebooks" teslim beklentisini karsilamak ve sinifta tek dosyadan proje akisini anlatmak.
+
+Deliverables:
+- `notebooks/01_classroom_demo.ipynb`
+- Notebook icinde proje amaci, kurulum, calistirma sirasi, rapor linkleri, Gemini LLM ciktisi, dashboard yolu ve limitation ozeti
+- Gerekirse `reports/report_index.md` veya README notebook referansi
+
+Acceptance:
+- Notebook minimal ama acilabilir JSON formatinda olur.
+- Notebook agir hesaplari otomatik calistirmak zorunda degildir; classroom walkthrough ve komut bloklari yeterlidir.
+- Su komutlar gorunur: market/fundamentals/macro/RSS fetch, research, backtest, variants, decision log, LLM harness, dashboard, demo, tests.
+- Notebook, canli API key veya secret icermez.
+
+Tests:
+- Notebook JSON parse edilir.
+- `python -m unittest tests.test_imports` veya yeni notebook smoke testi calisir.
+
+Notes:
+- Notebook teslim kalitesini artirir; local raw cache dosyalarini notebook'a gommemek gerekir.
+
+### P45 - Richer LLM Explanation Prompt And Evidence Citations
+
+Status: `Not Started`
+
+Goal: Gemini ciktisini daha bilgilendirici hale getirmek; LLM'in yalnizca sayilari tekrar etmesi yerine evidence dosya yollarini, guvenlik kurallarini, kisitlari ve proje sonucunu aciklamasini saglamak.
+
+Deliverables:
+- `src/llm_agent.py` prompt ve JSON schema iyilestirmesi
+- LLM output alanlari: `summary`, `methodology`, `evidence_links`, `quality_gate_interpretation`, `limitations`, `risk_notes`, `next_steps`, `not_investment_advice`
+- `reports/llm_agent_harness.md` daha okunabilir explanation bolumu
+- `tests/test_llm_agent.py` schema/prompt testleri
+
+Acceptance:
+- Prompt LLM'e sayi uydurmayi, yatirim tavsiyesi vermeyi ve evidence disi claim yazmayi yasaklamaya devam eder.
+- Evidence linkleri repo rapor dosyalarina referans verir: `reports/research_run_status.md`, `reports/backtest.md`, `reports/strategy_variants.md`, `reports/harness_variants.md`.
+- LLM ciktisi hem live Gemini hem offline fallback ile valid JSON olur.
+- Hatalar try/except ile yakalanir; bad LLM output guvenli fallback'e duser.
+
+Tests:
+- `python -m unittest tests.test_llm_agent`
+- `python -m scripts.run_llm_agent_harness --provider offline`
+- Kullanici isterse live: `python -m scripts.run_llm_agent_harness --provider google`
+
+Notes:
+- Live Gemini testini secret gerektirdigi icin zorunlu CI testi yapmayacagiz; kullanici kendi ortaminda calistiracak.
+- Bu fazdan sonra dashboard tekrar build edilmeli.
+
+### P46 - Final PDF Alignment Refresh
+
+Status: `Not Started`
+
+Goal: P43-P45 tamamlandiktan sonra tum final raporlari, dashboard'u, demo summary'yi ve plan durumunu teslim oncesi son hale getirmek.
+
+Deliverables:
+- `reports/report_index.md` final coverage/notebook/LLM guncellemesi
+- `reports/final_technical_report.md` final coverage bolumu ile yenilenmis
+- `reports/submission_gap_status.md` remaining limitation listesi guncel
+- `ui/dashboard.html` LLM/coverage/notebook linkleriyle yenilenmis
+- `implementationplan.md` P43-P46 Done durumuna cekilmis
+
+Acceptance:
+- `python -m unittest discover -s tests` gecer.
+- `python -m scripts.demo --offline` gecer.
+- `python -m scripts.build_dashboard` gecer.
+- Final limitation listesi net kalir: Fintables yerine yfinance fallback, video/STT yok, D-E executable signals yok, live API key local-only.
+
+Tests:
+- `python -m unittest discover -s tests`
+- `python -m scripts.demo --offline`
+- `python -m scripts.build_dashboard`
+
+Notes:
+- Bu faz, teslim oncesi "son paketleme" fazidir; yeni analiz mantigi eklemeyecek, kanit/dokuman/UI uyumunu tamamlayacak.
+
 ## Gelistirme Gunlugu
 
 | Tarih | Faz | Degisiklik | Test/Dogrulama | Not |
@@ -1621,6 +1802,10 @@ Notes:
 | 2026-09-25 | P38 | Fixed harness question fixture, deterministic harness variant runner/CLI, measured harness report, README/report manifest/gap updates ve testler eklendi. | `python -m unittest tests.test_harness_variant_reports tests.test_harness_variants tests.test_imports` passed: 8 tests; `python -m scripts.run_harness_variants` returned `measured_deterministic`, 5 questions, 5 variants, best E. | Aktif faz P39'a tasindi; human-reviewed decision log sirada. |
 | 2026-09-25 | P39 | Reviewed educational decision log runner, idempotent JSONL writer, replay integrity report, README/report manifest/gap updates ve testler eklendi. | `python -m unittest tests.test_decision_log_reports tests.test_decision_log tests.test_imports` passed: 9 tests; `python -m scripts.run_decision_log` returned `reviewed_replay_ok`. | Aktif faz P40'a tasindi; final submission refresh sirada. |
 | 2026-09-25 | P40 | README, report manifest, final technical report, demo summary, submission gap status ve implementation plan final submission durumuna gore yenilendi. | `python -m unittest discover -s tests` passed: 197 tests; `python -m scripts.demo --offline` passed. | P00-P40 local submission workflow tamamlandi. |
+| 2026-10-03 | P41 | Optional live/offline LLM agent harness, Gemini/OpenAI-compatible provider secimi, constrained prompt, JSON validation, fallback ve ayri replay log eklendi. | `python -m unittest tests.test_llm_agent tests.test_imports` passed; `python -m scripts.run_llm_agent_harness --provider offline` passed. | API key yoksa offline fallback kullanilir. |
+| 2026-10-03 | P42 | Static bilgilendirici dashboard generator ve `ui/dashboard.html` eklendi. | `python -m unittest tests.test_ui_dashboard tests.test_reporting tests.test_imports` passed; `python -m scripts.build_dashboard` passed. | Dashboard report/LLM artifactleri yenilendikce tekrar build edilir. |
+| 2026-10-03 | PDF Polish Planning | PDF gereksinim analizi sonrasi P43-P46 final polish fazlari eklendi. | Dokuman guncellemesi. | Aktif faz P43'e tasindi; odak coverage matrix, notebook, richer LLM output ve final refresh. |
+| 2026-10-03 | P43 | PDF requirement coverage matrix, final report coverage bolumu, report manifest baglantisi ve demo generation entegrasyonu eklendi. | `python -m unittest discover -s tests` passed: 206 tests; `python -m scripts.demo --offline` passed; `python -m scripts.build_dashboard` passed. | Aktif faz P44'e tasindi. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -1633,6 +1818,11 @@ Notes:
 | BIST/XU100 sembol uyumu | Open | P03 adapter ve missing-symbol rapor yazicisi eklendi; canli `python -m scripts.fetch_market_data` calistirildiginda rapor uretilecek. |
 | Unseen period tarihleri | Decided | `experiment.unseen_start_date` `2025-10-01` olarak sabitlendi; selection 20,909 trade, unseen 4,904 trade ile measured raporlandi. |
 | Harness A-E run tipi | Decided | Live LLM run yerine deterministic fixed-question fixture kullanildi; rapor live prose kalitesini degil harness control capability'lerini olcer. |
+| LLM agent harness | Ready optional live/offline | `python -m scripts.run_llm_agent_harness --provider auto` Gemini veya OpenAI-compatible API key varsa live cagri yapar; yoksa deterministic fallback ile replayable artifact uretir. Prompt no-new-numbers, JSON-only ve no-investment-advice kisitlariyla kilitlidir. |
+| Bilgilendirici UI | Ready static dashboard | `python -m scripts.build_dashboard` `ui/dashboard.html` uretir; report inventory, LLM status ve demo komutlarini gosterir. |
+| PDF requirement coverage | Done | `reports/pdf_requirement_coverage.md` ve final report coverage bolumu hocanin PDF'indeki deliverable/kalite kriterlerini dosya/durum/limitasyon bazinda izler. |
+| Classroom notebook | Planned | P44 ile `notebooks/01_classroom_demo.ipynb` eklenecek; komut akisi, rapor linkleri, Gemini ciktisi ve dashboard yolu tek yerde gosterilecek. |
+| LLM explanation quality | Planned | P45 ile prompt daha acik evidence citation, methodology, limitation ve next-step alanlari uretecek sekilde iyilestirilecek. |
 | Human review kaydi | Decided | `p39-reviewed-educational-analysis` record'u educational project evidence olarak `accept` edildi; replay integrity `ok`, investment advice degil. |
 | Maliyet/slippage varsayimlari | Decided | `settings.yaml` icindeki `trading_cost_bps: 10` ve `slippage_bps: 5` backtest motoruna baglandi; sifir toplam maliyet reddedilir. |
 | Measured final results | Final local package ready | Four scenario reports, P35 backtest/risk, P36 unseen/regime, P37 A-C strategy variants, P38 harness deterministic run ve P39 decision replay hazir; P40 final refresh tamamlandi. |
@@ -1652,4 +1842,10 @@ Notes:
 - [x] Human-reviewed replayable decision log
 - [x] Strategy variants A-E comparison
 - [x] Harness variants A-E comparison
+- [x] Optional LLM agent harness integration
+- [x] Informative static dashboard UI
 - [x] Final report and classroom demo command
+- [x] PDF requirement coverage matrix
+- [ ] Classroom demo notebook
+- [ ] Richer LLM explanation with evidence citations
+- [ ] Final PDF alignment refresh

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agentic BIST Analytics Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #5f6b76;
+      --line: #d9e0e7;
+      --panel: #ffffff;
+      --page: #f4f7f9;
+      --accent: #117a65;
+      --accent-2: #8e44ad;
+      --warn: #b9770e;
+      --ok: #1e8449;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+      background: var(--page);
+      color: var(--ink);
+      letter-spacing: 0;
+    }
+    header {
+      padding: 28px clamp(18px, 4vw, 48px);
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+    h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 44px); }
+    h2 { margin: 0 0 14px; font-size: 20px; }
+    p { line-height: 1.55; }
+    main { padding: 24px clamp(18px, 4vw, 48px) 48px; }
+    .subtitle { max-width: 900px; color: var(--muted); margin: 0; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .metric { font-size: 30px; font-weight: 750; margin: 8px 0 2px; }
+    .label { color: var(--muted); font-size: 13px; }
+    .pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #eaf5f1;
+      color: var(--accent);
+    }
+    .pill.warn { background: #fbf1df; color: var(--warn); }
+    .section { margin-top: 24px; }
+    .reports {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    .report h3 { margin: 0 0 8px; font-size: 16px; }
+    .report p { margin: 6px 0; color: var(--muted); font-size: 13px; }
+    code {
+      background: #edf2f5;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 2px 5px;
+      white-space: pre-wrap;
+    }
+    .commands { display: grid; gap: 8px; }
+    .commands code { display: block; padding: 10px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Agentic BIST Analytics Dashboard</h1>
+    <p class="subtitle">Educational research harness status, report inventory, LLM agent output and demo commands. No broker connection, no investment advice.</p>
+  </header>
+  <main>
+    <section class="grid">
+      <div class="card">
+        <div class="label">Tracked reports</div>
+        <div class="metric">19</div>
+        <span class="pill">All tracked reports are present.</span>
+      </div>
+      <div class="card">
+        <div class="label">LLM harness status</div>
+        <div class="metric">live_llm_replay_ok</div>
+        <span class="pill">google</span>
+      </div>
+      <div class="card">
+        <div class="label">Agent label</div>
+        <div class="metric">INVESTIGATE</div>
+        <span class="pill warn">educational only</span>
+      </div>
+    </section>
+
+    <section class="card section">
+      <h2>LLM Agent Explanation</h2>
+      <p>Analysis of the harness reports indicates 4.0 scenario reports, 25813.0 backtest trades, 3.0 measured strategy variants, and 5.0 harness questions evaluated. The quality gate status is ANALYSIS_SAFE.</p>
+    </section>
+
+    <section class="section">
+      <h2>Run Commands</h2>
+      <div class="commands">
+        <code>python -m scripts.run_llm_agent_harness --provider auto</code>
+        <code>python -m scripts.build_dashboard</code>
+        <code>python -m scripts.demo --offline</code>
+        <code>python -m unittest discover -s tests</code>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Report Inventory</h2>
+      <div class="reports">
+        <article class="card report">
+  <h3>Market cache audit</h3>
+  <span class="pill">local_cache_audited</span>
+  <p><strong>Path:</strong> <code>reports/market_cache_audit.md</code></p>
+  <p><strong>Sample:</strong> 31 cached symbols audited; 30 universe symbols plus XU100 benchmark</p>
+  <p><strong>Limitation:</strong> BIST 100 membership over the full period still requires external documentation</p>
+</article>
+<article class="card report">
+  <h3>Sector catch-up</h3>
+  <span class="pill">measured_local_cache</span>
+  <p><strong>Path:</strong> <code>reports/sector_catch_up.md</code></p>
+  <p><strong>Sample:</strong> 129192 observation rows</p>
+  <p><strong>Limitation:</strong> raw cache is ignored by git; many simplified sectors have limited peer coverage</p>
+</article>
+<article class="card report">
+  <h3>Weekday and multi-day patterns</h3>
+  <span class="pill">measured_local_cache</span>
+  <p><strong>Path:</strong> <code>reports/weekday_patterns.md</code></p>
+  <p><strong>Sample:</strong> 215320 observation rows; 50 summary rows</p>
+  <p><strong>Limitation:</strong> multiple-testing risk; raw cache is ignored by git</p>
+</article>
+<article class="card report">
+  <h3>Technical reversals</h3>
+  <span class="pill">measured_local_cache</span>
+  <p><strong>Path:</strong> <code>reports/technical_reversals.md</code></p>
+  <p><strong>Sample:</strong> 158444 observation rows; 30967 generated event rows; 1662 summary rows</p>
+  <p><strong>Limitation:</strong> event rules are simple and not optimized; raw cache is ignored by git</p>
+</article>
+<article class="card report">
+  <h3>Quarterly fundamentals</h3>
+  <span class="pill">measured_local_cache</span>
+  <p><strong>Path:</strong> <code>reports/quarterly_fundamentals.md</code></p>
+  <p><strong>Sample:</strong> 3057 observation rows; 160 fundamentals rows; 33 summary rows</p>
+  <p><strong>Limitation:</strong> synthetic disclosure timestamps are conservative assumptions, not exact KAP times</p>
+</article>
+<article class="card report">
+  <h3>Fundamentals fetch status</h3>
+  <span class="pill">local_yfinance_fetch_ready</span>
+  <p><strong>Path:</strong> <code>reports/fundamentals_fetch_status.md</code></p>
+  <p><strong>Sample:</strong> 160 rows across 30 fixed-universe tickers</p>
+  <p><strong>Limitation:</strong> raw local fundamentals CSV is ignored by git; timestamps are conservative assumptions</p>
+</article>
+<article class="card report">
+  <h3>Fundamentals import status</h3>
+  <span class="pill">local_import_ready</span>
+  <p><strong>Path:</strong> <code>reports/fundamentals_import_status.md</code></p>
+  <p><strong>Sample:</strong> 160 valid rows; 30/30 universe ticker coverage</p>
+  <p><strong>Limitation:</strong> quarterly fundamentals report still needs measured run against market cache</p>
+</article>
+<article class="card report">
+  <h3>Macro/news/video context</h3>
+  <span class="pill">rss_and_macro_context_ready_no_video_required</span>
+  <p><strong>Path:</strong> <code>reports/context_sources.md</code></p>
+  <p><strong>Sample:</strong> RSS context rows generated from local cache; 1421 numeric macro rows generated locally</p>
+  <p><strong>Limitation:</strong> RSS source availability varies; alias matches are not sentiment or trade signals</p>
+</article>
+<article class="card report">
+  <h3>Macro context fetch status</h3>
+  <span class="pill">local_macro_fetch_ready</span>
+  <p><strong>Path:</strong> <code>reports/macro_context_fetch_status.md</code></p>
+  <p><strong>Sample:</strong> 1421 rows; 709 USD/TRY, 709 EUR/TRY and 3 static policy/inflation rows</p>
+  <p><strong>Limitation:</strong> TCMB/TUIK/FED static records are curated project inputs, not live API pulls</p>
+</article>
+<article class="card report">
+  <h3>Macro context status</h3>
+  <span class="pill">local_macro_context_ready</span>
+  <p><strong>Path:</strong> <code>reports/macro_context_status.md</code></p>
+  <p><strong>Sample:</strong> 1421 valid rows; 5/5 required indicators present</p>
+  <p><strong>Limitation:</strong> local macro CSV is generated artifact and is ignored by git; RSS macro aliases do not replace numeric macro records</p>
+</article>
+<article class="card report">
+  <h3>Research run status</h3>
+  <span class="pill">four_reports_measured_local_cache</span>
+  <p><strong>Path:</strong> <code>reports/research_run_status.md</code></p>
+  <p><strong>Sample:</strong> 4 reports generated; 506013 total observation rows</p>
+  <p><strong>Limitation:</strong> raw input artifacts are ignored by git; measured reports are educational historical research</p>
+</article>
+<article class="card report">
+  <h3>Backtest and risk</h3>
+  <span class="pill">measured_local_cache</span>
+  <p><strong>Path:</strong> <code>reports/backtest.md</code></p>
+  <p><strong>Sample:</strong> 25819 signal rows; 25813 tradable rows; 30 symbols</p>
+  <p><strong>Limitation:</strong> trade-level risk only; overlapping trades are not capital-constrained portfolio simulation</p>
+</article>
+<article class="card report">
+  <h3>Unseen period and regime split</h3>
+  <span class="pill">measured_local_cache</span>
+  <p><strong>Path:</strong> <code>reports/split_regime.md</code></p>
+  <p><strong>Sample:</strong> 25813 tradable rows; 20909 selection rows; 4904 unseen rows</p>
+  <p><strong>Limitation:</strong> trade-level stability only; strategy variant selection remains later phase</p>
+</article>
+<article class="card report">
+  <h3>Strategy variants A-E</h3>
+  <span class="pill">measured_partial_local_cache</span>
+  <p><strong>Path:</strong> <code>reports/strategy_variants.md</code></p>
+  <p><strong>Sample:</strong> 5 variants; A-C measured, D-E unavailable; 42864 variant trade rows</p>
+  <p><strong>Limitation:</strong> macro and news/video executable signals are unavailable; RSS context is not a trade signal</p>
+</article>
+<article class="card report">
+  <h3>Harness variants A-E</h3>
+  <span class="pill">measured_deterministic_no_live_llm</span>
+  <p><strong>Path:</strong> <code>reports/harness_variants.md</code></p>
+  <p><strong>Sample:</strong> 5 fixed questions across 5 harness variants</p>
+  <p><strong>Limitation:</strong> does not call a live LLM and does not judge answer prose quality</p>
+</article>
+<article class="card report">
+  <h3>LLM agent harness</h3>
+  <span class="pill">optional_live_or_offline_llm_ready</span>
+  <p><strong>Path:</strong> <code>reports/llm_agent_harness.md</code></p>
+  <p><strong>Sample:</strong> 1 reviewed LLM harness decision record</p>
+  <p><strong>Limitation:</strong> live prose quality depends on configured API key/model; offline fallback is deterministic</p>
+</article>
+<article class="card report">
+  <h3>PDF requirement coverage</h3>
+  <span class="pill">pdf_alignment_matrix_ready</span>
+  <p><strong>Path:</strong> <code>reports/pdf_requirement_coverage.md</code></p>
+  <p><strong>Sample:</strong> 20 requirement coverage rows</p>
+  <p><strong>Limitation:</strong> coverage is a project-compliance map, not an empirical research result</p>
+</article>
+<article class="card report">
+  <h3>Decision log</h3>
+  <span class="pill">reviewed_replay_ok</span>
+  <p><strong>Path:</strong> <code>reports/decision_log.md</code></p>
+  <p><strong>Sample:</strong> 1 reviewed educational decision record; replay status ok</p>
+  <p><strong>Limitation:</strong> educational project evidence only; not an investment recommendation</p>
+</article>
+<article class="card report">
+  <h3>Static dashboard</h3>
+  <span class="pill">static_dashboard_ready</span>
+  <p><strong>Path:</strong> <code>ui/dashboard.html</code></p>
+  <p><strong>Sample:</strong> HTML dashboard with report cards and command checklist</p>
+  <p><strong>Limitation:</strong> static UI only; it does not fetch live data or run server-side actions</p>
+</article>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

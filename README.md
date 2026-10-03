@@ -2,7 +2,7 @@
 
 A small, reproducible **educational research project** for 30 selected BIST 100 stocks. It studies sector catch-up, calendar patterns, technical reversals, and reactions to quarterly financial disclosures. Python performs calculations; a controlled AI assistant summarizes evidence. Results are historical observations, not investment advice. The project has no broker connection or real trading.
 
-This README is a practical implementation guide based on the course project PDF. The proposed file names and thresholds are implementation choices, not extra course requirements. **Project status: local measured reports, deterministic harness comparison, and replayable decision log are ready; strategy variants D-E remain unavailable until executable macro and news/video trade signals are defined.**
+This README is a practical implementation guide based on the course project PDF. The proposed file names and thresholds are implementation choices, not extra course requirements. **Project status: local measured reports, optional LLM agent harness, static dashboard, deterministic harness comparison, and replayable decision logs are ready; strategy variants D-E remain unavailable until executable macro and news/video trade signals are defined.**
 
 ## What must be delivered
 
@@ -162,6 +162,22 @@ python -m scripts.run_decision_log
 ```
 
 This refreshes `reports/decision_logs/decisions.jsonl` and `reports/decision_log.md` with one educational human-reviewed record, evidence hash, quality gate payload and replay integrity check.
+
+Run the optional LLM agent harness:
+
+```powershell
+python -m scripts.run_llm_agent_harness --provider auto
+```
+
+With no API key, this uses the deterministic offline fallback so the classroom demo remains reproducible. To enable a live Gemini call, set `GEMINI_API_KEY` or `GOOGLE_API_KEY` and optionally `GEMINI_MODEL=gemini-3.8-flash`; to enable an OpenAI-compatible call, set `LLM_API_KEY` or `OPENAI_API_KEY`. The LLM receives only committed evidence and quality-gate metadata, returns a constrained JSON explanation, and is not allowed to calculate market numbers or give investment advice. The command writes `reports/llm_agent_harness.md`, `reports/llm_agent_harness.json`, and a separate replay log under `reports/decision_logs/llm_agent/`.
+
+Build the static project dashboard:
+
+```powershell
+python -m scripts.build_dashboard
+```
+
+This writes `ui/dashboard.html`. Open it in a browser to inspect report readiness, LLM harness status, evidence summary and demo commands. It has no server dependency.
 
 Then run the offline demo:
 

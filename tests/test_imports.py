@@ -12,6 +12,7 @@ class ImportTest(unittest.TestCase):
             harness,
             harness_variant_reports,
             indicators,
+            llm_agent,
             macro_context_fetch,
             macro_context_status,
             market_audit,
@@ -23,6 +24,7 @@ class ImportTest(unittest.TestCase):
             rss_news,
             split_regime_reports,
             strategy_variant_reports,
+            ui_dashboard,
             yfinance_fundamentals,
         )
 
@@ -34,6 +36,7 @@ class ImportTest(unittest.TestCase):
         self.assertIsNotNone(harness)
         self.assertIsNotNone(harness_variant_reports)
         self.assertIsNotNone(indicators)
+        self.assertIsNotNone(llm_agent)
         self.assertIsNotNone(macro_context_fetch)
         self.assertIsNotNone(macro_context_status)
         self.assertIsNotNone(market_audit)
@@ -45,6 +48,7 @@ class ImportTest(unittest.TestCase):
         self.assertIsNotNone(rss_news)
         self.assertIsNotNone(split_regime_reports)
         self.assertIsNotNone(strategy_variant_reports)
+        self.assertIsNotNone(ui_dashboard)
         self.assertIsNotNone(yfinance_fundamentals)
 
 

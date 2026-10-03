@@ -11,6 +11,7 @@ from src.news_context import DEFAULT_NEWS_CONTEXT_OUTPUT_PATH
 from src.reporting import (
     validate_report_manifest,
     write_final_technical_report,
+    write_requirement_coverage,
     write_report_index,
 )
 from src.rss_news import (
@@ -112,12 +113,16 @@ def _check_reports() -> list[DemoCheck]:
     checks: list[DemoCheck] = []
     try:
         report_index = write_report_index()
+        coverage_report = write_requirement_coverage()
         final_report = write_final_technical_report()
         checks.append(
             DemoCheck(
                 name="report_generation",
                 status=PASS,
-                detail=f"wrote {_display_path(report_index)} and {_display_path(final_report)}",
+                detail=(
+                    f"wrote {_display_path(report_index)}, "
+                    f"{_display_path(coverage_report)} and {_display_path(final_report)}"
+                ),
             )
         )
         manifest_errors = validate_report_manifest()

@@ -8,7 +8,7 @@ This demo performs no network calls. It validates the fixed universe, regenerate
 | --- | --- | --- |
 | settings | pass | loaded config\settings.yaml |
 | universe | pass | 30 fixed symbols validated |
-| report_generation | pass | wrote reports\report_index.md and reports\final_technical_report.md |
+| report_generation | pass | wrote reports\report_index.md, reports\pdf_requirement_coverage.md and reports\final_technical_report.md |
 | report_manifest | pass | all report metadata paths are present |
 | cache | pass | 31 cached market files found in data\cache |
 | rss_raw_cache | pass | 259 rows found in data\rss\news_raw.jsonl |

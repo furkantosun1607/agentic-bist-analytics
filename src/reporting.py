@@ -22,6 +22,138 @@ class ReportManifestEntry:
     limitations: str
 
 
+@dataclass(frozen=True)
+class RequirementCoverageEntry:
+    requirement: str
+    status: str
+    evidence: str
+    limitation: str
+
+
+REQUIREMENT_COVERAGE: tuple[RequirementCoverageEntry, ...] = (
+    RequirementCoverageEntry(
+        requirement="Educational BIST 100 research system; no broker or investment advice",
+        status="Met",
+        evidence="README.md; reports/final_technical_report.md; reports/llm_agent_harness.md",
+        limitation="System is research-only and does not execute market orders.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Fixed 30-stock BIST universe and sector map",
+        status="Met",
+        evidence="config/universe.csv; config/universe_dictionary.md",
+        limitation="Historical BIST 100 membership over the full study period still requires external documentation.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Market data with XU100 benchmark and source metadata",
+        status="Met",
+        evidence="src/data.py; reports/market_cache_audit.md; reports/missing_symbols.csv",
+        limitation="Raw local cache files under data/cache are ignored by git.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Technical indicator layer: SMA, EMA, KAMA, RSI, MACD, Bollinger, ATR, Supertrend, Ichimoku, support/resistance and volume",
+        status="Met",
+        evidence="src/indicators.py; src/events.py; reports/technical_reversals.md",
+        limitation="Rules are intentionally simple and not optimized.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Mandatory scenario 1: sector laggard / catch-up",
+        status="Met",
+        evidence="src/research.py; reports/sector_catch_up.md",
+        limitation="Several simplified sectors have limited peer coverage.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Mandatory scenario 2: weekday and multi-day patterns",
+        status="Met",
+        evidence="src/research.py; reports/weekday_patterns.md",
+        limitation="Multiple-testing risk is documented; results remain historical observations.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Mandatory scenario 3: technical reversal events",
+        status="Met",
+        evidence="src/events.py; reports/technical_reversals.md",
+        limitation="Optional divergence candidates are not treated as a separate optimized model.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Mandatory scenario 4: quarterly fundamentals and post-disclosure price reaction",
+        status="Partial",
+        evidence="src/fundamentals.py; src/yfinance_fundamentals.py; reports/quarterly_fundamentals.md",
+        limitation="Fintables is not used; instructor-approved yfinance fallback and synthetic disclosure timestamps are used.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Point-in-time fundamentals, macro and news publication timestamp handling",
+        status="Met",
+        evidence="src/validation.py; src/context.py; reports/fundamentals_import_status.md; reports/macro_context_status.md",
+        limitation="Synthetic financial disclosure timestamps are conservative assumptions, not exact KAP times.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Macro context: USD/TRY, EUR/TRY, TCMB policy, Fed policy and TUIK inflation",
+        status="Partial",
+        evidence="src/macro_context_fetch.py; reports/macro_context_fetch_status.md; reports/macro_context_status.md",
+        limitation="FX is fetched with yfinance; TCMB/TUIK/FED records are curated static point-in-time records rather than live official API pulls.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Financial news and speech intelligence context",
+        status="Partial",
+        evidence="src/rss_news.py; src/news_context.py; reports/context_sources.md; reports/news_alias_matches.md",
+        limitation="RSS news metadata is implemented; instructor-approved video/STT pipeline is not implemented.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Backtesting with signal timing, costs, slippage, benchmarks and risk metrics",
+        status="Met",
+        evidence="src/backtest.py; reports/backtest.md; reports/split_regime.md",
+        limitation="Backtest is trade-level research output, not a capital-constrained portfolio simulation.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Out-of-sample / regime evaluation",
+        status="Met",
+        evidence="src/splits.py; reports/split_regime.md",
+        limitation="Unseen start date is fixed in configuration and should be disclosed when rerun.",
+    ),
+    RequirementCoverageEntry(
+        requirement="MCP-like deterministic tools and constrained tool permissions",
+        status="Partial",
+        evidence="src/mcp_server.py; reports/mcp_tools.md; src/harness.py; reports/harness_state_machine.md",
+        limitation="Implements an MCP-like local registry, not a deployed external MCP transport server.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Stateful agent harness with evidence, quality gate, human review and replay",
+        status="Met",
+        evidence="src/harness.py; src/evidence.py; src/decision_log.py; reports/decision_log.md",
+        limitation="Human review is represented as a reviewed educational project record.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Memory architecture: temporal, episodic and procedural memory",
+        status="Partial",
+        evidence="reports/decision_logs/decisions.jsonl; reports/decision_logs/llm_agent/decisions.jsonl; src/harness.py",
+        limitation="Replayable episodic/procedural records exist; no separate database-backed memory service is implemented.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Strategy variants A-E",
+        status="Partial",
+        evidence="src/strategy_variants.py; reports/strategy_variants.md",
+        limitation="Variants A-C are measured; D-E are unavailable because executable macro/news-video trade signals are not invented.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Agent harness experiments A-E",
+        status="Partial",
+        evidence="src/harness_variants.py; reports/harness_variants.md; reports/llm_agent_harness.md",
+        limitation="A-E harness comparison is deterministic capability scoring; live Gemini explanation exists separately.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Python source code / notebooks and environment instructions",
+        status="Partial",
+        evidence="src/; scripts/; requirements.txt; README.md; .env.example",
+        limitation="Classroom demo notebook is planned for P44.",
+    ),
+    RequirementCoverageEntry(
+        requirement="Final technical report and classroom demonstration",
+        status="Met",
+        evidence="reports/final_technical_report.md; reports/demo_summary.md; ui/dashboard.html",
+        limitation="Dashboard is static and informational; it does not run analyses itself.",
+    ),
+)
+
+
 REPORT_MANIFEST: tuple[ReportManifestEntry, ...] = (
     ReportManifestEntry(
         report_name="Market cache audit",
@@ -174,6 +306,26 @@ REPORT_MANIFEST: tuple[ReportManifestEntry, ...] = (
         limitations="does not call a live LLM and does not judge answer prose quality",
     ),
     ReportManifestEntry(
+        report_name="LLM agent harness",
+        path="reports/llm_agent_harness.md",
+        status="optional_live_or_offline_llm_ready",
+        data_period="committed local project evidence through current report artifacts",
+        source="LLM explanation over deterministic evidence bundle and quality gate payload",
+        sample_size="1 reviewed LLM harness decision record",
+        assumptions="LLM returns constrained JSON and cannot calculate financial metrics",
+        limitations="live prose quality depends on configured API key/model; offline fallback is deterministic",
+    ),
+    ReportManifestEntry(
+        report_name="PDF requirement coverage",
+        path="reports/pdf_requirement_coverage.md",
+        status="pdf_alignment_matrix_ready",
+        data_period="course PDF requirements reviewed against current local project artifacts",
+        source="Engineering Economics Project 2026 PDF and local report inventory",
+        sample_size=f"{len(REQUIREMENT_COVERAGE)} requirement coverage rows",
+        assumptions="coverage statuses are explicit and do not convert limitations into completed work",
+        limitations="coverage is a project-compliance map, not an empirical research result",
+    ),
+    ReportManifestEntry(
         report_name="Decision log",
         path="reports/decision_log.md",
         status="reviewed_replay_ok",
@@ -182,6 +334,16 @@ REPORT_MANIFEST: tuple[ReportManifestEntry, ...] = (
         sample_size="1 reviewed educational decision record; replay status ok",
         assumptions="JSONL record requires output label, review, evidence hash and record hash",
         limitations="educational project evidence only; not an investment recommendation",
+    ),
+    ReportManifestEntry(
+        report_name="Static dashboard",
+        path="ui/dashboard.html",
+        status="static_dashboard_ready",
+        data_period="current local report inventory",
+        source="local report manifest and LLM harness JSON output",
+        sample_size="HTML dashboard with report cards and command checklist",
+        assumptions="dashboard is regenerated after report or LLM harness updates",
+        limitations="static UI only; it does not fetch live data or run server-side actions",
     ),
 )
 
@@ -233,6 +395,38 @@ def write_report_index(output_path: str | Path = REPORTS_DIR / "report_index.md"
     return path
 
 
+def write_requirement_coverage(
+    output_path: str | Path = REPORTS_DIR / "pdf_requirement_coverage.md",
+) -> Path:
+    """Write a PDF-to-project requirement coverage matrix."""
+
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "# PDF Requirement Coverage Matrix",
+        "",
+        "This matrix maps the course PDF requirements to the current repository artifacts. It is a delivery-readiness aid, not a financial result.",
+        "",
+        "| PDF requirement | Status | Project evidence | Limitation / note |",
+        "| --- | --- | --- | --- |",
+    ]
+    lines.extend(_coverage_table_rows())
+    lines.extend(
+        [
+            "",
+            "Status policy:",
+            "- `Met`: implemented and documented with local artifacts.",
+            "- `Partial`: materially supported, but one or more PDF details are not fully implemented.",
+            "- `Unavailable/Documented Limitation`: intentionally not implemented or blocked by source access; no values are invented.",
+            "",
+            "Non-negotiable rule: missing Fintables, live official macro API, video/STT, and D-E executable trade signals remain explicit limitations.",
+            "",
+        ]
+    )
+    path.write_text("\n".join(lines), encoding="utf-8")
+    return path
+
+
 def write_final_technical_report(
     output_path: str | Path = REPORTS_DIR / "final_technical_report.md",
 ) -> Path:
@@ -243,7 +437,7 @@ def write_final_technical_report(
     lines = [
         "# Final Technical Report",
         "",
-        "Status: implementation infrastructure is complete through measured report orchestration. Local market, fundamentals, macro and RSS artifacts are available; the four required research reports, backtest/risk report, unseen/regime report, partial A-E strategy comparison, deterministic harness comparison and reviewed decision replay have been generated.",
+        "Status: implementation infrastructure is complete through measured report orchestration. Local market, fundamentals, macro and RSS artifacts are available; the four required research reports, backtest/risk report, unseen/regime report, partial A-E strategy comparison, deterministic harness comparison, optional LLM agent harness, static dashboard and reviewed decision replay have been generated.",
         "",
         "## Scope",
         "",
@@ -251,7 +445,7 @@ def write_final_technical_report(
         "",
         "## Report Status",
         "",
-        "The four scenario reports, backtest/risk report, unseen/regime report, A-C strategy variants, deterministic harness A-E comparison and one reviewed decision replay have measured outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but D-E strategy variants remain unavailable until executable macro and news/video signals are defined.",
+        "The four scenario reports, backtest/risk report, unseen/regime report, A-C strategy variants, deterministic harness A-E comparison, optional LLM explanation run, static dashboard and reviewed decision replay have measured or generated outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but D-E strategy variants remain unavailable until executable macro and news/video signals are defined.",
         "",
         "## Inconclusive Findings",
         "",
@@ -269,11 +463,18 @@ def write_final_technical_report(
         "- Stateful harness with permitted tool rules.",
         "- Evidence bundle, quality gate and replayable decision log with one reviewed record.",
         "",
+        "## PDF Requirement Coverage",
+        "",
+        "| PDF requirement | Status | Project evidence | Limitation / note |",
+        "| --- | --- | --- | --- |",
+        *_coverage_table_rows(),
+        "",
         "## Limitations",
         "",
         "- Raw local macro, fundamentals, market and RSS cache files are not committed.",
         "- Approved video context and final measured strategy outputs are not committed.",
-        "- Harness variants are measured with deterministic fixtures, not live LLM calls.",
+        "- Harness variants are measured with deterministic fixtures; the optional LLM harness can run live only when an API key is configured.",
+        "- The static dashboard is informational and does not fetch live data.",
         "- The measured backtest is trade-level research output and not a portfolio allocation simulation.",
         "- No broker connection or investment advice is included.",
         "",
@@ -284,3 +485,17 @@ def write_final_technical_report(
     ]
     path.write_text("\n".join(lines), encoding="utf-8")
     return path
+
+
+def _coverage_table_rows() -> list[str]:
+    rows: list[str] = []
+    for entry in REQUIREMENT_COVERAGE:
+        rows.append(
+            f"| {_escape_table(entry.requirement)} | {_escape_table(entry.status)} | "
+            f"{_escape_table(entry.evidence)} | {_escape_table(entry.limitation)} |"
+        )
+    return rows
+
+
+def _escape_table(value: str) -> str:
+    return value.replace("|", "\\|").replace("\n", " ")

@@ -15,6 +15,8 @@ Status: final local submission package is ready; remaining items are documented 
 | Unseen/regime comparison | measured local workflow | `python -m scripts.run_split_regime` used `2025-10-01` unseen start and generated 4 stability rows plus 6 regime rows. |
 | Strategy variants A-E | measured partial local workflow | `python -m scripts.run_strategy_variants` measured A-C and marks D-E unavailable until executable macro/news-video signals exist. |
 | Harness variants A-E | measured deterministic workflow | `python -m scripts.run_harness_variants` scored 5 fixed questions across 5 harness variants without live LLM calls. |
+| Optional LLM agent harness | ready live/offline workflow | `python -m scripts.run_llm_agent_harness --provider auto` uses live Gemini or OpenAI-compatible LLM when configured and deterministic fallback otherwise. |
+| Static dashboard UI | ready | `python -m scripts.build_dashboard` writes `ui/dashboard.html` with report inventory, LLM status and demo commands. |
 | Human-reviewed decision log | reviewed replay workflow | `python -m scripts.run_decision_log` wrote one reviewed educational record with replay status `ok`. |
 | RSS context pipeline | ready local workflow | Fetch, normalize, alias match and context builder commands are available. |
 | Offline demo | ready | `python -m scripts.demo --offline` reads local artifacts without live network calls. |
@@ -25,7 +27,8 @@ Status: final local submission package is ready; remaining items are documented 
 | Limitation | Type | Status |
 | --- | --- | --- |
 | Strategy variants D-E | unavailable component signals | Macro and news/video context are metadata/evidence only; no executable trade signals are invented. |
-| Live LLM harness run | intentionally not used | Harness A-E is deterministic fixture-only and does not judge answer prose quality. |
+| Harness A-E comparison prose quality | deterministic experiment limitation | Harness A-E comparison remains fixture-only; optional LLM agent harness exists separately for constrained explanation runs. |
+| Live LLM availability | optional external dependency | Gemini calls require `GEMINI_API_KEY` or `GOOGLE_API_KEY`; OpenAI-compatible calls require `LLM_API_KEY` or `OPENAI_API_KEY`; offline fallback remains replayable. |
 | Raw cache artifacts | local only | `data/cache`, `data/rss`, `data/fundamentals`, and `data/macro` stay ignored by git. |
 
 ## Current External Inputs Needed From User

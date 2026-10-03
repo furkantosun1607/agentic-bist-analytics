@@ -2,29 +2,40 @@
   "decision_id": "p41-llm-agent-harness",
   "explanation": {
     "evidence_links": [
-      "research_reports",
-      "backtest_report",
-      "strategy_variants_report",
-      "harness_variants_report"
+      "reports/research_run_status.md",
+      "reports/backtest.md",
+      "reports/strategy_variants.md",
+      "reports/harness_variants.md",
+      "reports/pdf_requirement_coverage.md"
     ],
     "label": "INVESTIGATE",
     "limitations": [
-      "Findings are constrained to the 25813.0 backtest trades and 3.0 measured strategy variants documented in the local report files as of 2026-09-25T12:00:00+00:00."
+      "The fallback client is deterministic and does not benchmark live prose quality.",
+      "Strategy variants D and E are unavailable until executable macro/news signals exist.",
+      "RSS news is context metadata, not a standalone trading signal."
+    ],
+    "methodology": "The harness reads committed report evidence, applies the quality gate, asks the LLM for a constrained explanation, records human review, and writes a replayable decision log.",
+    "next_steps": [
+      "Open reports/pdf_requirement_coverage.md for PDF alignment.",
+      "Open ui/dashboard.html for a classroom status overview.",
+      "Run the live Gemini provider when a fresh LLM explanation is required."
     ],
     "not_investment_advice": true,
+    "quality_gate_interpretation": "ANALYSIS_SAFE means the committed project evidence passed the current evidence completeness and leakage-oriented checks for this educational artifact.",
     "risk_notes": [
-      "Backtest metrics reflect historical simulations across 25813.0 trades and do not guarantee future performance or execution fidelity."
+      "No broker action is generated.",
+      "Numerical claims must remain tied to deterministic report artifacts."
     ],
-    "summary": "Analysis of the harness reports indicates 4.0 scenario reports, 25813.0 backtest trades, 3.0 measured strategy variants, and 5.0 harness questions evaluated. The quality gate status is ANALYSIS_SAFE."
+    "summary": "The project is ready to demonstrate a controlled educational BIST analytics workflow. Deterministic Python reports provide the measured scenario, backtest, strategy-variant and harness evidence; the LLM explains that evidence without recalculating financial metrics."
   },
-  "model": "gemini-3.8-flash",
-  "provider": "google",
+  "model": "deterministic-fallback",
+  "provider": "offline",
   "quality_gate": {
     "evidence_hash": "8988d55e80c4c17fcdb651751c7e8fdf033bdae86f29c121a04b6da3e5e01d85",
     "gate_status": "ANALYSIS_SAFE",
     "issues": []
   },
   "replay_status": "ok",
-  "status": "live_llm_replay_ok",
+  "status": "offline_llm_replay_ok",
   "warnings": []
 }

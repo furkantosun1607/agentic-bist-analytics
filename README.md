@@ -179,6 +179,14 @@ python -m scripts.build_dashboard
 
 This writes `ui/dashboard.html`. Open it in a browser to inspect report readiness, LLM harness status, evidence summary and demo commands. It has no server dependency.
 
+Open the classroom walkthrough notebook:
+
+```text
+notebooks/01_classroom_demo.ipynb
+```
+
+The notebook is a lightweight demo guide with the command sequence, report links, Gemini output reader, dashboard path and known limitations. It does not store API keys or raw cache artifacts.
+
 Then run the offline demo:
 
 ```powershell

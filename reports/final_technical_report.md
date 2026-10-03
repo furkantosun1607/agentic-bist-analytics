@@ -1,6 +1,6 @@
 # Final Technical Report
 
-Status: implementation infrastructure is complete through measured report orchestration. Local market, fundamentals, macro and RSS artifacts are available; the four required research reports, backtest/risk report, unseen/regime report, partial A-E strategy comparison, deterministic harness comparison, optional LLM agent harness, static dashboard and reviewed decision replay have been generated.
+Status: final PDF-alignment package is ready. Local market, fundamentals, macro and RSS artifacts are available; the four required research reports, backtest/risk report, unseen/regime report, partial A-E strategy comparison, deterministic harness comparison, optional LLM agent harness, PDF requirement coverage matrix, classroom demo notebook, static dashboard and reviewed decision replay have been generated.
 
 ## Scope
 
@@ -8,7 +8,7 @@ This project implements an educational BIST 100 research harness for a fixed 30-
 
 ## Report Status
 
-The four scenario reports, backtest/risk report, unseen/regime report, A-C strategy variants, deterministic harness A-E comparison, optional LLM explanation run, static dashboard and reviewed decision replay have measured or generated outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but D-E strategy variants remain unavailable until executable macro and news/video signals are defined.
+The four scenario reports, backtest/risk report, unseen/regime report, A-C strategy variants, deterministic harness A-E comparison, optional LLM explanation run, PDF requirement coverage matrix, classroom demo notebook, static dashboard and reviewed decision replay have measured or generated outputs. RSS news context, local yfinance fundamentals and numeric macro context are ready as local artifacts, but D-E strategy variants remain unavailable until executable macro and news/video signals are defined.
 
 ## Inconclusive Findings
 
@@ -25,6 +25,7 @@ The four scenario reports, P35 backtest, P36 unseen/regime report and P37 A-C st
 - Deterministic MCP-like tool surface.
 - Stateful harness with permitted tool rules.
 - Evidence bundle, quality gate and replayable decision log with one reviewed record.
+- PDF requirement coverage matrix and classroom demo notebook for submission review.
 
 ## PDF Requirement Coverage
 
@@ -48,13 +49,14 @@ The four scenario reports, P35 backtest, P36 unseen/regime report and P37 A-C st
 | Memory architecture: temporal, episodic and procedural memory | Partial | reports/decision_logs/decisions.jsonl; reports/decision_logs/llm_agent/decisions.jsonl; src/harness.py | Replayable episodic/procedural records exist; no separate database-backed memory service is implemented. |
 | Strategy variants A-E | Partial | src/strategy_variants.py; reports/strategy_variants.md | Variants A-C are measured; D-E are unavailable because executable macro/news-video trade signals are not invented. |
 | Agent harness experiments A-E | Partial | src/harness_variants.py; reports/harness_variants.md; reports/llm_agent_harness.md | A-E harness comparison is deterministic capability scoring; live Gemini explanation exists separately. |
-| Python source code / notebooks and environment instructions | Partial | src/; scripts/; requirements.txt; README.md; .env.example | Classroom demo notebook is planned for P44. |
+| Python source code / notebooks and environment instructions | Met | src/; scripts/; notebooks/01_classroom_demo.ipynb; requirements.txt; README.md; .env.example | Notebook is a lightweight classroom walkthrough and does not embed raw cache artifacts or secrets. |
 | Final technical report and classroom demonstration | Met | reports/final_technical_report.md; reports/demo_summary.md; ui/dashboard.html | Dashboard is static and informational; it does not run analyses itself. |
 
 ## Limitations
 
 - Raw local macro, fundamentals, market and RSS cache files are not committed.
-- Approved video context and final measured strategy outputs are not committed.
+- Instructor-approved video/STT context is not implemented in the current RSS-only flow.
+- Strategy variants D-E remain unavailable because executable macro/news-video trade signals are not invented.
 - Harness variants are measured with deterministic fixtures; the optional LLM harness can run live only when an API key is configured.
 - The static dashboard is informational and does not fetch live data.
 - The measured backtest is trade-level research output and not a portfolio allocation simulation.
@@ -62,4 +64,4 @@ The four scenario reports, P35 backtest, P36 unseen/regime report and P37 A-C st
 
 ## Submission Status
 
-Final packaging artifacts have been refreshed. Before submission, rerun the documented commands if local cache artifacts are intentionally updated.
+Final packaging artifacts have been refreshed. Before submission, rerun the documented commands if local cache artifacts are intentionally updated or if a fresh live Gemini explanation is required.

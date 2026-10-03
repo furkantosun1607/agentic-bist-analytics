@@ -22,7 +22,7 @@ This matrix maps the course PDF requirements to the current repository artifacts
 | Memory architecture: temporal, episodic and procedural memory | Partial | reports/decision_logs/decisions.jsonl; reports/decision_logs/llm_agent/decisions.jsonl; src/harness.py | Replayable episodic/procedural records exist; no separate database-backed memory service is implemented. |
 | Strategy variants A-E | Partial | src/strategy_variants.py; reports/strategy_variants.md | Variants A-C are measured; D-E are unavailable because executable macro/news-video trade signals are not invented. |
 | Agent harness experiments A-E | Partial | src/harness_variants.py; reports/harness_variants.md; reports/llm_agent_harness.md | A-E harness comparison is deterministic capability scoring; live Gemini explanation exists separately. |
-| Python source code / notebooks and environment instructions | Partial | src/; scripts/; requirements.txt; README.md; .env.example | Classroom demo notebook is planned for P44. |
+| Python source code / notebooks and environment instructions | Met | src/; scripts/; notebooks/01_classroom_demo.ipynb; requirements.txt; README.md; .env.example | Notebook is a lightweight classroom walkthrough and does not embed raw cache artifacts or secrets. |
 | Final technical report and classroom demonstration | Met | reports/final_technical_report.md; reports/demo_summary.md; ui/dashboard.html | Dashboard is static and informational; it does not run analyses itself. |
 
 Status policy:

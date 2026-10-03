@@ -76,6 +76,29 @@
     }
     .commands { display: grid; gap: 8px; }
     .commands code { display: block; padding: 10px; }
+    .shortcuts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+    }
+    .shortcut {
+      display: block;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--accent);
+      font-weight: 750;
+      text-decoration: none;
+    }
+    .shortcut span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+    }
   </style>
 </head>
 <body>
@@ -87,13 +110,13 @@
     <section class="grid">
       <div class="card">
         <div class="label">Tracked reports</div>
-        <div class="metric">19</div>
+        <div class="metric">20</div>
         <span class="pill">All tracked reports are present.</span>
       </div>
       <div class="card">
         <div class="label">LLM harness status</div>
-        <div class="metric">live_llm_replay_ok</div>
-        <span class="pill">google</span>
+        <div class="metric">offline_llm_replay_ok</div>
+        <span class="pill">offline</span>
       </div>
       <div class="card">
         <div class="label">Agent label</div>
@@ -104,7 +127,18 @@
 
     <section class="card section">
       <h2>LLM Agent Explanation</h2>
-      <p>Analysis of the harness reports indicates 4.0 scenario reports, 25813.0 backtest trades, 3.0 measured strategy variants, and 5.0 harness questions evaluated. The quality gate status is ANALYSIS_SAFE.</p>
+      <p>The project is ready to demonstrate a controlled educational BIST analytics workflow. Deterministic Python reports provide the measured scenario, backtest, strategy-variant and harness evidence; the LLM explains that evidence without recalculating financial metrics.</p>
+    </section>
+
+    <section class="section">
+      <h2>Submission Shortcuts</h2>
+      <div class="shortcuts">
+        <a class="shortcut" href="../reports/pdf_requirement_coverage.md">PDF Coverage<span>reports/pdf_requirement_coverage.md</span></a>
+<a class="shortcut" href="../reports/final_technical_report.md">Final Report<span>reports/final_technical_report.md</span></a>
+<a class="shortcut" href="../notebooks/01_classroom_demo.ipynb">Notebook<span>notebooks/01_classroom_demo.ipynb</span></a>
+<a class="shortcut" href="../reports/llm_agent_harness.md">LLM Harness<span>reports/llm_agent_harness.md</span></a>
+<a class="shortcut" href="../ui/dashboard.html">Dashboard<span>ui/dashboard.html</span></a>
+      </div>
     </section>
 
     <section class="section">
@@ -238,6 +272,13 @@
   <p><strong>Path:</strong> <code>reports/pdf_requirement_coverage.md</code></p>
   <p><strong>Sample:</strong> 20 requirement coverage rows</p>
   <p><strong>Limitation:</strong> coverage is a project-compliance map, not an empirical research result</p>
+</article>
+<article class="card report">
+  <h3>Classroom demo notebook</h3>
+  <span class="pill">classroom_walkthrough_ready</span>
+  <p><strong>Path:</strong> <code>notebooks/01_classroom_demo.ipynb</code></p>
+  <p><strong>Sample:</strong> one notebook with setup, workflow, report links, LLM output reader and limitations</p>
+  <p><strong>Limitation:</strong> notebook does not execute the full pipeline automatically</p>
 </article>
 <article class="card report">
   <h3>Decision log</h3>

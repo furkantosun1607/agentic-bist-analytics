@@ -97,6 +97,17 @@ def _render_dashboard(
         if isinstance(explanation, dict):
             llm_label = str(explanation.get("label", "-"))
             llm_summary = str(explanation.get("summary", llm_summary))
+    shortcuts = (
+        ("PDF Coverage", "reports/pdf_requirement_coverage.md"),
+        ("Final Report", "reports/final_technical_report.md"),
+        ("Notebook", "notebooks/01_classroom_demo.ipynb"),
+        ("LLM Harness", "reports/llm_agent_harness.md"),
+        ("Dashboard", "ui/dashboard.html"),
+    )
+    shortcut_links = "\n".join(
+        f'<a class="shortcut" href="../{html.escape(path)}">{html.escape(label)}<span>{html.escape(path)}</span></a>'
+        for label, path in shortcuts
+    )
 
     return f"""<!doctype html>
 <html lang="en">
@@ -176,6 +187,29 @@ def _render_dashboard(
     }}
     .commands {{ display: grid; gap: 8px; }}
     .commands code {{ display: block; padding: 10px; }}
+    .shortcuts {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 10px;
+    }}
+    .shortcut {{
+      display: block;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--accent);
+      font-weight: 750;
+      text-decoration: none;
+    }}
+    .shortcut span {{
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+    }}
   </style>
 </head>
 <body>
@@ -205,6 +239,13 @@ def _render_dashboard(
     <section class="card section">
       <h2>LLM Agent Explanation</h2>
       <p>{html.escape(llm_summary)}</p>
+    </section>
+
+    <section class="section">
+      <h2>Submission Shortcuts</h2>
+      <div class="shortcuts">
+        {shortcut_links}
+      </div>
     </section>
 
     <section class="section">

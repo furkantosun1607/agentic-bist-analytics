@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 from src.llm_agent import (
     AgentExplanation,
+    ALLOWED_EVIDENCE_LINKS,
     GoogleGenAIClient,
     LLMConfig,
     OfflineLLMClient,
@@ -26,9 +27,12 @@ class BadLLMClient:
         return {
             "label": "BUY",
             "summary": "unsupported label",
+            "methodology": "bad",
             "evidence_links": [],
+            "quality_gate_interpretation": "bad",
             "limitations": [],
             "risk_notes": [],
+            "next_steps": [],
             "not_investment_advice": True,
         }
 
@@ -67,7 +71,27 @@ class LLMAgentTests(unittest.TestCase):
                 {
                     "label": "WATCH",
                     "summary": "bad",
+                    "methodology": "bad",
+                    "evidence_links": list(ALLOWED_EVIDENCE_LINKS),
+                    "quality_gate_interpretation": "bad",
+                    "limitations": [],
+                    "risk_notes": [],
+                    "next_steps": [],
                     "not_investment_advice": False,
+                }
+            )
+        with self.assertRaisesRegex(ValueError, "unsupported evidence links"):
+            validate_agent_explanation(
+                {
+                    "label": "WATCH",
+                    "summary": "bad",
+                    "methodology": "bad",
+                    "evidence_links": ["research_reports"],
+                    "quality_gate_interpretation": "bad",
+                    "limitations": [],
+                    "risk_notes": [],
+                    "next_steps": [],
+                    "not_investment_advice": True,
                 }
             )
 
@@ -85,9 +109,16 @@ class LLMAgentTests(unittest.TestCase):
             self.assertEqual("offline_llm_replay_ok", result.status)
             self.assertEqual("ok", result.replay.status)
             self.assertEqual("INVESTIGATE", result.explanation.label)
+            self.assertIn("reports/pdf_requirement_coverage.md", result.explanation.evidence_links)
+            self.assertTrue(result.explanation.methodology)
+            self.assertTrue(result.explanation.quality_gate_interpretation)
+            self.assertTrue(result.explanation.next_steps)
             self.assertTrue((tmp / "decision_logs" / "llm_agent" / "decisions.jsonl").exists())
             payload = json.loads((tmp / "llm.json").read_text(encoding="utf-8"))
             self.assertEqual("offline", payload["provider"])
+            self.assertIn("methodology", payload["explanation"])
+            self.assertIn("quality_gate_interpretation", payload["explanation"])
+            self.assertIn("next_steps", payload["explanation"])
 
     def test_bad_llm_output_falls_back_to_safe_offline_explanation(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -119,7 +150,11 @@ class LLMAgentTests(unittest.TestCase):
             self.assertIsInstance(result.explanation, AgentExplanation)
             self.assertIn("Do not invent, calculate", client.system_prompt)
             self.assertIn("Return only JSON", client.system_prompt)
+            self.assertIn("methodology", client.system_prompt)
+            self.assertIn("quality_gate_interpretation", client.system_prompt)
             self.assertIn("no_new_numbers", client.user_prompt)
+            self.assertIn("evidence_links_must_be_repo_paths", client.user_prompt)
+            self.assertIn("reports/pdf_requirement_coverage.md", client.user_prompt)
 
     def test_auto_provider_uses_google_when_gemini_key_exists(self):
         clean_env = {

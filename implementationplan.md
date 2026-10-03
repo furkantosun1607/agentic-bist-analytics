@@ -21,10 +21,10 @@ Bu dosya, CSE-481 Engineering Economics BIST 100 Research Harness projesinin ana
 
 | Alan | Durum |
 | --- | --- |
-| Proje durumu | P43 PDF requirement coverage complete; P44-P46 final PDF-alignment polish remaining |
+| Proje durumu | P00-P46 final PDF-alignment package complete |
 | Son guncelleme | 2026-10-03 |
-| Aktif faz | P44 - Classroom Demo Notebook |
-| Kritik sonraki hedef | Classroom notebook, iyilestirilmis LLM explanation ve final refresh |
+| Aktif faz | Complete |
+| Kritik sonraki hedef | Teslim oncesi gerekirse documented commands tekrar calistirilir |
 
 ## Degismez Proje Kurallari
 
@@ -1678,7 +1678,7 @@ Completed:
 
 ### P44 - Classroom Demo Notebook
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: PDF'in "Python source code / notebooks" teslim beklentisini karsilamak ve sinifta tek dosyadan proje akisini anlatmak.
 
@@ -1694,15 +1694,24 @@ Acceptance:
 - Notebook, canli API key veya secret icermez.
 
 Tests:
-- Notebook JSON parse edilir.
-- `python -m unittest tests.test_imports` veya yeni notebook smoke testi calisir.
+- `python -m unittest tests.test_notebooks tests.test_reporting` passed: 5 tests.
+- `python -m scripts.demo --offline` passed.
+- `python -m scripts.build_dashboard` passed.
+- `python -m unittest discover -s tests` passed: 207 tests.
 
 Notes:
 - Notebook teslim kalitesini artirir; local raw cache dosyalarini notebook'a gommemek gerekir.
 
+Completed:
+- `notebooks/01_classroom_demo.ipynb` classroom walkthrough olarak eklendi.
+- Notebook komut akisi, rapor linkleri, Gemini output reader, dashboard yolu ve limitation ozetini icerir.
+- Notebook secret veya raw cache artifact'i icermez.
+- Report manifest ve PDF coverage matrisi notebook'u takip edecek sekilde guncellendi.
+- README notebook yolunu ve amacini belirtecek sekilde guncellendi.
+
 ### P45 - Richer LLM Explanation Prompt And Evidence Citations
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: Gemini ciktisini daha bilgilendirici hale getirmek; LLM'in yalnizca sayilari tekrar etmesi yerine evidence dosya yollarini, guvenlik kurallarini, kisitlari ve proje sonucunu aciklamasini saglamak.
 
@@ -1719,17 +1728,27 @@ Acceptance:
 - Hatalar try/except ile yakalanir; bad LLM output guvenli fallback'e duser.
 
 Tests:
-- `python -m unittest tests.test_llm_agent`
-- `python -m scripts.run_llm_agent_harness --provider offline`
+- `python -m unittest tests.test_llm_agent` passed: 7 tests.
+- `python -m scripts.run_llm_agent_harness --provider offline` passed: `offline_llm_replay_ok`.
+- `python -m scripts.build_dashboard` passed.
+- `python -m unittest discover -s tests` passed: 207 tests.
 - Kullanici isterse live: `python -m scripts.run_llm_agent_harness --provider google`
 
 Notes:
 - Live Gemini testini secret gerektirdigi icin zorunlu CI testi yapmayacagiz; kullanici kendi ortaminda calistiracak.
 - Bu fazdan sonra dashboard tekrar build edilmeli.
 
+Completed:
+- `AgentExplanation` schema'si `methodology`, `quality_gate_interpretation` ve `next_steps` alanlariyla genisletildi.
+- Prompt JSON schema, evidence path zorunlulugu ve no-new-numbers kurallariyla guclendirildi.
+- Evidence links yalnizca onayli repo rapor yollarindan kabul edilecek sekilde validate edildi.
+- Offline fallback daha acik methodology, quality gate yorumu, limitation ve next-step ciktisi uretir hale getirildi.
+- Markdown ve JSON LLM raporlari yeni bolumlerle guncellendi.
+- LLM unit testleri yeni schema ve evidence path validation kontrollerini kapsayacak sekilde guncellendi.
+
 ### P46 - Final PDF Alignment Refresh
 
-Status: `Not Started`
+Status: `Done`
 
 Goal: P43-P45 tamamlandiktan sonra tum final raporlari, dashboard'u, demo summary'yi ve plan durumunu teslim oncesi son hale getirmek.
 
@@ -1747,12 +1766,20 @@ Acceptance:
 - Final limitation listesi net kalir: Fintables yerine yfinance fallback, video/STT yok, D-E executable signals yok, live API key local-only.
 
 Tests:
-- `python -m unittest discover -s tests`
-- `python -m scripts.demo --offline`
-- `python -m scripts.build_dashboard`
+- `python -m scripts.demo --offline` passed.
+- `python -m scripts.build_dashboard` passed.
+- `python -m unittest tests.test_ui_dashboard tests.test_reporting` passed: 5 tests.
+- `python -m unittest discover -s tests` passed: 207 tests.
 
 Notes:
 - Bu faz, teslim oncesi "son paketleme" fazidir; yeni analiz mantigi eklemeyecek, kanit/dokuman/UI uyumunu tamamlayacak.
+
+Completed:
+- Final technical report P46 durumuna gore PDF coverage, notebook, dashboard ve richer LLM explanation bilgisini icerir hale getirildi.
+- Submission gap status coverage, notebook, richer LLM schema ve video/STT limitation notlariyla guncellendi.
+- Dashboard'a submission shortcuts bandi eklendi: PDF coverage, final report, notebook, LLM harness ve dashboard linkleri.
+- Demo summary, report index, final report, coverage report ve dashboard yeniden uretildi.
+- P43-P46 final polish akisi tamamlandi.
 
 ## Gelistirme Gunlugu
 
@@ -1806,6 +1833,9 @@ Notes:
 | 2026-10-03 | P42 | Static bilgilendirici dashboard generator ve `ui/dashboard.html` eklendi. | `python -m unittest tests.test_ui_dashboard tests.test_reporting tests.test_imports` passed; `python -m scripts.build_dashboard` passed. | Dashboard report/LLM artifactleri yenilendikce tekrar build edilir. |
 | 2026-10-03 | PDF Polish Planning | PDF gereksinim analizi sonrasi P43-P46 final polish fazlari eklendi. | Dokuman guncellemesi. | Aktif faz P43'e tasindi; odak coverage matrix, notebook, richer LLM output ve final refresh. |
 | 2026-10-03 | P43 | PDF requirement coverage matrix, final report coverage bolumu, report manifest baglantisi ve demo generation entegrasyonu eklendi. | `python -m unittest discover -s tests` passed: 206 tests; `python -m scripts.demo --offline` passed; `python -m scripts.build_dashboard` passed. | Aktif faz P44'e tasindi. |
+| 2026-10-03 | P44 | Classroom demo notebook, notebook smoke testi, README referansi ve report manifest/coverage notebook status guncellemesi eklendi. | `python -m unittest discover -s tests` passed: 207 tests; `python -m scripts.demo --offline` passed; `python -m scripts.build_dashboard` passed. | Aktif faz P45'e tasindi. |
+| 2026-10-03 | P45 | LLM explanation schema, prompt, evidence path validation, richer offline fallback ve markdown/JSON output bolumleri iyilestirildi. | `python -m unittest discover -s tests` passed: 207 tests; `python -m scripts.run_llm_agent_harness --provider offline` passed; `python -m scripts.build_dashboard` passed. | Aktif faz P46'ya tasindi. |
+| 2026-10-03 | P46 | Final technical report, submission gap status, dashboard submission shortcuts, demo artifacts ve plan final state yenilendi. | `python -m unittest discover -s tests` passed: 207 tests; `python -m scripts.demo --offline` passed; `python -m scripts.build_dashboard` passed. | P00-P46 final PDF-alignment package tamamlandi. |
 
 ## Acik Riskler Ve Kararlar
 
@@ -1821,8 +1851,9 @@ Notes:
 | LLM agent harness | Ready optional live/offline | `python -m scripts.run_llm_agent_harness --provider auto` Gemini veya OpenAI-compatible API key varsa live cagri yapar; yoksa deterministic fallback ile replayable artifact uretir. Prompt no-new-numbers, JSON-only ve no-investment-advice kisitlariyla kilitlidir. |
 | Bilgilendirici UI | Ready static dashboard | `python -m scripts.build_dashboard` `ui/dashboard.html` uretir; report inventory, LLM status ve demo komutlarini gosterir. |
 | PDF requirement coverage | Done | `reports/pdf_requirement_coverage.md` ve final report coverage bolumu hocanin PDF'indeki deliverable/kalite kriterlerini dosya/durum/limitasyon bazinda izler. |
-| Classroom notebook | Planned | P44 ile `notebooks/01_classroom_demo.ipynb` eklenecek; komut akisi, rapor linkleri, Gemini ciktisi ve dashboard yolu tek yerde gosterilecek. |
-| LLM explanation quality | Planned | P45 ile prompt daha acik evidence citation, methodology, limitation ve next-step alanlari uretecek sekilde iyilestirilecek. |
+| Classroom notebook | Done | `notebooks/01_classroom_demo.ipynb` komut akisi, rapor linkleri, Gemini ciktisi, dashboard yolu ve limitation ozetini tek yerde gosterir. |
+| LLM explanation quality | Done | Prompt ve JSON schema evidence path, methodology, quality gate yorumu, limitation ve next-step alanlari uretecek sekilde iyilestirildi. |
+| Final PDF alignment refresh | Done | Final report, submission gap status, dashboard shortcuts, demo summary ve implementation plan teslim oncesi son duruma cekildi. |
 | Human review kaydi | Decided | `p39-reviewed-educational-analysis` record'u educational project evidence olarak `accept` edildi; replay integrity `ok`, investment advice degil. |
 | Maliyet/slippage varsayimlari | Decided | `settings.yaml` icindeki `trading_cost_bps: 10` ve `slippage_bps: 5` backtest motoruna baglandi; sifir toplam maliyet reddedilir. |
 | Measured final results | Final local package ready | Four scenario reports, P35 backtest/risk, P36 unseen/regime, P37 A-C strategy variants, P38 harness deterministic run ve P39 decision replay hazir; P40 final refresh tamamlandi. |
@@ -1846,6 +1877,6 @@ Notes:
 - [x] Informative static dashboard UI
 - [x] Final report and classroom demo command
 - [x] PDF requirement coverage matrix
-- [ ] Classroom demo notebook
-- [ ] Richer LLM explanation with evidence citations
-- [ ] Final PDF alignment refresh
+- [x] Classroom demo notebook
+- [x] Richer LLM explanation with evidence citations
+- [x] Final PDF alignment refresh

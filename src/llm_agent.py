@@ -37,6 +37,13 @@ from src.settings import PROJECT_ROOT, Settings, load_settings
 DEFAULT_CREATED_AT = "2026-10-03T12:00:00+03:00"
 DEFAULT_REPORT_PATH = PROJECT_ROOT / "reports" / "llm_agent_harness.md"
 DEFAULT_JSON_PATH = PROJECT_ROOT / "reports" / "llm_agent_harness.json"
+ALLOWED_EVIDENCE_LINKS = (
+    "reports/research_run_status.md",
+    "reports/backtest.md",
+    "reports/strategy_variants.md",
+    "reports/harness_variants.md",
+    "reports/pdf_requirement_coverage.md",
+)
 
 
 @dataclass(frozen=True)
@@ -52,9 +59,12 @@ class LLMConfig:
 class AgentExplanation:
     label: str
     summary: str
+    methodology: str
     evidence_links: tuple[str, ...]
+    quality_gate_interpretation: str
     limitations: tuple[str, ...]
     risk_notes: tuple[str, ...]
+    next_steps: tuple[str, ...]
     not_investment_advice: bool
 
 
@@ -90,24 +100,35 @@ class OfflineLLMClient:
         return {
             "label": "INVESTIGATE",
             "summary": (
-                "The controlled harness has enough replayable project evidence for an "
-                "educational analysis demo. The result should remain investigative "
-                "because macro and news/video executable strategy signals are not "
-                "available."
+                "The project is ready to demonstrate a controlled educational BIST "
+                "analytics workflow. Deterministic Python reports provide the measured "
+                "scenario, backtest, strategy-variant and harness evidence; the LLM "
+                "explains that evidence without recalculating financial metrics."
             ),
-            "evidence_links": [
-                "reports/research_run_status.md",
-                "reports/backtest.md",
-                "reports/strategy_variants.md",
-                "reports/harness_variants.md",
-            ],
+            "methodology": (
+                "The harness reads committed report evidence, applies the quality gate, "
+                "asks the LLM for a constrained explanation, records human review, and "
+                "writes a replayable decision log."
+            ),
+            "evidence_links": list(ALLOWED_EVIDENCE_LINKS),
+            "quality_gate_interpretation": (
+                "ANALYSIS_SAFE means the committed project evidence passed the current "
+                "evidence completeness and leakage-oriented checks for this educational "
+                "artifact."
+            ),
             "limitations": [
                 "The fallback client is deterministic and does not benchmark live prose quality.",
                 "Strategy variants D and E are unavailable until executable macro/news signals exist.",
+                "RSS news is context metadata, not a standalone trading signal.",
             ],
             "risk_notes": [
                 "No broker action is generated.",
                 "Numerical claims must remain tied to deterministic report artifacts.",
+            ],
+            "next_steps": [
+                "Open reports/pdf_requirement_coverage.md for PDF alignment.",
+                "Open ui/dashboard.html for a classroom status overview.",
+                "Run the live Gemini provider when a fresh LLM explanation is required.",
             ],
             "not_investment_advice": True,
         }
@@ -369,12 +390,22 @@ def validate_agent_explanation(raw: dict[str, object]) -> AgentExplanation:
     if not not_advice:
         raise ValueError("LLM explanation must mark not_investment_advice=true")
 
+    evidence_links = _string_tuple(raw.get("evidence_links"))
+    invalid_links = [link for link in evidence_links if link not in ALLOWED_EVIDENCE_LINKS]
+    if not evidence_links:
+        raise ValueError("LLM explanation evidence_links is empty")
+    if invalid_links:
+        raise ValueError(f"LLM explanation contains unsupported evidence links: {', '.join(invalid_links)}")
+
     return AgentExplanation(
         label=label,
         summary=summary,
-        evidence_links=_string_tuple(raw.get("evidence_links")),
+        methodology=_required_text(raw, "methodology"),
+        evidence_links=evidence_links,
+        quality_gate_interpretation=_required_text(raw, "quality_gate_interpretation"),
         limitations=_string_tuple(raw.get("limitations")),
         risk_notes=_string_tuple(raw.get("risk_notes")),
+        next_steps=_string_tuple(raw.get("next_steps")),
         not_investment_advice=not_advice,
     )
 
@@ -412,6 +443,14 @@ def write_llm_harness_outputs(result: LLMHarnessRunResult, log_path: Path) -> No
         "",
         result.explanation.summary,
         "",
+        "## Methodology",
+        "",
+        result.explanation.methodology,
+        "",
+        "## Quality Gate Interpretation",
+        "",
+        result.explanation.quality_gate_interpretation,
+        "",
         "## Evidence Links",
         "",
     ]
@@ -420,6 +459,8 @@ def write_llm_harness_outputs(result: LLMHarnessRunResult, log_path: Path) -> No
     lines.extend(f"- {item}" for item in result.explanation.limitations)
     lines.extend(["", "## Risk Notes", ""])
     lines.extend(f"- {item}" for item in result.explanation.risk_notes)
+    lines.extend(["", "## Next Steps", ""])
+    lines.extend(f"- {item}" for item in result.explanation.next_steps)
     if result.warnings:
         lines.extend(["", "## Warnings", ""])
         lines.extend(f"- {warning}" for warning in result.warnings)
@@ -447,9 +488,11 @@ def _system_prompt() -> str:
     return (
         "You are the explanation layer inside an educational BIST analytics harness. "
         "Python tools already calculated every number. Do not invent, calculate or "
-        "recommend trades. Return only JSON with keys: label, summary, evidence_links, "
-        "limitations, risk_notes, not_investment_advice. The label must be one of "
-        f"{', '.join(EDUCATIONAL_OUTPUT_LABELS)}."
+        "recommend trades. Return only JSON with keys: label, summary, methodology, "
+        "evidence_links, quality_gate_interpretation, limitations, risk_notes, "
+        "next_steps, not_investment_advice. Evidence links must be existing project "
+        "report paths from the user payload, not invented aliases. The label must be "
+        f"one of {', '.join(EDUCATIONAL_OUTPUT_LABELS)}."
     )
 
 
@@ -461,6 +504,18 @@ def _user_prompt(evidence: tuple[dict[str, object], ...], quality_gate: QualityG
             "no_investment_advice": True,
             "no_new_numbers": True,
             "must_reference_evidence": True,
+            "evidence_links_must_be_repo_paths": True,
+        },
+        "required_json_schema": {
+            "label": "one educational label",
+            "summary": "plain-language project conclusion",
+            "methodology": "how the harness used deterministic reports, quality gate, LLM explanation, human review and replay",
+            "evidence_links": list(ALLOWED_EVIDENCE_LINKS),
+            "quality_gate_interpretation": "explain gate_status without adding new facts",
+            "limitations": "list of explicit project limitations",
+            "risk_notes": "list of educational risk notes",
+            "next_steps": "list of classroom/demo follow-up actions",
+            "not_investment_advice": True,
         },
     }
     return json.dumps(payload, ensure_ascii=True, sort_keys=True)
@@ -474,6 +529,13 @@ def _string_tuple(value: object) -> tuple[str, ...]:
     if isinstance(value, list):
         return tuple(str(item) for item in value if str(item).strip())
     raise ValueError("expected a string or list of strings")
+
+
+def _required_text(raw: dict[str, object], key: str) -> str:
+    value = str(raw.get(key, "")).strip()
+    if not value:
+        raise ValueError(f"LLM explanation {key} is empty")
+    return value
 
 
 def _display_path(path: Path) -> str:

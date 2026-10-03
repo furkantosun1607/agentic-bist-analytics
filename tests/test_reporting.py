@@ -23,6 +23,10 @@ class ReportingTests(unittest.TestCase):
             "PDF requirement coverage",
             {entry.report_name for entry in REPORT_MANIFEST},
         )
+        self.assertIn(
+            "Classroom demo notebook",
+            {entry.report_name for entry in REPORT_MANIFEST},
+        )
 
     def test_write_report_index_contains_required_metadata_columns(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -55,12 +59,12 @@ class ReportingTests(unittest.TestCase):
                 text,
             )
             self.assertIn(
-                "deterministic harness A-E comparison, optional LLM explanation run, static dashboard and reviewed decision replay have measured or generated outputs",
+                "optional LLM explanation run, PDF requirement coverage matrix, classroom demo notebook, static dashboard and reviewed decision replay have measured or generated outputs",
                 text,
             )
             self.assertIn("optional LLM harness can run live only when an API key is configured", text)
             self.assertIn("## PDF Requirement Coverage", text)
-            self.assertIn("Classroom demo notebook is planned for P44", text)
+            self.assertIn("notebooks/01_classroom_demo.ipynb", text)
             self.assertIn("final strategy-level conclusions remain partial", text)
             self.assertIn("No broker connection or investment advice", text)
 
